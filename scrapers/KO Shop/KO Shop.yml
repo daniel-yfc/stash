@@ -3,7 +3,7 @@
 # - Robust class matching via normalize-space()
 # - Element-based selectors (no /text() traps)
 # - Fixed main-image href pattern
-# - Search URL supports optional class_id
+# - Test Cases at https://www.ko-shop.com/products/detail.php?product_id={product_id}, which product_id are [34893, 35479, 35620, 36104,40170,40366,40499,40918,41840,41968,42156].
 
 name: "KO Shop"
 
@@ -19,14 +19,14 @@ sceneByURL:
 
 sceneByName:
   action: scrapeXPath
-  # Usage: keyword, class_id (class_id can be empty string)
-  queryURL: https://www.ko-shop.com/products/list.php?word={}&class_id={}
+  # Usage: keyword
+  queryURL: https://www.ko-shop.com/products/list.php?word={}
   scraper: searchScraper
 
 sceneByQueryFragment:
   action: scrapeXPath
-  # Usage: title fragment, class_id (class_id can be empty string)
-  queryURL: https://www.ko-shop.com/products/list.php?word={}&class_id={}
+  # Usage: title fragment
+  queryURL: https://www.ko-shop.com/products/list.php?word={}
   queryURLReplace:
     # First placeholder: clean title -> keyword
     - regex: '\\.[^.]+$'
