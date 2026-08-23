@@ -47,11 +47,13 @@ description: >
 - Script actions: load `script-actions.md` and always print install prerequisites.
 - CDP: load `cdp-workflow.md` only when HTTP cannot retrieve the content. Never emit `useCDP: true` without the visible-CDP steps.
 
-## Load when needed
+## Load when needed (agent references)
 
 | File | Load when |
 | --- | --- |
 | [xpath-patterns.md](references/xpath-patterns.md) | Writing or fixing XPath |
+| [json-patterns.md](references/json-patterns.md) | Writing or fixing `scrapeJson` (GJSON) |
+| [json-examples.md](references/json-examples.md) | Complete-file `scrapeJson` template |
 | [date-formats.md](references/date-formats.md) | Dates, `parseDate`, `&nbsp;`, unix, relative days |
 | [title-patterns.md](references/title-patterns.md) | Title `replace` block |
 | [performer-cleaning.md](references/performer-cleaning.md) | Performer names or gender |
@@ -60,5 +62,12 @@ description: >
 | [cdp-workflow.md](references/cdp-workflow.md) | Login, paywall, JS-only, or HTTP failure |
 | [advanced-patterns.md](references/advanced-patterns.md) | subScraper, anchors, networks, studio map |
 | [examples.md](references/examples.md) | Need a complete-file template |
+| [eval-pack.md](references/eval-pack.md) | Testing this skill end-to-end |
 
-Do not load `MANIFEST.md`. It is a human install index only.
+## Human-only references (do not load for scraper tasks)
+
+These live in `references/` for documentation but are **not** part of the agent workflow:
+
+- `request-template.md` / `request-template-zh-TW.md` — request intake forms
+- `validator-errors-zh-TW.md` / `validator-index-messages-zh-TW.md` — validator message translations
+- `scraper.schema.json` — offline schema stub (also at repo root `validator/scraper.schema.json` for CI)

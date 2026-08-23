@@ -32,9 +32,3 @@ steps:
   with:
     skill-file: path/to/SKILL.md
 ```
-
-## 失敗範例
-
-```
-::error file=skills/stash-scraper-builder/SKILL.md::連結失效：references/eval-pack.md（找不到 skills/stash-scraper-builder/references/eval-pack.md）
-```

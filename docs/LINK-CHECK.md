@@ -8,12 +8,12 @@
 | --- | --- | --- |
 | 相對連結（檔案存在性） | markdown-link-check | 所有 `*.md` |
 | 外部連結（HTTP 狀態） | markdown-link-check | 所有 `*.md` |
-| SKILL.md 載入表專項 | shell script | `skills/stash-scraper-builder/SKILL.md` |
+| SKILL.md 載入表專項 | skill-link-check action | `skills/stash-scraper-builder/SKILL.md` |
 
 ## 觸發時機
 
-- push 到 `main` 且有 `*.md` 變更
-- PR 到 `main` 且有 `*.md` 變更
+- push 到 `main` 且有 `*.md` / `*.json` 變更
+- PR 到 `main` 且有 `*.md` / `*.json` 變更
 
 ## 忽略的網域
 
@@ -35,12 +35,7 @@
 ## 本地執行
 
 ```bash
-# 安裝
 npm install -g markdown-link-check
-
-# 檢查單一檔案
 markdown-link-check -c .github/markdown-link-check.json skills/stash-scraper-builder/SKILL.md
-
-# 檢查全部
 find . -name "*.md" -exec markdown-link-check -c .github/markdown-link-check.json {} \;
 ```
