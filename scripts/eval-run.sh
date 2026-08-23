@@ -5,7 +5,7 @@ echo "=== 執行評估包 ==="
 
 # 1. 驗證所有刮削器
 echo "1. 驗證刮削器..."
-deno run -R=scrapers -R=validator/scraper.schema.json validator/index-zh-TW.mjs -a -s scrapers/
+deno run -R=scrapers,validator/scraper.schema.json validator/index-zh-TW.mjs -a -s scrapers/
 
 # 2. 檢查 eval-pack.md 的 5 任務
 echo "2. 檢查評估任務..."

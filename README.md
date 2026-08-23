@@ -28,16 +28,16 @@ https://github.com/daniel-yfc/stash
 
 ```bash
 # Validate all scrapers
-deno run -R=scrapers -R=validator/scraper.schema.json validator/index-zh-TW.mjs -a -s scrapers/
+deno run -R=scrapers,validator/scraper.schema.json validator/index-zh-TW.mjs -a -s scrapers/
 
 # Validate a single scraper
-deno run -R=scrapers -R=validator/scraper.schema.json validator/index-zh-TW.mjs scrapers/site-a/site-a.yml
+deno run -R=scrapers,validator/scraper.schema.json validator/index-zh-TW.mjs scrapers/site-a/site-a.yml
 ```
 
 ## File structure
 
 ```
-stash/
+stash-scraper-builder/
 ├── AGENTS.md                    # Agent rules
 ├── README.md                    # This file
 ├── README_zhTW.md               # Chinese version
@@ -67,15 +67,15 @@ stash/
 
 ## Real-page testing (required before PR)
 
-Schema validation proves structure only — NOT that a selector returns data. Every scraper must be tested against real pages from the target site before a PR is opened.
+Schema validation proves structure only — **not** that a selector returns data. Every scraper must be tested against **real pages from the target site** before a PR is opened.
 
 ### Rules
 
-- Test ** every function/mode the scraper implements** (`sceneByURL`, `performerByURL`, `sceneByName`, `sceneByFragment`, etc.).
+- Test **every function/mode the scraper implements** (`sceneByURL`, `performerByURL`, `sceneByName`, `sceneByFragment`, etc.).
 - For each function, test at least **3 real pages** (e.g. 3 different videos, 3 different performers).
 - For each test page, record the **URL** and the **expected value of every relevant field** (Title, Date, Performers, Studio, Tags, Image, …).
 - Include edge cases in your 3+ pages where possible: missing date, multiple performers, CJK + Latin mixed names, bracketed title tags.
-- A selector that returns nothing on a real page is a fail-to-fetch defect — fix it before the PR, do not ship it.
+- A selector that returns nothing on a real page is a **fail-to-fetch defect** — fix it before the PR, do not ship it.
 
 ### Test record format (paste into the PR description)
 

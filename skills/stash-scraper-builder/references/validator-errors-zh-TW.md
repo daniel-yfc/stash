@@ -441,16 +441,16 @@ xPathScrapers:
 
 ```bash
 # 基本
-deno run -R=scrapers -R=validator/scraper.schema.json validate.js scrapers/xxx.yml
+deno run -R=scrapers,validator/scraper.schema.json validate.js scrapers/xxx.yml
 
 # 所有錯誤
-deno run ... validate.js -a scrapers/xxx.yml
+deno run -R=scrapers,validator/scraper.schema.json validate.js -a scrapers/xxx.yml
 
 # 強制排序
-deno run ... validate.js -s scrapers/xxx.yml
+deno run -R=scrapers,validator/scraper.schema.json validate.js -s scrapers/xxx.yml
 
 # 詳細
-deno run ... validate.js -v scrapers/
+deno run -R=scrapers,validator/scraper.schema.json validate.js -v scrapers/
 ```
 
 本文件僅供**人工參考**，技能不會載入。

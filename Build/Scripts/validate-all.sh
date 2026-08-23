@@ -22,6 +22,6 @@ if [ ! -f "validator/scraper.schema.json" ]; then
 fi
 
 # 驗證
-deno run -R=scrapers -R=validator/scraper.schema.json validator/index-zh-TW.mjs -a -s scrapers/
+deno run -R=scrapers,validator/scraper.schema.json validator/index-zh-TW.mjs -a -s scrapers/
 
 echo "=== 驗證完成 ==="

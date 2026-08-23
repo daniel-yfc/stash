@@ -9,7 +9,7 @@ Schema: `references/scraper.schema.json` (local stub) + live https://github.com/
 Validate (from that repo):
 
 ```
-deno run -R=scrapers -R=validator/scraper.schema.json validate.js scrapers/xxx.yml
+deno run -R=scrapers,validator/scraper.schema.json validate.js scrapers/xxx.yml
 ```
 
 ## Before emit

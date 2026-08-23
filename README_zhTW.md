@@ -28,16 +28,16 @@ https://github.com/daniel-yfc/stash
 
 ```bash
 # 驗證所有刮削器
-deno run -R=scrapers -R=validator/scraper.schema.json validator/index-zh-TW.mjs -a -s scrapers/
+deno run -R=scrapers,validator/scraper.schema.json validator/index-zh-TW.mjs -a -s scrapers/
 
 # 驗證單一刮削器
-deno run -R=scrapers -R=validator/scraper.schema.json validator/index-zh-TW.mjs scrapers/site-a/site-a.yml
+deno run -R=scrapers,validator/scraper.schema.json validator/index-zh-TW.mjs scrapers/site-a/site-a.yml
 ```
 
 ## 檔案結構
 
 ```
-stash/
+stash-scraper-builder/
 ├── AGENTS.md                    # Agent 規則
 ├── README.md                    # 英文版
 ├── README_zhTW.md               # 本檔
