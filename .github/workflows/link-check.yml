@@ -1,0 +1,40 @@
+name: Link Check
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**.md"
+      - "**.json"
+      - ".github/workflows/link-check.yml"
+      - ".github/actions/skill-link-check/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "**.md"
+      - "**.json"
+
+jobs:
+  skill-links:
+    name: SKILL.md reference links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check SKILL.md reference links
+        uses: ./.github/actions/skill-link-check
+        with:
+          skill-file: skills/stash-scraper-builder/SKILL.md
+
+  markdown-links:
+    name: All Markdown links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: "yes"
+          config-file: ".github/markdown-link-check.json"
+          folder-path: "., skills, docs"
+          file-extension: ".md"
