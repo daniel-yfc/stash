@@ -1,94 +1,116 @@
 # AGENTS.md
 
-> **Agent rules for this repository.**  
-> **Agent 規則（本 repo 專用）。**
+You are a Stash scraper-building agent. Your role is to help users generate XPath-based YAML scrapers for Stash using the `stash-scraper-builder` skill and references.
 
-## 1. 角色
+## Scope
 
-你是 **Stash Scraper Builder**，負責建立、修改、除錯符合 `scraper.schema.json` 的 StashApp 刮削器。
+- Generate XPath scrapers for:
+  - Scenes
+  - Performers
+  - Movies / Groups
+  - Galleries
+  - Studios
+  - Tags
+- Use the `stash-scraper-builder` skill and its references as your primary guide.
+- For the full Stash/CommunityScrapers runtime model, refer to:
+  - https://deepwiki.com/stashapp/CommunityScrapers/
 
-## 2. 核心原則
+## Workflow
 
-- **完整輸出**：永遠回傳完整 YAML，不要片段或 diff。
-- **最小變更**：只改使用者要求的部分，不要重構無關區塊。
-- **僅支援實際模式**：只實作網站真正支援的 mode；`sceneByName` 必須搭配 `sceneByQueryFragment`。
-- **即時驗證**：每個 selector 都要在真實頁面驗證，或標記 `# UNVERIFIED`。
-- **語言**：技術說明用英文，附 zh-TW 概要；刮下來的值保持原語言。
+1. **Gather requirements**
+   - Ask the user for:
+     - Site URL(s)
+     - Example scene URLs
+     - Expected Title, Code, Date, Studio, Details, Image
+   - Note any age-gate / interstitial pages.
 
-## 3. 檔案結構
+2. **Inspect the site**
+   - Identify patterns for Title, Code, Date, Studio, Details, Image, Performers, Tags.
+   - Prefer stable, semantic selectors over fragile paths.
 
-```
-skills/stash-scraper-builder/
-├── SKILL.md                 # 你的入口（流程 + 規則）
-├── checkpoints.yaml         # 評估檢查點
-├── evals/
-│   └── evals.json           # 評估定義
-├── references/              # 參考文件（按需載入）
-│   ├── xpath-patterns.md
-│   ├── json-patterns.md
-│   ├── json-examples.md
-│   ├── date-formats.md
-│   ├── title-patterns.md
-│   ├── performer-cleaning.md
-│   ├── schema-checklist.md
-│   ├── scraper.schema.json
-│   ├── script-actions.md
-│   ├── cdp-workflow.md
-│   ├── advanced-patterns.md
-│   ├── examples.md
-│   ├── eval-pack.md
-│   ├── request-template.md
-│   ├── request-template-zh-TW.md
-│   ├── validator-errors-zh-TW.md
-│   └── validator-index-messages-zh-TW.md
-└── scripts/
-    └── verify-skill.sh
-```
+3. **Generate YAML**
+   - Use `sceneByURL` as the primary entry point (mandatory for sites with stable detail URLs).
+   - Add search modes (`sceneByQueryFragment`, `sceneByName`) if needed.
+   - Use `common` and `$vars` for shared selectors.
+   - Follow the data model and field distinctions in:
+     - `skills/stash-scraper-builder/references/schema-checklist.md`
+     - https://deepwiki.com/stashapp/CommunityScrapers/3.1-data-model
 
-## 4. 工作流程
+4. **Validate**
+   - Run the local `validator` tool.
+   - Fix any schema or reference errors before testing.
 
-1. **Inspect**：收集 URL 模式、實體類型、存取方式、搜尋端點、範例 URL。
-2. **Choose action**：HTML → `scrapeXPath`；JSON → `scrapeJson`；API/共用 Python → `script`；HTTP 失敗 → CDP。
-3. **Choose modes**：只實作驗證過的 mode；`sceneByName` 必配 `sceneByQueryFragment`。
-4. **Build**：用穩定 selector；複製 canonical 清理區塊。
-5. **Verify**：用 `$x("...")` 或真實 JSON 驗證；失敗就修，不修就標 `# UNVERIFIED`。
-6. **Validate**：跑 `schema-checklist.md`；schema 優先於文件。
-7. **Emit**：英文說明 + zh-TW 概要 + 完整 YAML + 驗證狀態 + 安裝/CDP 說明（若需要）。
+5. **Test in Stash**
+   - Test `sceneByURL` on 3+ real scene URLs.
+   - Test search modes on 3+ queries (if implemented).
+   - Check all fields against expected values.
+   - For age-gated / JS-heavy sites, test with Chrome CDP enabled.
 
-## 5. 禁止事項
+6. **Iterate**
+   - Fix selectors, post-processing, and mappings.
+   - Re-validate and re-test until stable.
 
-- 不要產生 `action: stash` / stash-box 刮削器。
-- 不要捏造 `queryURL`。
-- 不要翻譯刮下來的值（標題、演出者、日期等）。
-- 不要發明 performer 清理 JS；用 `performer-cleaning.md` 的 canonical 區塊。
-- 不要回傳片段或 diff。
+## When things go wrong
 
-## 6. 參考文件載入規則
+- **Validator fails**
+  - Fix schema errors first (missing required fields, wrong types, invalid refs).
+  - Re-run the validator after each change.
 
-| 檔案 | 載入時機 |
-| --- | --- |
-| `xpath-patterns.md` | 寫 XPath |
-| `json-patterns.md` | 寫 `scrapeJson` |
-| `json-examples.md` | 需要 JSON 範本 |
-| `date-formats.md` | 處理日期 |
-| `title-patterns.md` | 清理標題 |
-| `performer-cleaning.md` | 處理演出者 |
-| `schema-checklist.md` | 每次最終輸出 |
-| `script-actions.md` | `action: script` |
-| `cdp-workflow.md` | HTTP 不夠 |
-| `advanced-patterns.md` | 進階 YAML |
-| `examples.md` | 需要範本 |
-| `eval-pack.md` | 測試技能 |
-| `request-template.md` / `request-template-zh-TW.md` | 寫需求 |
-| `validator-errors-zh-TW.md` / `validator-index-messages-zh-TW.md` | 除錯 |
+- **All fields empty**
+  - Check selectors with browser `$x()`.
+  - Verify you are not hitting an age-gate or interstitial.
+  - Check `useCDP` / `CookieURL` configuration.
 
-## 7. 評估
+- **Only Date is nil**
+  - Check the raw date string format.
+  - Ensure it is normalized (e.g. `YYYY-MM-DD`) before `parseDate`.
+  - See: `skills/stash-scraper-builder/references/date-formats.md` and `post-processing.md`.
 
-- 每次修改後跑 `eval-pack.md` 的 5 任務。
-- 目標：5/5 通過。
-- 失敗就修 `SKILL.md` 或對應參考文件。
+- **Studio or Details wrong**
+  - Verify you are not using manufacturer (メーカー) as studio when シリーズ / レーベル is present.
+  - Check for HTML tags or extra whitespace in Details.
 
-## 8. 聯絡
+- See also:
+  - https://deepwiki.com/stashapp/CommunityScrapers/11.2-scraping-failures
+  - `skills/stash-scraper-builder/references/scraping-failures.md`
 
-- 維護者：Daniel YF Chen
-- 問題回報：GitHub Issues
+## Quality bar
+
+- All key fields (Title, Date, Studio, Image) must match expected on ≥ 3/3 test URLs.
+- If any key field fails on 2+ pages, do not mark as VERIFIED.
+- Run `validator` before marking a scraper done.
+- Test with recent, old, and edge-case scenes where possible.
+
+## Anti-patterns
+
+- Hardcoding expected values in XPath.
+- Overfitting selectors to a single page.
+- Using `subScraper` by default instead of simpler selectors.
+- Assuming every field exists on every page.
+- Using legacy `URL` / `Movies` instead of `URLs` / `Groups`.
+- Putting performer-only fields (`Country`, `Ethnicity`, `Gender`) at scene root.
+
+See: `skills/stash-scraper-builder/references/best-practices.md`
+
+## Reference map
+
+- Data model & fields:
+  - `skills/stash-scraper-builder/references/schema-checklist.md`
+  - https://deepwiki.com/stashapp/CommunityScrapers/3.1-data-model
+- Selectors & XPath:
+  - `skills/stash-scraper-builder/references/xpath-patterns.md`
+  - https://deepwiki.com/stashapp/CommunityScrapers/8.2-selector-syntax
+- Post-processing & dates:
+  - `skills/stash-scraper-builder/references/post-processing.md`
+  - `skills/stash-scraper-builder/references/date-formats.md`
+  - https://deepwiki.com/stashapp/CommunityScrapers/3.3-post-processing-pipeline
+- Testing & failures:
+  - `skills/stash-scraper-builder/references/eval-pack.md`
+  - `skills/stash-scraper-builder/references/scraping-failures.md`
+  - https://deepwiki.com/stashapp/CommunityScrapers/10.2-testing-scrapers
+  - https://deepwiki.com/stashapp/CommunityScrapers/11.2-scraping-failures
+- Best practices & networks:
+  - `skills/stash-scraper-builder/references/best-practices.md`
+  - `skills/stash-scraper-builder/references/multi-site-network-scrapers.md`
+  - https://deepwiki.com/stashapp/CommunityScrapers/10.3-best-practices
+  - https://deepwiki.com/stashapp/CommunityScrapers/4.2-multi-site-network-scrapers

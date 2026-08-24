@@ -47,30 +47,93 @@ Key pages used by this skill:
 - Never invent a `Groups` value from シリーズ / レーベル unless the user explicitly wants that mapping.
 - Studio, Date, Details, and Image must be checked against expected values, not just "selector matched something."
 - Keep `Country` / `Ethnicity` / `Gender` under `Performers`, never at scene root.
+- Use `URLs` (array), not legacy `URL`.
+- Use `Groups`, not legacy `Movies`.
 
 ## How to use this skill
 
-1. Ask the user for:
+1. **Ask the user for:**
    - Site URL(s)
    - Example scene URLs
    - Expected Title, Code, Date, Studio, Details, Image
-2. Inspect the site HTML / DOM:
+2. **Inspect the site HTML / DOM:**
    - Identify patterns for Title, Code, Date, Studio, Details, Image, Performers, Tags
    - Note any age-gate / interstitial pages
-3. Generate a YAML scraper:
+3. **Generate a YAML scraper:**
    - Use `sceneByURL` as the primary entry point
    - Add search modes (`sceneByQueryFragment`, `sceneByName`) if needed
    - Use `common` and `$vars` for shared selectors
-4. Validate:
+4. **Validate:**
    - Run the local `validator` tool
    - Fix any schema or reference errors
-5. Test in Stash:
+5. **Test in Stash:**
    - Test `sceneByURL` on 3+ real scene URLs
    - Test search modes on 3+ queries
    - Check all fields against expected values
-6. Iterate:
+6. **Iterate:**
    - Fix selectors, post-processing, and mappings
    - Re-validate and re-test until stable
+
+## Definition of done
+
+- Validator passes with no errors.
+- `sceneByURL` works on ≥ 3 real URLs.
+- At least one search mode works on ≥ 3 queries (if implemented).
+- Key fields match expected values on all tested pages.
+- No obvious anti-patterns (hardcoded values, overly fragile XPath).
+
+## Troubleshooting
+
+- **Validator fails**
+  - Fix schema errors first (missing required fields, wrong types, invalid refs).
+  - Re-run the validator after each change.
+
+- **All fields empty**
+  - Check selectors with browser `$x()`.
+  - Verify you are not hitting an age-gate or interstitial.
+  - Check `useCDP` / `CookieURL` configuration.
+
+- **Only Date is nil**
+  - Check the raw date string format.
+  - Ensure it is normalized (e.g. `YYYY-MM-DD`) before `parseDate`.
+  - See: `references/date-formats.md` and `references/post-processing.md`.
+
+- **Studio or Details wrong**
+  - Verify you are not using manufacturer (メーカー) as studio when シリーズ / レーベル is present.
+  - Check for HTML tags or extra whitespace in Details.
+
+- See also:
+  - https://deepwiki.com/stashapp/CommunityScrapers/11.2-scraping-failures
+  - `references/scraping-failures.md`
+
+## Data model reminders
+
+- Scene: no required fields
+- Performer: `Name` only
+- Movie / Group: `Name` only
+- Gallery: `Title` only
+- Image: no required fields
+- Studio: `Name` only
+- Tag: `Name` only
+
+Field distinctions:
+
+- Use `URLs` (array) for scenes/performers/studios, not legacy `URL`.
+- Use `Groups` for scene groups; `Movies` is legacy.
+- Performer-only fields include: `Disambiguation`, `Birthdate`, `Height`, `Weight`, `Gender`, `Circumcised`, etc.
+- Keep performer-specific fields (`Country`, `Ethnicity`, `Gender`) under `Performers`, not at scene root.
+
+## Anti-patterns
+
+- Hardcoding expected values in XPath.
+- Overfitting selectors to a single page.
+- Using `subScraper` by default instead of simpler selectors.
+- Assuming every field exists on every page.
+- Using legacy `URL` / `Movies` instead of `URLs` / `Groups`.
+- Putting performer-only fields (`Country`, `Ethnicity`, `Gender`) at scene root.
+- Overly deep or fragile XPath.
+
+See: `references/best-practices.md`
 
 ## Output format
 
