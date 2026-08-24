@@ -1,0 +1,143 @@
+# CK-Download — sceneByURL scraper
+# Verification status: UNVERIFIED — selectors not yet tested against live pages
+# (SKILL.md workflow step 5). Test every mode against 3+ real pages before use.
+#
+# Age-gate / login note:
+# This site may use age-gate / login. Test with useCDP: true if scraping fails.
+# See: skills/stash-scraper-builder/references/scraping-failures.md
+
+name: "CK-Download"
+
+sceneByURL:
+  - action: scrapeXPath
+    url:
+      - ck-download.com/product/detail/
+      - www.ck-download.com/product/detail/
+    scraper: sceneScraper
+    useCDP: true
+
+sceneByName:
+  action: scrapeXPath
+  queryURL: https://www.ck-download.com/product/result?kw={}&only_nm=0&kw_opt=1
+  scraper: searchScraper
+
+sceneByQueryFragment:
+  action: scrapeXPath
+  queryURL: https://www.ck-download.com/product/result?kw={}&only_nm=0&kw_opt=1
+  scraper: searchScraper
+
+sceneByFragment:
+  action: scrapeXPath
+  queryURL: https://www.ck-download.com/product/result?kw={title}&only_nm=0&kw_opt=1
+  queryURLReplace:
+    title:
+      - regex: '\.[^.]+$'
+        with: ''
+      - regex: '[_\.]+'
+        with: ' '
+      - regex: '\s{2,}'
+        with: ' '
+      - regex: '^\s+|\s+$'
+        with: ''
+  scraper: searchScraper
+
+xPathScrapers:
+  searchScraper:
+    common:
+      $results: //ul[contains(@class,'title_list')]//li[.//a[contains(@href,'/product/detail/')]]
+
+    scene:
+      Title:
+        selector: $results//h4[1]/text()
+        postProcess:
+          - replace:
+              - regex: '^\s+|\s+$'
+                with: ''
+
+      URLs:
+        selector: $results//a[contains(@href,'/product/detail/')][1]/@href
+        postProcess:
+          - javascript: |
+              var v = value || "";
+              if (!v) return "";
+              v = v.replace(/^\/\//, "https://");
+              if (v.indexOf("http") === 0) return v;
+              if (v.indexOf("/") === 0) return "https://www.ck-download.com" + v;
+              return "https://www.ck-download.com/" + v;
+
+      Image:
+        selector: $results//div[contains(@class,'photo')]//img[1]/@src
+        postProcess:
+          - javascript: |
+              var v = value || "";
+              if (!v) return "";
+              v = v.replace(/^\/\//, "https://");
+              if (v.indexOf("http") === 0) return v;
+              if (v.indexOf("/") === 0) return "https://www.ck-download.com" + v;
+              return "https://www.ck-download.com/" + v;
+
+  sceneScraper:
+    common:
+      $data: //table[contains(@class,'prod_data')][1]
+      $cats: //div[contains(@class,'prod_category')][1]
+
+    scene:
+      Title:
+        selector: $data//th[normalize-space(.)='DVD タイトル']/following-sibling::td[1]/text()
+        postProcess:
+          - replace:
+              - regex: '^\s+|\s+$'
+                with: ''
+
+      Code:
+        selector: $data//th[normalize-space(.)='プロダクトナンバー']/following-sibling::td[1]/text()
+        postProcess:
+          - replace:
+              - regex: '^\s+|\s+$'
+                with: ''
+
+      URLs:
+        fixed: "{inputURL}"
+
+      Date:
+        selector: //div[contains(@class,'add_info')]//div[contains(@class,'date')][1]/text()
+        postProcess:
+          - javascript: |
+              var v = value || "";
+              if (!v) return "";
+              var cleaned = v.replace(/\s*UP.*$/iu, '').trim();
+              var m = cleaned.match(/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/u);
+              if (m) return m[1] + "-" + m[2] + "-" + m[3];
+              return cleaned;
+          - parseDate: "2006-01-02"
+
+      Studio:
+        Name:
+          selector: $data//th[normalize-space(.)='レーベル']/following-sibling::td[1]//a[1]/text() | $data//th[normalize-space(.)='メーカー' and not(ancestor::table//th[normalize-space(.)='レーベル'])]/following-sibling::td[1]//a[1]/text()
+          postProcess:
+            - replace:
+                - regex: '^\s+|\s+$'
+                  with: ''
+
+      Tags:
+        Name:
+          selector: $cats//li[strong[normalize-space(.)='プレイ内容']]//a/text() | $cats//li[strong[normalize-space(.)='モデルタイプ']]//a/text()
+          postProcess:
+            - replace:
+                - regex: '^\s+|\s+$'
+                  with: ''
+
+      Details:
+        selector: //div[contains(@class,'intro_text')]//p[string-length(normalize-space(.)) > 10 and not(contains(@style,'color'))]//text()[normalize-space()]
+        concat: "\n\n"
+
+      Image:
+        selector: //div[contains(@class,'photo_flexslider')]//img[not(contains(@src,'no_image'))][1]/@src
+        postProcess:
+          - javascript: |
+              var v = value || "";
+              if (!v) return "";
+              v = v.replace(/^\/\//, "https://");
+              if (v.indexOf("http") === 0) return v;
+              if (v.indexOf("/") === 0) return "https://www.ck-download.com" + v;
+              return "https://www.ck-download.com/" + v;
