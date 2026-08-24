@@ -1,107 +1,45 @@
-# Eval Pack — 5 Tasks
+# Eval pack
 
-**Load when:** testing the skill end-to-end.
+Canonical reference:
 
-> **概要（zh-TW）：** 五個任務，各對應一種失敗模式。每題都要輸出完整 YAML、勾選 checklist、標記 selector 驗證狀態。
+- https://deepwiki.com/stashapp/CommunityScrapers/10.2-testing-scrapers
 
-## Pass criteria (all tasks)
+For the official testing workflow, see the link above.
 
-- [ ] Output is a **complete** YAML file (no fragments, no “unchanged” placeholders).
-- [ ] Only modes the site verifiably supports are present.
-- [ ] `sceneByName` ⇒ `sceneByQueryFragment` present; otherwise both omitted.
-- [ ] Every selector is either verified on a real page/response or marked `# UNVERIFIED` with an explanation.
-- [ ] Local `scraper.schema.json` stub accepts the YAML (no structural errors on the fields it covers).
-- [ ] Script tasks include the three install prerequisites in the **response**.
-- [ ] CDP task includes visible-CDP setup steps (or explicitly states “out of scope”).
+## Stash test procedure
 
-## Task 1 — New XPath site (public HTML)
+1. Configure Stash:
+   - Set Scrapers Path to the `scrapers/` directory.
+   - Set User Agent if the site blocks defaults.
+   - Enable Chrome CDP for JS-heavy / age-gated sites.
+   - Set Python path if using script scrapers.
 
-**Site:** `https://example.com/works/ABP-123` (fictional; use any real public HTML site with scene pages).
+2. Test `sceneByURL`:
+   - In Stash, open a scene, paste the URL in the "Scrape from URL" box.
+   - Run the scraper and inspect all fields.
 
-**Requirements:**
-- `sceneByURL` + `sceneByFragment` only (no search endpoint).
-- Title cleaning from `title-patterns.md`.
-- Date with `parseDate` (Go layout matching the site).
-- Performers with canonical JS from `performer-cleaning.md`; `Gender: fixed: "Male"`.
-- Studio `Name` only.
+3. Check debug logs for errors or empty selectors.
 
-**Expected output:** one complete YAML, all selectors verified or marked `# UNVERIFIED`.
+4. Field quality checklist:
+   - No studio prefix in `Title`.
+   - `Date` is ISO `YYYY-MM-DD`.
+   - `Image` is HTTPS and high quality.
+   - `Details` has no HTML tags.
+   - `Studio.Name` matches expected studio.
 
-**Failure modes to catch:**
-- Fragment-only output.
-- Missing title cleaning or wrong `parseDate` layout.
-- Invented `sceneByName`.
+5. Test multiple scenes:
+   - Recent, old, missing performers, special characters.
 
-## Task 2 — New `scrapeJson` site (real JSON API)
+6. Run `validator` before marking a scraper done.
 
-**Site:** `https://api.example.com/v1/scene/123` (fictional; use any real JSON API that returns scene metadata).
+## Expected vs actual table
 
-**Requirements:**
-- `sceneByURL` + `sceneByName` + `sceneByQueryFragment`.
-- `action: scrapeJson` with GJSON selectors.
-- Title cleaning + `parseDate` on `data.release_date` (or equivalent).
-- Performers array `data.performers[*].name` with canonical JS.
+After each live test, record:
 
-**Expected output:** one complete YAML using `scrapeJson`.
+- Expected Studio / scraped Studio
+- Expected Date / scraped Date
+- Expected Group / scraped Group
+- Expected Details / scraped Details
+- Expected Image / scraped Image
 
-**Failure modes to catch:**
-- Invented GJSON paths not tested on the real response.
-- Using `scrapeXPath` on a JSON-only endpoint.
-
-## Task 3 — Script + dependency
-
-**Site:** `https://scriptsite.test/video/123` (fictional; use any site that already has a shared Python scraper in CommunityScrapers).
-
-**Requirements:**
-- `sceneByURL` + `sceneByFragment` (or more if the site supports them).
-- `action: script` with `# requires:` and `../Dependency/script.py`.
-- Response must state: Python on PATH, pip packages, dependency files exist.
-
-**Expected output:** one complete YAML + install prerequisites in the explanation.
-
-**Failure modes to catch:**
-- Missing `# requires:` or wrong relative path.
-- No install notice in the response.
-
-## Task 4 — Date `&nbsp;` fix (complete file)
-
-**Input:** existing scraper that fails on `15&nbsp;Jan&nbsp;2024`.
-
-**Requirements:**
-- Fix the Date field with `replace` then `parseDate`.
-- Return the **entire** scraper file, not just the Date block.
-
-**Expected output:** full YAML with the corrected Date postProcess.
-
-**Failure modes to catch:**
-- Fragment output (“only the changed section”).
-- `parseDate` before `replace` (still fails).
-
-## Task 5 — Login-gated site
-
-**Site:** `https://members-only.test/scene/123` (fictional; any real login/paywall site).
-
-**Requirements:**
-- Do **not** emit a scraper that silently returns nothing.
-- Either:
-  - Emit `driver: useCDP: true` **and** the visible-CDP steps from `cdp-workflow.md`, or
-  - State that login-gated scraping is out of scope for this skill.
-
-**Expected output:** YAML + CDP steps, or an explicit “out of scope” explanation.
-
-**Failure modes to catch:**
-- `useCDP: true` without the setup steps.
-- Plain HTTP scraper that will fail on a gated page.
-
-## Scoring
-
-| Task | Pass | Fail |
-| --- | --- | --- |
-| 1 XPath | 1 | 0 |
-| 2 JSON | 1 | 0 |
-| 3 Script | 1 | 0 |
-| 4 Date | 1 | 0 |
-| 5 CDP | 1 | 0 |
-| **Total** | **/5** | |
-
-Target: **5/5** before calling the skill “done.” If any task fails, fix the workflow or checklists, then re-run.
+A scraper that returns the wrong studio is a fail, even if the YAML is valid.

@@ -1,73 +1,85 @@
----
-name: stash-scraper-builder
-description: >
-  Build, modify, and debug StashApp scraper YAML that conforms to scraper.schema.json.
-  Use for Stash-specific scraper.yml, scrapeXPath, scrapeJson, script actions,
-  sceneByURL, performerByURL, sceneByFragment, sceneByName, galleryByURL, groupByURL,
-  or a request to scrape a site for StashApp.
-  Do not use for generic YAML, generic web scraping, or Stash-box / action: stash scrapers.
----
+# Stash Scraper Builder Skill
 
-# Stash Scraper Builder
+This skill helps you generate XPath-based YAML scrapers for Stash.
+It is a **builder checklist**, not a full runtime manual.
 
-> **快速總覽（zh-TW）：** 建立、修改與除錯 StashApp scraper YAML。輸出完整檔案、只改被要求的部分、只覆蓋網站真正支援的模式，並在輸出前驗證 selector。
+## Canonical reference
 
-## Scope
+This skill is a builder checklist for generating XPath scrapers.
+For the full Stash/CommunityScrapers runtime model, always refer to:
 
-**Use this skill for:** Stash XPath, JSON, or script scrapers.
+- https://deepwiki.com/stashapp/CommunityScrapers/
 
-**Do not use for:** generic YAML; generic crawling; `action: stash` / stash-box / Identify scrapers; fabricated search endpoints; fragment or diff output; translating scraped values; inventing performer-cleaning JavaScript.
+Key pages used by this skill:
 
-- Return the **entire** YAML file. Never return a diff, fragment, or “the rest is unchanged.”
-- Change only what the user asked. Do not reorder or “optimize” unrelated blocks.
-- Explanations and comments: English, plus a short zh-TW orientation when it helps.
-- YAML values scraped from the site stay in the source language.
-- If the user asks for stash-box, state that it is out of scope. Do not emit a partial `stash` / `stashServer` block.
+- System architecture & entry points:
+  https://deepwiki.com/stashapp/CommunityScrapers/1.1-system-architecture
+- Core concepts & entity model:
+  https://deepwiki.com/stashapp/CommunityScrapers/3-core-concepts
+- Data model (Scene, Performer, Movie/Group, Gallery, Image, Studio, Tag):
+  https://deepwiki.com/stashapp/CommunityScrapers/3.1-data-model
+- Post-processing pipeline (replace, parseDate, map, subScraper, etc.):
+  https://deepwiki.com/stashapp/CommunityScrapers/3.3-post-processing-pipeline
+- XPath scrapers overview:
+  https://deepwiki.com/stashapp/CommunityScrapers/4-xpath-scrapers
+- Basic XPath scrapers:
+  https://deepwiki.com/stashapp/CommunityScrapers/4.1-basic-xpath-scrapers
+- Multi-site network scrapers:
+  https://deepwiki.com/stashapp/CommunityScrapers/4.2-multi-site-network-scrapers
+- Advanced XPath techniques:
+  https://deepwiki.com/stashapp/CommunityScrapers/4.3-advanced-xpath-techniques
+- Configuration reference:
+  https://deepwiki.com/stashapp/CommunityScrapers/8-configuration-reference
+- Selector syntax (XPath / JSONPath):
+  https://deepwiki.com/stashapp/CommunityScrapers/8.2-selector-syntax
+- Testing scrapers in Stash:
+  https://deepwiki.com/stashapp/CommunityScrapers/10.2-testing-scrapers
+- Best practices for maintainable scrapers:
+  https://deepwiki.com/stashapp/CommunityScrapers/10.3-best-practices
+- Runtime scraping failures & diagnostics:
+  https://deepwiki.com/stashapp/CommunityScrapers/11.2-scraping-failures
 
-## Workflow
+## Hard rules (from runtime + recent scrapers)
 
-1. **Inspect.** Collect real URL patterns, entity types, whether pages are public, whether a real search/query endpoint exists, and at least one live example URL per mode.
-2. **Choose the action.** Public HTML → `scrapeXPath`. Real JSON body → `scrapeJson`. Existing API / shared Python package → `script`. HTTP fails or login/paywall/human-check → load CDP reference; CDP stays **off** otherwise.
-3. **Choose modes.** Cover every mode the site verifiably supports, and only those. If `sceneByName` is present, `sceneByQueryFragment` is required. If a real query-fragment flow does not exist, omit both.
-4. **Build.** Stable selectors; canonical cleaning from the matching reference. Copy performer JavaScript unchanged.
-5. **Verify.** Test each XPath with `$x("...")` (or the real JSON path) on a live page per mode. Empty node = fail-to-fetch: fix before output. If unverifiable, mark `# UNVERIFIED` and say so.
-6. **Validate.** Run `schema-checklist.md`. Schema wins over docs.
-7. **Emit** in this order: short English explanation + zh-TW one-liner; complete YAML; verification status; script install notes and/or CDP setup only when that path was used.
+- `sceneByURL` is mandatory for any site that has stable detail URLs.
+- Do not mark a scraper `VERIFIED` until `sceneByURL` and at least one search mode each pass 3+ real pages.
+- Age-gated sites must be tested from a rendered DOM snapshot, not a raw HTTP fetch.
+- Never invent a `Groups` value from シリーズ / レーベル unless the user explicitly wants that mapping.
+- Studio, Date, Details, and Image must be checked against expected values, not just "selector matched something."
+- Keep `Country` / `Ethnicity` / `Gender` under `Performers`, never at scene root.
 
-## Always-on rules
+## How to use this skill
 
-- URL actions: `url` is an array (contains-match).
-- `performerByFragment` cannot use `scrapeXPath` or `scrapeJson`.
-- Search `queryURL` uses `{}`. Do not invent a `queryURL`.
-- Repeated XPath prefixes: `common:` with `$`-prefixed keys. No common-to-common references. Avoid `div[3]`; prefer attributes or text anchors.
-- `parseDate` uses Go reference time (`2006-01-02 15:04:05`). Normalize `&nbsp;` / irregular whitespace with `replace` **before** `parseDate`.
-- Title cleaning: copy the ordered block from `title-patterns.md` unless the site already emits clean titles.
-- Performer names: Hanzi > English > Kana. Copy the canonical JavaScript from `performer-cleaning.md`. Do not rewrite it.
-- Gender: `fixed: "Male"` unless an explicit scrapeable gender field exists. Say so in the explanation.
-- Script actions: load `script-actions.md` and always print install prerequisites.
-- CDP: load `cdp-workflow.md` only when HTTP cannot retrieve the content. Never emit `useCDP: true` without the visible-CDP steps.
+1. Ask the user for:
+   - Site URL(s)
+   - Example scene URLs
+   - Expected Title, Code, Date, Studio, Details, Image
+2. Inspect the site HTML / DOM:
+   - Identify patterns for Title, Code, Date, Studio, Details, Image, Performers, Tags
+   - Note any age-gate / interstitial pages
+3. Generate a YAML scraper:
+   - Use `sceneByURL` as the primary entry point
+   - Add search modes (`sceneByQueryFragment`, `sceneByName`) if needed
+   - Use `common` and `$vars` for shared selectors
+4. Validate:
+   - Run the local `validator` tool
+   - Fix any schema or reference errors
+5. Test in Stash:
+   - Test `sceneByURL` on 3+ real scene URLs
+   - Test search modes on 3+ queries
+   - Check all fields against expected values
+6. Iterate:
+   - Fix selectors, post-processing, and mappings
+   - Re-validate and re-test until stable
 
-## Load when needed (agent references)
+## Output format
 
-| File | Load when |
-| --- | --- |
-| [xpath-patterns.md](references/xpath-patterns.md) | Writing or fixing XPath |
-| [json-patterns.md](references/json-patterns.md) | Writing or fixing `scrapeJson` (GJSON) |
-| [json-examples.md](references/json-examples.md) | Complete-file `scrapeJson` template |
-| [date-formats.md](references/date-formats.md) | Dates, `parseDate`, `&nbsp;`, unix, relative days |
-| [title-patterns.md](references/title-patterns.md) | Title `replace` block |
-| [performer-cleaning.md](references/performer-cleaning.md) | Performer names or gender |
-| [schema-checklist.md](references/schema-checklist.md) | Every final output |
-| [script-actions.md](references/script-actions.md) | `action: script` |
-| [cdp-workflow.md](references/cdp-workflow.md) | Login, paywall, JS-only, or HTTP failure |
-| [advanced-patterns.md](references/advanced-patterns.md) | subScraper, anchors, networks, studio map |
-| [examples.md](references/examples.md) | Need a complete-file template |
-| [eval-pack.md](references/eval-pack.md) | Testing this skill end-to-end |
+Return a single YAML file, ready to save as `YourSite.yml` in `scrapers/`.
+Include:
 
-## Human-only references (do not load for scraper tasks)
+- `documentHeader` with `# @meta` block
+- `sceneByURL` with `scene` block
+- Optional: `sceneByQueryFragment`, `sceneByName`
+- Optional: `movieByURL`, `performerByURL`, etc.
 
-These live in `references/` for documentation but are **not** part of the agent workflow:
-
-- `request-template.md` / `request-template-zh-TW.md` — request intake forms
-- `validator-errors-zh-TW.md` / `validator-index-messages-zh-TW.md` — validator message translations
-- `scraper.schema.json` — offline schema stub (also at repo root `validator/scraper.schema.json` for CI)
+Keep the YAML clean, commented, and aligned with the [CommunityScrapers style](https://deepwiki.com/stashapp/CommunityScrapers/10.3-best-practices).
