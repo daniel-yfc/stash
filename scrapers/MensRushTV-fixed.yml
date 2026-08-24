@@ -1,0 +1,161 @@
+# Men's Rush TV — sceneByURL scraper
+# Verification status: UNVERIFIED — selectors not yet tested against live pages
+# (SKILL.md workflow step 5). Test every mode against 3+ real pages before use.
+#
+# Age-gate / login note:
+# This site may use age-gate / login. Test with useCDP: true if scraping fails.
+# See: skills/stash-scraper-builder/references/scraping-failures.md
+
+name: "Men's Rush TV"
+
+sceneByURL:
+  - action: scrapeXPath
+    url:
+      - mensrush.tv/single.php
+      - www.mensrush.tv/single.php
+    scraper: sceneScraper
+    useCDP: true
+
+sceneByName:
+  action: scrapeXPath
+  queryURL: https://www.mensrush.tv/list.php?keyword={}
+  scraper: searchScraper
+
+sceneByQueryFragment:
+  action: scrapeXPath
+  queryURL: https://www.mensrush.tv/list.php?keyword={}
+  scraper: searchScraper
+
+sceneByFragment:
+  action: scrapeXPath
+  queryURL: https://www.mensrush.tv/list.php?keyword={title}
+  queryURLReplace:
+    title:
+      - regex: '\.[^.]+$'
+        with: ''
+      - regex: '[_\.]+'
+        with: ' '
+      - regex: '\s{2,}'
+        with: ' '
+      - regex: '^\s+|\s+$'
+        with: ''
+  scraper: searchScraper
+
+xPathScrapers:
+  searchScraper:
+    common:
+      $results: //section[contains(@class,'movie_lists')]//div[contains(@class,'movie_box')]
+
+    scene:
+      Title:
+        selector: $results//p[1]/text()
+        postProcess:
+          - replace:
+              - regex: '^\s+|\s+$'
+                with: ''
+
+      URLs:
+        selector: $results//a[1]/@href
+        postProcess:
+          - javascript: |
+              var v = value || "";
+              if (!v) return "";
+              v = v.replace(/^\/\//, "https://");
+              if (v.indexOf("http") === 0) return v;
+              if (v.indexOf("/") === 0) return "https://www.mensrush.tv" + v;
+              return "https://www.mensrush.tv/" + v;
+
+      Image:
+        selector: $results//img[1]/@src
+        postProcess:
+          - javascript: |
+              var v = value || "";
+              if (!v) return "";
+              v = v.replace(/\?.*$/, "");
+              v = v.replace(/^\/\//, "https://");
+              if (v.indexOf("http") === 0) return v;
+              if (v.indexOf("/") === 0) return "https://www.mensrush.tv" + v;
+              return v.replace(/_sm\.(webp|jpg)$/, ".$1");
+
+  sceneScraper:
+    scene:
+      Title:
+        selector: //div[@class='detail_title'][1]//h2[1]/text()
+        postProcess:
+          - replace:
+              - regex: '^\s+|\s+$'
+                with: ''
+
+      Code:
+        selector: //input[@name='fid']/@value
+        postProcess:
+          - replace:
+              - regex: '_DL$'
+                with: ''
+          - replace:
+              - regex: '^\s+|\s+$'
+                with: ''
+
+      URLs:
+        fixed: "{inputURL}"
+
+      Studio:
+        Name:
+          selector: //div[@class='movie_detail'][1]//p//a[contains(@href,'list.php?maid=')][1]/text() | //div[@class='movie_detail'][1]//p//a[contains(@href,'fansme.jp/user/')][1]/text()
+          postProcess:
+            - replace:
+                - regex: '^FansMe（(.+)）$'
+                  with: '$1'
+            - replace:
+                - regex: '^\s+|\s+$'
+                  with: ''
+
+      Performers:
+        Name:
+          selector: //div[@class='movie_detail'][1]//p[contains(normalize-space(.),'モデル')][1]//text()[normalize-space()]
+          concat: ' '
+          postProcess:
+            - javascript: |
+                var v = value || "";
+                if (!v) return "";
+                var text = v.replace(/\s+/g, ' ').trim();
+                text = text.replace(/^.*?モデル[:：]\s*/u, '');
+                text = text.replace(/\s*メーカー[:：].*$/u, '');
+                var out = [];
+                var push = function(n) {
+                  n = (n || '').trim().replace(/ 君$/u, '');
+                  n = n.replace(/\s*[（(][぀ - ゟ゠ - ヿー]+[)）]/gu, '').trim();
+                  var kanaLead = n.match(/^[぀ - ゟ゠ - ヿー]+\s+(.+)$/u);
+                  if (kanaLead) n = kanaLead[1].trim();
+                  var mixed = n.match(/^([^\x00-\x7F]+)\s+[A-Za-z\s]+$/u);
+                  if (mixed) n = mixed[1].trim();
+                  if (!n) return;
+                  if (out.indexOf(n) < 0) out.push(n);
+                };
+                text.split(/[｜|\/,、]/u).forEach(push);
+                return out.join(',');
+          split: ','
+
+      Tags:
+        Name:
+          selector: //div[@class='movie_detail'][1]//p//a[contains(@href,'list.php?geid=')]/text()
+          postProcess:
+            - replace:
+                - regex: '^\s+|\s+$'
+                  with: ''
+
+      Details:
+        selector: //div[@class='movie_detail']/h3[1]/following-sibling::p[1]//text()[normalize-space()]
+        concat: "\n\n"
+
+      Image:
+        selector: //div[@id='movie_area']//div[contains(@class,'player')]//img[1]/@src
+        postProcess:
+          - javascript: |
+              var v = value || "";
+              if (!v) return "";
+              v = v.replace(/\?.*$/, "");
+              v = v.replace(/^\/\//, "https://");
+              if (v.indexOf("http") === 0) return v;
+              if (v.indexOf("/") === 0) return "https://www.mensrush.tv" + v;
+              return "https://www.mensrush.tv/" + v;
