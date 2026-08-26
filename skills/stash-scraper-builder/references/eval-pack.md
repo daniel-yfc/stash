@@ -2,7 +2,7 @@
 
 **Load when:** testing the skill end-to-end.
 
-> **概要（zh-TW）：** 五個任務，各對應一種失敗模式。每題都要輸出完整 YAML、勾選 checklist、標記 selector 驗證狀態。
+> **概要（zh-TW）：** 五個任務，各對應一種失敗模式。每題都要輸出完整 YAML、勾選 checklist、標記 selector 驗證狀態（`# UNVERIFIED` 加註解說明原因）。
 
 ## Pass criteria (all tasks)
 
@@ -13,6 +13,32 @@
 - [ ] Official CommunityScrapers validator passes (or local stub with known limitations noted).
 - [ ] Script tasks include the three install prerequisites in the **response**.
 - [ ] CDP task includes visible-CDP setup steps (or explicitly states "out of scope").
+
+## Test matrix (H1 / #31)
+
+Test each task against these scenarios:
+
+| Scenario | Purpose |
+| --- | --- |
+| **New** (recent scene) | Verify current HTML structure |
+| **Old** (archive scene) | Catch selector drift over time |
+| **Missing field** (no performers, no date) | Ensure graceful handling of optional fields |
+| **Multi-performer** (3+ performers) | Verify array handling, not single-value |
+| **Non-ASCII** (CJK, accented Latin) | Ensure encoding and regex handling |
+
+**Network scrapers:** test 3–5 domains from the network to confirm template consistency.
+
+## Verification checklist (Expected vs Actual)
+
+For each task, verify:
+
+- [ ] Title matches expected (no studio prefix, correct brackets preserved)
+- [ ] Date is ISO `YYYY-MM-DD` and matches expected calendar day
+- [ ] Studio.Name matches expected (not parent/child confusion)
+- [ ] Image is HTTPS and high quality (not a thumb)
+- [ ] Details has no HTML tags
+
+A scraper that returns the wrong studio is a fail, even if the YAML is valid.
 
 ## Task 1 — New XPath site (public HTML)
 
@@ -37,12 +63,13 @@
 **Site:** Use any real JSON API that returns scene metadata.
 
 **Requirements:**
-- `sceneByURL` + `sceneByName` + `sceneByQueryFragment` (if the API supports search).
+- `sceneByURL` (mandatory) + `sceneByName` + `sceneByQueryFragment` (**only if the API has a real search endpoint**).
 - `action: scrapeJson` with GJSON selectors.
 - Title cleaning + `parseDate` on the release date field.
 - Performers array with canonical JS.
+- Use `jsonScrapers` (not `xPathScrapers`).
 
-**Expected output:** one complete YAML using `jsonScrapers` (not `xPathScrapers`).
+**Expected output:** one complete YAML using `jsonScrapers`.
 
 **Failure modes to catch:**
 - Invented GJSON paths not tested on the real response.
@@ -56,6 +83,7 @@
 **Requirements:**
 - `sceneByURL` + `sceneByFragment` (or more if the site supports them).
 - `action: script` with `# requires:` and the dependency path.
+- If the site supports `performerByFragment`, test it (script-only mode).
 - Response must state: Python on PATH, pip packages, dependency files exist.
 
 **Expected output:** one complete YAML + install prerequisites in the explanation.
