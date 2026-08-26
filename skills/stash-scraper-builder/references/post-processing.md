@@ -1,41 +1,73 @@
 # Post-processing pipeline
 
-Canonical reference:
-
-- https://deepwiki.com/stashapp/CommunityScrapers/3.3-post-processing-pipeline
+Canonical reference: https://deepwiki.com/stashapp/CommunityScrapers/3.3-post-processing-pipeline
 
 ## Order of operations
 
 For each field:
 
-1. Selector execution
-2. `concat` (if present, before `postProcess`)
-3. `postProcess[]` in array order
-4. `split` (if present, after `postProcess`)
+1. Selector execution (multiple matches → first value only, unless `concat` is set)
+2. `concat` — **attribute-level**, before `postProcess`. Not a `postProcess` operator.
+3. `postProcess[]` in array order. Each item has **exactly one** operator.
+4. `split` — attribute-level, after `postProcess`.
+
+Putting `concat` inside `postProcess` fails schema validation.
+
+## Operator order (quality)
+
+Inside `postProcess`, go **specific → general**:
+
+1. Extract the target substring (`replace` / `javascript`).
+2. `parseDate` or `map`.
+3. Only then trim / protocol / whitespace cleanup.
+
+A broad `replace` first can destroy the date or studio token the later step needs.
 
 ## Supported operations
 
-Common operators:
+- `replace` — regex or plain. Unmatched → original string passes through.
+- `parseDate` — Go reference layout (`2006-01-02`). Failed parse → field becomes **empty** (no error).
+- `map` — exact-key remap (studio / gender). Prefer `map` over a long `replace` list for known variants. Unmatched key → original usually passes through; still list every real variant.
+- `subScraper` — extra HTTP request; do not use by default.
+- `javascript` — goja; `return` a string from `value`.
+- `subtractDays` — after a day-count extract.
+- `feetToCm` / `lbToKg` / `dimensionToMetric` — performer units, not dates.
 
-- `replace` – string substitution (regex or plain).
-- `parseDate` – parse date string using Go reference format (e.g. `"2006-01-02"`).
-- `map` – map input strings to new values (e.g. studio normalization).
-- `subScraper` – run another scraper to fill a field (expensive; use sparingly).
-- `concat` – join multiple matches into one string.
-- `split` – split a string into an array.
-- `feetToCm`, `lbToKg`, `dimensionToMetric` – unit conversions.
-- `subtractDays` – subtract days from a parsed date.
-- `javascript` – custom JS transformation.
-
-Important behaviors:
-
-- Failed `parseDate` → field becomes empty (no error).
-- Unmatched `replace` / `map` → original string passes through.
-- Each `postProcess` item must have exactly one operator.
-- Deprecated: inline `replace`, `parseDate`, `subScraper` outside `postProcess`.
+Deprecated: inline `replace` / `parseDate` / `subScraper` outside `postProcess`.
 
 ## Patterns
 
-- Use `map` for studio normalization instead of many `replace` calls.
-- Use `concat` when you expect multiple nodes to contribute to one field.
-- Avoid `subScraper` unless no other option exists.
+```yaml
+Details:
+  selector: "//div[@class='desc']//text()"
+  concat: "\n"
+  postProcess:
+    - replace:
+        - regex: "</?[a-zA-Z][^>]*>"
+          with: ""
+```
+
+```yaml
+Studio:
+  Name:
+    selector: "//span[@class='brand']"
+    postProcess:
+      - map:
+          "ex-site": "Example Site"
+          "EXSITE": "Example Site"
+```
+
+```yaml
+Image:
+  selector: "//img[@id='poster']/@src | //meta[@property='og:image']/@content"
+  postProcess:
+    - replace:
+        - regex: "^//"
+          with: "https://"
+        - regex: "/thumb/"
+          with: "/poster/"
+```
+
+- Use `concat` when several nodes should become one string (Details, mixed `<br>`).
+- Use `split` when one string should become an array.
+- Avoid `subScraper` unless the value exists only on a second page.

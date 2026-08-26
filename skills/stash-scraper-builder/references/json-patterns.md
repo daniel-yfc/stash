@@ -1,24 +1,12 @@
-# JSON Scraping Patterns
+# JSON scraping patterns
 
 **Load when:** writing or fixing `scrapeJson` (GJSON) selectors.
 
-> **概要（zh-TW）：** GJSON 是 JSONPath 子集。路徑用 `.` 分隔；陣列用 `[0]`、`[*]`；`..` 遞迴搜尋。先用真實 API 回應驗證。
+> **概要（zh-TW）：** 定義必須在 `jsonScrapers`。ByName 用 `{}`，fragment 用 `{url}`。不要寫 GJSON filter 表達式。
 
-## 1. GJSON basics
+Canonical reference: https://deepwiki.com/stashapp/CommunityScrapers/5.1-json-scraper-configuration
 
-GJSON is a subset of JSONPath used by Stash. Paths are strings like `data.title` or `items[*].url`.
-
-| Form | Meaning |
-| --- | --- |
-| `data.title` | `data.title` field |
-| `items[0]` | First element of `items` |
-| `items[*]` | All elements (returns array) |
-| `..title` | Recursive search for `title` anywhere |
-| `items[?(@.type=="scene")]` | Filter by field (when supported) |
-
-Always test the path against the real JSON body, not a guessed schema.
-
-## 2. Selector shape
+## 1. Required shape
 
 ```yaml
 sceneByURL:
@@ -27,7 +15,7 @@ sceneByURL:
       - "api.example.com/v1/scene/"
     scraper: sceneJson
 
-xPathScrapers:
+jsonScrapers:
   sceneJson:
     scene:
       Title:
@@ -40,101 +28,68 @@ xPathScrapers:
         selector: "data.cover_url"
       Performers:
         Name:
-          selector: "data.performers[*].name"
-        Gender:
-          fixed: "Male"
+          selector: "data.performers.#.name"
       Studio:
         Name:
           selector: "data.studio.name"
 ```
 
-`scrapeJson` returns a single object; `*ByName` returns an array.
+`action: scrapeJson` looks up `jsonScrapers.<name>`. Putting the body under `xPathScrapers` fails validation and returns nothing.
 
-## 3. Common patterns
+## 2. GJSON basics
 
-### Nested objects
+Always test the path against a real JSON body (`curl` or DevTools → Network).
 
-```yaml
-Studio:
-  Name:
-    selector: "meta.studio.name"
-  URL:
-    selector: "meta.studio.url"
-```
-
-### Arrays
-
-```yaml
-Performers:
-  Name:
-    selector: "cast[*].name"
-  URL:
-    selector: "cast[*].profile_url"
-```
-
-### Recursive search
-
-```yaml
-Details:
-  selector: "..description"
-```
-
-Use only when the key is unique in the response.
-
-### Filtering (when supported)
-
-```yaml
-Tags:
-  Name:
-    selector: "tags[?(@.type=='category')].name"
-```
-
-If the validator rejects this, fall back to a plain `tags[*].name` and filter in Python.
-
-## 4. Missing keys and nulls
-
-GJSON returns `null` when a path is absent. Stash treats `null` as empty.
-
-```yaml
-Date:
-  selector: "data.release_date" # may be null
-  postProcess:
-    - parseDate: "2006-01-02"
-```
-
-If the site sometimes omits the field, leave it as-is; do not add defensive `replace` unless you have seen real failures.
-
-## 5. `*ByName` vs other modes
-
-| Mode | Output |
+| Form | Meaning |
 | --- | --- |
-| `sceneByName` | `[{...}]` array |
-| `sceneByFragment` | `{...}` object |
-| `sceneByURL` | `{...}` object |
+| `data.title` | Nested field |
+| `items.0` / `items[0]` | First element |
+| `items.#.name` / `items[*].name` | All names |
+| `..title` | Recursive search (only if the key is unique) |
 
-Even for one result, `*ByName` must wrap the object in an array.
+Do **not** use JSONPath filters such as `items[?(@.type=='scene')]`. They may look valid and still return null at runtime. Take `items.#.field` and filter in `script` if needed.
 
-## 6. Verify against the real response
+Missing keys / `null` become empty. Do not invent paths from docs alone.
 
-1. Open the API URL in a browser or `curl`.
-2. Paste the JSON into a GJSON tester (or use `jq '.data.title'`).
-3. Confirm the path returns the expected value.
-4. Only then put it into the YAML.
+`*ByName` must return an array of objects. `*ByURL` / `*ByFragment` return one object.
 
-If the API requires auth, use the same session / headers the site uses; do not guess paths from documentation alone.
+## 3. Verify a path (5 steps)
 
-## 7. When to prefer `scrapeJson` over `scrapeXPath`
+1. Open the real API URL (same headers/cookies the site uses).
+2. Copy the JSON body.
+3. Evaluate the GJSON path (tester or `jq` for simple dotted paths).
+4. Confirm a non-null value.
+5. Only then put it in YAML. If unverifiable, mark `# UNVERIFIED`.
 
-| Situation | Prefer |
+## 4. `queryURL` and `queryURLReplace`
+
+| Mode | `queryURL` |
 | --- | --- |
-| Site exposes a JSON API | `scrapeJson` |
-| HTML is thin and just renders JSON | `scrapeJson` |
-| Multi-site shared logic via Python | `script` |
-| Simple static HTML | `scrapeXPath` |
+| `sceneByName` | `{}` only. **No** `queryURLReplace`. |
+| `sceneByQueryFragment` | `{url}` of the selected hit, optionally rewritten with `queryURLReplace`. |
+| `sceneByURL` / `sceneByFragment` | Optional rewrite of the pasted URL into an API URL. |
 
-Do not force `scrapeJson` on an HTML-only site.
+Official queryURL placeholders are `{}`, `{url}`, and (fragment) `{filename}` — not `{title}`.
+`queryURLReplace` keys are **your** names (`id`, `slug`) filled from regex on the input URL.
 
-## 8. Example: search endpoint
+```yaml
+sceneByURL:
+  - action: scrapeJson
+    url:
+      - example.com/video/
+    queryURL: "https://api.example.com/v1/scene/{id}"
+    queryURLReplace:
+      id:
+        - regex: ".*/video/([^/?#]+).*"
+          with: "$1"
+    scraper: sceneJson
+```
+
+If the regex does not capture, the API request is wrong and every field is empty.
+
+Stash YAML fetches **one** URL per run. Pagination (`hasNextPage`, cursors) is a `script` concern, not a YAML loop.
+
+## 5. Search pair
 
 ```yaml
 sceneByName:
@@ -144,29 +99,27 @@ sceneByName:
 
 sceneByQueryFragment:
   action: scrapeJson
-  queryURL: "https://api.example.com/search?q={title}"
-  scraper: sceneSearch
-
-xPathScrapers:
-  sceneSearch:
-    scene:
-      Title:
-        selector: "results[*].title"
-      URL:
-        selector: "results[*].url"
-      Image:
-        selector: "results[*].cover_url"
+  queryURL: "{url}"
+  scraper: sceneJson
 ```
 
-`queryURL` uses `{}` for the search term; `queryURLReplace` can clean the title first.
+`sceneSearch` must expose `Title` + `URL`. Do **not** set fragment `queryURL` to `.../search?q={title}`.
 
-## 9. Anti-patterns
+## 6. When to prefer `scrapeJson`
+
+| Situation | Prefer |
+| --- | --- |
+| Site exposes a JSON API | `scrapeJson` |
+| HTML is a thin shell over JSON / `__NEXT_DATA__` / JSON-LD extracted via script | `scrapeJson` or `script` |
+| Multi-site shared logic | `script` |
+| Simple static HTML | `scrapeXPath` |
+
+## 7. Anti-patterns
 
 | Avoid | Prefer |
 | --- | --- |
-| `..title` on a huge response | Direct path `data.title` |
-| `items[*]` when you need one field | `items[*].name` |
-| Inventing paths from docs | `curl` the real endpoint |
-| Using `scrapeJson` on HTML | `scrapeXPath` or `script` |
-
-If a path returns `null` on the real page, it is a fail-to-fetch defect — fix it before output.
+| `scrapeJson` + `xPathScrapers` | `jsonScrapers` |
+| Invented paths | `curl` the real endpoint |
+| `{title}` on queryURL | `{}` / `{url}` |
+| `items[?(@.type=='scene')]` | `items.#.field` or `script` |
+| Root `name` | Filename + `#` comments |
