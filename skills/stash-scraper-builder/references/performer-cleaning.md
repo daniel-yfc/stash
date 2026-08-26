@@ -1,17 +1,19 @@
-# Performer Name Cleaning
+# Performer name cleaning
 
-**Load when:** performer `Name` or `Gender` is in play.
+**Load when:** building Performer Name (and optionally Gender).
 
-> **概要（zh-TW）：** 漢字 > 英語 > 假名。只允許複製下方唯一 javascript 區塊，不得改邏輯。無明確性別欄位時 `Gender: fixed: "Male"`。
+> **概要（zh-TW）：** 漢字 > 英語 > 假名。保留 `・` / `-`。無明確性別欄位時預設不寫 Gender；單性別站才用 `fixed`。別名用 `replace` 去掉 ` / ` 後段。
+
+Canonical reference: https://deepwiki.com/stashapp/CommunityScrapers/10.3-best-practices
 
 ## Priority
 
 | Input | Output | Pattern |
 | --- | --- | --- |
-| `東出省吾 Shogo` | `東出省吾` | A Hanzi (+ optional English) |
-| `大河(たいが)` | `大河` | B Hanzi + kana in `()` / `（）` |
-| `うる Uru` | `Uru` | C kana + English → English |
-| `たろう` | `たろう` | D pure kana |
+| `東出省吾 Shogo` | `東出省吾` | Hanzi (+ optional English) |
+| `大河 (たいが)` / `大河（たいが）` | `大河` | Hanzi + kana in parens |
+| `うる Uru` | `Uru` | kana + English → English |
+| `たろう` | `たろう` | pure kana |
 
 ## Canonical block (copy verbatim)
 
@@ -33,16 +35,23 @@ postProcess:
 
 `\u4e00-\u9fff\u3400-\u4dbf` = CJK Unified + Ext. A. `\u3041-\u3093\u30a1-\u30f6` = hiragana + katakana. `\u30fc\u3005\u309b\u309c` = `ー々゛゜`.
 
+## Preserve symbols
+
+- Keep `・` and `-` unless the site standardizes names without them.
+- Do not translate or romanize.
+
 ## Gender
 
-Default when no scrapeable gender field (state this in the explanation):
+Default: do not write Gender when no explicit field exists.
+
+Single-gender sites may use `fixed` with a stated reason:
 
 ```yaml
 Gender:
-  fixed: "Male"
+  fixed: "Female"  # all performers on this site are female
 ```
 
-Only if the page has an explicit field:
+When an explicit field exists, map to the schema enum (case-insensitive; capitalize output):
 
 ```yaml
 Gender:
@@ -55,4 +64,17 @@ Gender:
         "女性": "Female"
 ```
 
-Schema enum (case-insensitive; capitalized form recommended): `male` | `female` | `transgender_male` | `transgender_female` | `intersex` | `non_binary`.
+## Aliases
+
+If the site appends aliases like `Name / Alias`, strip the alias:
+
+```yaml
+postProcess:
+  - replace:
+      - regex: "\\s*/.*$"
+        with: ""
+```
+
+## Unmatched regex
+
+If none of the patterns match, return the original string. Do not force a rewrite.

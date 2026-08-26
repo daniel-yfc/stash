@@ -1,48 +1,54 @@
-# Title-Cleaning Regex Set
+# Title patterns
 
-**Load when:** a Title field needs `postProcess: replace`.
+**Load when:** building Title cleaning.
 
-> **概要（zh-TW）：** 預設套用下列區塊（網站標題已乾淨則可省略）。規則順序不可改。
+> **概要（zh-TW）：** 有序 `replace`：去標籤括號 → 去副檔名 → 折疊空白 → trim。保留真實標題括號（如 `【系列】作品名`）；依站點語言調整 CJK 標點。
 
-Apply to all `Title` fields unless the site is known to emit clean titles.
+Canonical reference: https://deepwiki.com/stashapp/CommunityScrapers/10.3-best-practices
+
+## Order of operations
+
+Apply in this order. Do not hard-code expected titles.
 
 ```yaml
-Title:
-  selector: "..."
-  postProcess:
-    - replace:
-        - regex: "\\\\s*\\\\[.*?\\\\]\\\\s*$"
-          with: ""
-        - regex: "\\\\s*【.*?】\\\\s*$"
-          with: ""
-        - regex: "\\\\s*（.*?）\\\\s*$"
-          with: ""
-        - regex: "\\\\.(mp4|mkv|avi|wmv|flv|ts|mpg|mpeg|rmvb|mov|m4v|iso|rar|zip|7z)\\\\s*$"
-          with: ""
-        - regex: "\\\\s{2,}"
-          with: " "
-        - regex: "^\\\\s+|\\\\s+$"
-          with: ""
+postProcess:
+  - replace:
+      # 1. Strip bracket tags that are not part of the real title
+      - regex: "\\s*\\[.*?\\]\\s*$"
+        with: ""
+      - regex: "\\s*【.*?】\\s*$"
+        with: ""
+      - regex: "\\s*（.*?）\\s*$"
+        with: ""
+      # 2. Strip file extensions
+      - regex: "\\.(mp4|mkv|avi|wmv|flv|ts|mpg|mpeg|rmvb|mov|m4v|iso)\\s*$"
+        with: ""
+      # 3. Collapse whitespace
+      - regex: "\\s{2,}"
+        with: " "
+      # 4. Trim
+      - regex: "^\\s+|\\s+$"
+        with: ""
 ```
 
-| # | Target |
-| --- | --- |
-| 1 | Trailing `[…]` tags |
-| 2 | Trailing `【…】` |
-| 3 | Trailing `（…）` |
-| 4 | File extensions |
-| 5 | Collapse whitespace |
-| 6 | Trim |
+## Site-specific studio prefix
 
-Do not reorder: brackets before collapse; collapse before trim; extensions after brackets.
-
-YAML: write `\\s` as `\\\\s` inside double-quoted regex strings. `$1` needs no extra escaping.
-
-Site-name watermark only if the user asks:
+If the site always prefixes titles with the studio/brand, add one more `replace` before step 3:
 
 ```yaml
-- regex: "\\\\s*[-–—]\\\\s*SiteName\\\\s*$"
+- regex: "^(BrandName\\s*[:：-]?\\s*)"
   with: ""
 ```
 
-Do not strip legitimate title brackets such as `「系列名」`. Do not use greedy `.*`. Do not strip codes like `ABP-123` unless asked.
+Do not translate the remaining title. Keep the source language.
+
+## CJK punctuation
+
+For sites that mix full/half-width punctuation, adjust step 1 to include full-width brackets or add a dedicated pass:
+
+```yaml
+- regex: "\\s*[\u3000-\u303f].*?\\s*$"
+  with: ""
+```
+
+Tune per site; do not apply blindly.
