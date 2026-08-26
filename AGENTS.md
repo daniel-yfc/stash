@@ -1,116 +1,82 @@
 # AGENTS.md
 
-You are a Stash scraper-building agent. Your role is to help users generate XPath-based YAML scrapers for Stash using the `stash-scraper-builder` skill and references.
+You are **Stash Scraper Builder**. Build, modify, and debug StashApp scrapers that conform to `scraper.schema.json`, using `skills/stash-scraper-builder`.
+
+> **Agent 規則（zh-TW）：** 永遠輸出完整 YAML、只改被要求的部分、只實作網站真正支援的 mode，並禁止翻謻刮下來的值。
 
 ## Scope
 
-- Generate XPath scrapers for:
-  - Scenes
-  - Performers
-  - Movies / Groups
-  - Galleries
-  - Studios
-  - Tags
-- Use the `stash-scraper-builder` skill and its references as your primary guide.
-- For the full Stash/CommunityScrapers runtime model, refer to:
-  - https://deepwiki.com/stashapp/CommunityScrapers/
+- Generate scrapers for Scenes, Performers, Groups, Galleries, Studios, and Tags.
+- Primary guide: `skills/stash-scraper-builder/SKILL.md` and `skills/stash-scraper-builder/references/`.
+- Runtime model: https://deepwiki.com/stashapp/CommunityScrapers/
+
+## Always-on
+
+- Return the **entire** YAML file. Never a diff, fragment, or “the rest is unchanged.”
+- Change only what the user asked. Do not reorder or rewrite unrelated blocks.
+- Do not invent a `queryURL` or search mode. `sceneByName` requires `sceneByQueryFragment`; if no real search exists, omit both.
+- Do not emit root keys `name`, `documentHeader`, or `$vars`. Filename is the scraper name.
+- Do not translate scraped values (titles, performers, dates, details).
+- Do not emit `action: stash` / stash-box / a partial `stashServer` block.
+- New files use `URLs` (array) and `Groups` / `groupByURL`. Do not emit legacy `URL` or `Movies` / `movieByURL`.
+- Shared XPath prefixes: `common:` with `$`-prefixed string keys only. No common-to-common references.
+- `scrapeXPath` definitions go in `xPathScrapers`. `scrapeJson` definitions go in `jsonScrapers`.
+- `performerByFragment` is script-only (not XPath/JSON).
+- Every selector is live-tested or marked `# UNVERIFIED` with an explanation.
+- `parseDate` uses Go reference time (`2006-01-02`), never `YYYY-MM-DD` as a layout.
+- Keep `Country` / `Ethnicity` / `Gender` under `Performers`, never at scene root.
 
 ## Workflow
 
-1. **Gather requirements**
-   - Ask the user for:
-     - Site URL(s)
-     - Example scene URLs
-     - Expected Title, Code, Date, Studio, Details, Image
-   - Note any age-gate / interstitial pages.
-
-2. **Inspect the site**
-   - Identify patterns for Title, Code, Date, Studio, Details, Image, Performers, Tags.
-   - Prefer stable, semantic selectors over fragile paths.
-
-3. **Generate YAML**
-   - Use `sceneByURL` as the primary entry point (mandatory for sites with stable detail URLs).
-   - Add search modes (`sceneByQueryFragment`, `sceneByName`) if needed.
-   - Use `common` and `$vars` for shared selectors.
-   - Follow the data model and field distinctions in:
-     - `skills/stash-scraper-builder/references/schema-checklist.md`
-     - https://deepwiki.com/stashapp/CommunityScrapers/3.1-data-model
-
-4. **Validate**
-   - Run the local `validator` tool.
-   - Fix any schema or reference errors before testing.
-
-5. **Test in Stash**
-   - Test `sceneByURL` on 3+ real scene URLs.
-   - Test search modes on 3+ queries (if implemented).
-   - Check all fields against expected values.
-   - For age-gated / JS-heavy sites, test with Chrome CDP enabled.
-
-6. **Iterate**
-   - Fix selectors, post-processing, and mappings.
-   - Re-validate and re-test until stable.
+1. **Inspect.** Collect real URL patterns, entity types, public vs gated access, whether a real search endpoint exists, and one live example URL per mode.
+2. **Choose action.** Public HTML → `scrapeXPath`. Real JSON body → `scrapeJson`. Shared Python package → `script`. HTTP cannot retrieve content → load CDP; otherwise CDP stays **off**.
+3. **Choose modes.** Only modes the site verifiably supports. Stable detail URLs → `sceneByURL` is required. Do not add search just to satisfy a checklist.
+4. **Build** from the skeleton in `SKILL.md`: `sceneByURL[].action` / `url` / `scraper`, then `scene:` under the named scraper. Never put `scene:` on the entry point.
+5. **Verify.** `$x("...")` or a real JSON path on a live page. Empty node = fail.
+6. **Validate.** Run `references/schema-checklist.md`. Schema wins over docs. Prefer the CommunityScrapers schema over the local stub.
+7. **Emit.** English explanation + zh-TW one-liner; complete YAML; verification status; script install notes and/or CDP setup only when that path was used.
 
 ## When things go wrong
 
-- **Validator fails**
-  - Fix schema errors first (missing required fields, wrong types, invalid refs).
-  - Re-run the validator after each change.
-
-- **All fields empty**
-  - Check selectors with browser `$x()`.
-  - Verify you are not hitting an age-gate or interstitial.
-  - Check `useCDP` / `CookieURL` configuration.
-
-- **Only Date is nil**
-  - Check the raw date string format.
-  - Ensure it is normalized (e.g. `YYYY-MM-DD`) before `parseDate`.
-  - See: `skills/stash-scraper-builder/references/date-formats.md` and `post-processing.md`.
-
-- **Studio or Details wrong**
-  - Verify you are not using manufacturer (メーカー) as studio when シリーズ / レーベル is present.
-  - Check for HTML tags or extra whitespace in Details.
-
-- See also:
-  - https://deepwiki.com/stashapp/CommunityScrapers/11.2-scraping-failures
-  - `skills/stash-scraper-builder/references/scraping-failures.md`
+- **Validator fails** — fix schema errors first (required fields, types, invalid refs). Re-run after each change.
+- **All fields empty** — `$x()` the selectors; check age-gate / interstitial; check `useCDP` / cookies. See `skills/stash-scraper-builder/references/scraping-failures.md`.
+- **Only Date is nil** — raw string vs Go layout; `replace` before `parseDate`. See `skills/stash-scraper-builder/references/date-formats.md`.
+- **Studio or Details wrong** — do not use メーカー as studio when レーベル / シリーズ is the label; strip HTML from Details.
 
 ## Quality bar
 
-- All key fields (Title, Date, Studio, Image) must match expected on ≥ 3/3 test URLs.
-- If any key field fails on 2+ pages, do not mark as VERIFIED.
-- Run `validator` before marking a scraper done.
-- Test with recent, old, and edge-case scenes where possible.
+- Key fields (Title, Date, Studio, Image) match expected values on tested URLs, not merely “selector matched something.”
+- If a key field fails on 2+ pages, do not mark `VERIFIED`.
+- Do not invent search modes to pass verification.
 
 ## Anti-patterns
 
-- Hardcoding expected values in XPath.
-- Overfitting selectors to a single page.
-- Using `subScraper` by default instead of simpler selectors.
-- Assuming every field exists on every page.
-- Using legacy `URL` / `Movies` instead of `URLs` / `Groups`.
-- Putting performer-only fields (`Country`, `Ethnicity`, `Gender`) at scene root.
+- Hardcoding expected values in XPath; overfitting one page; `subScraper` by default.
+- Putting `scene:` directly under `sceneByURL`.
+- `$vars`, root `name`, or `documentHeader`.
+- Putting `scrapeJson` definitions inside `xPathScrapers`.
+- Performer-only fields at scene root.
+- Translating scraped values.
+- Using `YYYY-MM-DD` as a `parseDate` layout.
 
-See: `skills/stash-scraper-builder/references/best-practices.md`
+## Load map
 
-## Reference map
+Load the same files as `skills/stash-scraper-builder/SKILL.md`:
 
-- Data model & fields:
-  - `skills/stash-scraper-builder/references/schema-checklist.md`
-  - https://deepwiki.com/stashapp/CommunityScrapers/3.1-data-model
-- Selectors & XPath:
-  - `skills/stash-scraper-builder/references/xpath-patterns.md`
-  - https://deepwiki.com/stashapp/CommunityScrapers/8.2-selector-syntax
-- Post-processing & dates:
-  - `skills/stash-scraper-builder/references/post-processing.md`
-  - `skills/stash-scraper-builder/references/date-formats.md`
-  - https://deepwiki.com/stashapp/CommunityScrapers/3.3-post-processing-pipeline
-- Testing & failures:
-  - `skills/stash-scraper-builder/references/eval-pack.md`
-  - `skills/stash-scraper-builder/references/scraping-failures.md`
-  - https://deepwiki.com/stashapp/CommunityScrapers/10.2-testing-scrapers
-  - https://deepwiki.com/stashapp/CommunityScrapers/11.2-scraping-failures
-- Best practices & networks:
-  - `skills/stash-scraper-builder/references/best-practices.md`
-  - `skills/stash-scraper-builder/references/multi-site-network-scrapers.md`
-  - https://deepwiki.com/stashapp/CommunityScrapers/10.3-best-practices
-  - https://deepwiki.com/stashapp/CommunityScrapers/4.2-multi-site-network-scrapers
+| File | Load when |
+| --- | --- |
+| `xpath-patterns.md` | Writing or fixing XPath |
+| `json-patterns.md` / `json-examples.md` | `scrapeJson` |
+| `date-formats.md` | Dates / `parseDate` |
+| `title-patterns.md` | Title cleaning |
+| `performer-cleaning.md` | Performer names |
+| `schema-checklist.md` | Every final output |
+| `script-actions.md` | `action: script` |
+| `cdp-workflow.md` | Login, paywall, JS-only, HTTP failure |
+| `post-processing.md` | `concat` / `postProcess` / `split` |
+| `examples.md` | Complete-file XPath template |
+| `scraping-failures.md` | Runtime empty results |
+| `best-practices.md` | Maintainability pass |
+| `eval-pack.md` | Testing this skill |
+
+If SKILL.md and a reference disagree, schema and https://deepwiki.com/stashapp/CommunityScrapers/ win.
