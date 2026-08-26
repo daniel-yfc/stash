@@ -3,38 +3,25 @@ name: Link Check
 on:
   push:
     branches: [main]
-    paths:
-      - "**.md"
-      - "**.json"
-      - ".github/workflows/link-check.yml"
-      - ".github/actions/skill-link-check/**"
   pull_request:
     branches: [main]
-    paths:
-      - "**.md"
-      - "**.json"
 
 jobs:
-  skill-links:
-    name: SKILL.md reference links
+  link-check:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check SKILL.md reference links
-        uses: ./.github/actions/skill-link-check
+      - name: Check links in Markdown files
+        uses: lycheeverse/lychee-action@v1
         with:
-          skill-file: skills/stash-scraper-builder/SKILL.md
+          args: '--verbose --no-progress skills/stash-scraper-builder/**/*.md README.md'
+          fail: false
 
-  markdown-links:
-    name: All Markdown links
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: gaurav-nelson/github-action-markdown-link-check@v1
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        if: always()
         with:
-          use-quiet-mode: "yes"
-          config-file: ".github/markdown-link-check.json"
-          folder-path: "., skills, docs"
-          file-extension: ".md"
+          name: lychee-results
+          path: ${{ github.workspace }}/lychee/out.md
