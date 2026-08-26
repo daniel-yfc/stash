@@ -1,19 +1,22 @@
-name: Validate
+name: validate
 
 on:
   push:
-    branches: [main]
+    paths:
+      - 'scrapers/*.yml'
+      - 'scrapers/**/*.yml'
+      - 'validator/**'
   pull_request:
-    branches: [main]
+    paths:
+      - 'scrapers/*.yml'
+      - 'scrapers/**/*.yml'
+      - 'validator/**'
 
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: denoland/setup-deno@v1
-        with:
-          deno-version: v1.x
       - name: Validate scrapers
-        run: |
-          deno run -R=scrapers,validator/scraper.schema.json validator/index-zh-TW.mjs -a -s scrapers/
+        run: deno run -R=scrapers -R=validator/scraper.schema.json validator/validate.js -a -s scrapers/
+        shell: bash
