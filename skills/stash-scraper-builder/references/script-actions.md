@@ -2,13 +2,12 @@
 
 **Load when:** `action: script` (including dependency packages).
 
-> **概要（zh-TW）：** `*ByName` 回傳陣列、其餘回傳物件。`# requires:` 在 `name:` 之前。每次輸出都要寫安裝前置。`performerByFragment` 僅限 script（有時 stash）；無 Python 套件就省略該模式。
+> **概要（zh-TW）：** `*ByName` 回傳陣列、其餘回傳物件。`# requires:` 為檔案第一行註解；不設 root `name:`（刮削器名稱取自檔名）。每次輸出都要寫安裝前置。`performerByFragment` 僅限 script（有時 stash）；無 Python 套件就省略該模式。
 
 ## YAML shape
 
 ```yaml
 # requires: DependencyName
-name: SiteName
 sceneByURL:
   - action: script
     url:
@@ -20,7 +19,7 @@ sceneByURL:
       - scene-by-url
 ```
 
-- `# requires:` before `name:`.
+- `# requires:` as a first-line comment. No root `name:` — the scraper name comes from the filename.
 - Relative path `../DependencyName/script.py`.
 - Typical extras: site id, then operation (`scene-by-url`). Keep that order on every action, including `groupByURL`.
 
@@ -29,10 +28,9 @@ Dependency-only package:
 ```yaml
 # script used as a dependency only
 # requires: py_common
-name: AlgoliaAPI
 ```
 
-No `*ByURL` / `*ByFragment` / `*ByName` on a pure package. `name` is still required.
+No `*ByURL` / `*ByFragment` / `*ByName` on a pure package. No root `name:` there either.
 
 ## Mode coverage (E1)
 
@@ -114,7 +112,6 @@ Use only modes the site supports. `sceneByName` always pairs with `sceneByQueryF
 
 ```yaml
 # requires: SomeDependency
-name: FullExample
 sceneByURL:
   - action: script
     url:
@@ -158,7 +155,7 @@ performerByFragment:
   action: script
   script:
     - python
-    - ../SomeDependency/script.py
+      - ../SomeDependency/script.py
     - example
     - performer-by-fragment
 ```

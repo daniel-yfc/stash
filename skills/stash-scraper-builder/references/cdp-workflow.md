@@ -38,12 +38,12 @@ Full table in `schema-checklist.md`.
 
 ## `clicks` need `sleep`
 
-Any `driver.clicks` entry that triggers navigation or AJAX must set `sleep` (seconds) so the DOM settles before extraction. A click without `sleep` routinely scrapes the pre-click page.
+Click items use `xpath` (optional `sleep` / `waitTillPresent` on the same object). Any `driver.clicks` entry that triggers navigation or AJAX must set `sleep` (seconds) so the DOM settles before extraction. A click without `sleep` routinely scrapes the pre-click page.
 
 ```yaml
 driver:
   useCDP: true
   clicks:
-    - selector: "//button[@id='age-confirm']"
+    - xpath: "//button[@id='age-confirm']"
       sleep: 2
 ```
