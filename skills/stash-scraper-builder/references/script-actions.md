@@ -2,13 +2,12 @@
 
 **Load when:** `action: script` (including dependency packages).
 
-> **概要（zh-TW）：** `*ByName` 回傳陣列、其餘回傳物件。`# requires:` 在 `name:` 之前。每次輸出都要寫安裝前置。
+> **概要（zh-TW）：** `*ByName` 回傳陣列、其餘回傳物件。`# requires:` 為檔案第一行註解；不設 root `name:`（刮削器名稱取自檔名）。每次輸出都要寫安裝前置。`performerByFragment` 僅限 script（有時 stash）；無 Python 套件就省略該模式。
 
 ## YAML shape
 
 ```yaml
 # requires: DependencyName
-name: SiteName
 sceneByURL:
   - action: script
     url:
@@ -20,7 +19,7 @@ sceneByURL:
       - scene-by-url
 ```
 
-- `# requires:` before `name:`.
+- `# requires:` as a first-line comment. No root `name:` — the scraper name comes from the filename.
 - Relative path `../DependencyName/script.py`.
 - Typical extras: site id, then operation (`scene-by-url`). Keep that order on every action, including `groupByURL`.
 
@@ -29,21 +28,61 @@ Dependency-only package:
 ```yaml
 # script used as a dependency only
 # requires: py_common
-name: AlgoliaAPI
 ```
 
-No `*ByURL` / `*ByFragment` / `*ByName` on a pure package. `name` is still required.
+No `*ByURL` / `*ByFragment` / `*ByName` on a pure package. No root `name:` there either.
 
-## I/O contract
+## Mode coverage (E1)
+
+- `performerByFragment` accepts **only** `action: script` (sometimes `action: stash`). Never `scrapeXPath` / `scrapeJson`.
+- If no Python package exists for the site, **omit the mode entirely** — do not emit a `performerByFragment` block that cannot run.
+
+## I/O contract (E4)
 
 | Type | stdin | stdout |
 | --- | --- | --- |
 | `*ByName` | `{"name": "<query>"}` | `[{...}]` even for one hit |
 | All others | object (`url` or fragment) | `{...}` not an array |
 
-Empty: `[]` (ByName) or `{}`. Errors on **stderr**. `print(json.dumps(result))` on stdout.
+> **Never emit a bare object from a `*ByName` operation.** Stash parses search results as a list; a bare `{...}` yields zero results or a parse error. Zero hits → `[]`. One hit → `[{...}]`.
 
-`performerByFragment` is script-only (not XPath/JSON).
+Empty: `[]` (ByName) or `{}`. Errors on **stderr**. `print(json.dumps(result))` on stdout — nothing else may be printed to stdout.
+
+## Script quality (E5)
+
+- Types: emit correct JSON types (numbers as numbers, lists as lists); do not stringify everything.
+- Omit missing fields entirely instead of emitting `null` / empty guesses.
+- Log via `py_common.log` (stderr), never `print()` for diagnostics.
+- Strip query strings / tracking params from input URLs before matching or re-fetching.
+- Cache repeated requests (same URL fetched for multiple fields) to avoid rate limits.
+- Wrap every external request in `try/except`; on failure return `{}` / `[]` and log to stderr — never crash into a traceback on stdout.
+
+## Pagination (script only — B3)
+
+A YAML scraper fetches exactly one URL; `hasNextPage` / cursor pagination belongs in Python:
+
+```python
+results, cursor = [], None
+while True:
+    page = fetch_search(query, cursor)          # site client call
+    results.extend(page["items"])
+    cursor = page.get("nextCursor")             # or page["hasNextPage"] and next page index
+    if not cursor:
+        break
+print(json.dumps(results))                      # ByName: always a list
+```
+
+## API error field (B4)
+
+`scrapeJson` does not crash on an API `error` field, but a script must check it explicitly and return empty:
+
+```python
+data = resp.json()
+if data.get("error"):
+    log.error(f"API error: {data['error']}")
+    print(json.dumps([] if op.endswith("by-name") else {}))
+    sys.exit(0)
+```
 
 ## Install prerequisites (every script-action response)
 
@@ -73,7 +112,6 @@ Use only modes the site supports. `sceneByName` always pairs with `sceneByQueryF
 
 ```yaml
 # requires: SomeDependency
-name: FullExample
 sceneByURL:
   - action: script
     url:
@@ -117,7 +155,7 @@ performerByFragment:
   action: script
   script:
     - python
-    - ../SomeDependency/script.py
+      - ../SomeDependency/script.py
     - example
     - performer-by-fragment
 ```
