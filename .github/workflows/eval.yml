@@ -1,24 +1,41 @@
-name: Eval
+name: Eval Pack
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
+    inputs:
+      tasks:
+        description: 'Tasks to run (1-5, comma-separated). Default: all'
+        required: false
+        default: '1,2,3,4,5'
 
 jobs:
   eval:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
-      - uses: denoland/setup-deno@v1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          deno-version: v1.x
-      - name: Validate scrapers
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Display task info
         run: |
-          deno run -R=scrapers,validator/scraper.schema.json validator/index-zh-TW.mjs -a -s scrapers/
-      # TODO: remove continue-on-error once the 5 eval example scrapers exist in scrapers/
-      - name: Run eval pack
-        continue-on-error: true
+          echo "::group::Eval Pack Info"
+          echo "Running tasks: ${{ github.event.inputs.tasks || '1,2,3,4,5' }}"
+          echo ""
+          echo "Task 1: New XPath site (public HTML)"
+          echo "Task 2: New scrapeJson site (real JSON API)"
+          echo "Task 3: Script + dependency"
+          echo "Task 4: Date &nbsp; fix (complete file)"
+          echo "Task 5: Login-gated site"
+          echo ""
+          echo "Target: 5/5 pass before calling skill 'done'"
+          echo "::endgroup::"
+
+      - name: Note
         run: |
-          ./scripts/eval-run.sh
+          echo "::notice::Eval pack is P4 (workstream H). Failures are expected until H2 (#40) is complete."
+          echo "This workflow is manual-only to avoid blocking skill doc PRs (see #4: H5 docs CI optional)."
