@@ -1,32 +1,149 @@
-# KO Shop — private cookie version
-# Do not set useCDP. Cookie-based login only.
+# KO Shop
+# Private build: cookies + CookieURL. Do not set useCDP in entry points.
+# Search URL verified 2026-08-27: /products/list.php?word=雄穴
+# → /products/detail.php?product_id=42743, 42707, 42727.
+# Card XPath UNVERIFIED ($x not run on list markup).
+# Detail selectors kept from product_id=40277 DOM.
+# Studio = シリーズ，not メーカー. No Groups from シリーズ.
 # Last Updated: 2026-08-28
 
 name: KO Shop
+
 sceneByURL:
   - action: scrapeXPath
     url:
       - ko-shop.com/products/detail.php
       - www.ko-shop.com/products/detail.php
     scraper: sceneScraper
+
 sceneByName:
   action: scrapeXPath
   queryURL: "https://www.ko-shop.com/products/list.php?word={}"
   scraper: searchScraper
+
 sceneByQueryFragment:
   action: scrapeXPath
   queryURL: "{url}"
   scraper: sceneScraper
+
 xPathScrapers:
   searchScraper:
     common:
+      # UNVERIFIED class; scoped to product_id links that contain an image
       $results: "//a[contains(@href,'/products/detail.php?product_id=')][.//img]"
+    scene:
+      Title:
+        selector: "$results//img[1]/@alt | $results"
+        postProcess:
+          - replace:
+              - regex: "^\\s+|\\s+$"
+                with: ""
+      URLs:
+        selector: "$results/@href"
+        postProcess:
+          - javascript: |
+              var v = value || "";
+              if (!v) return "";
+              v = v.replace(/^\/\//, "https://");
+              if (/^https?:/i.test(v)) return v;
+              if (v.charAt(0) === "/") return "https://www.ko-shop.com" + v;
+              return "https://www.ko-shop.com/" + v;
+      Image:
+        selector: "$results//img[1]/@src"
+        postProcess:
+          - javascript: |
+              var v = value || "";
+              if (!v) return "";
+              v = v.replace(/\?.*$/, "");
+              v = v.replace(/^\/\//, "https://");
+              if (/^https?:/i.test(v)) return v;
+              if (v.charAt(0) === "/") return "https://www.ko-shop.com" + v;
+              return "https://www.ko-shop.com/" + v;
+
+  sceneScraper:
+    common:
+      $meta: "//div[contains(concat(' ',normalize-space(@class),' '),' detail_product ')]//dl[1]"
+    scene:
+      Title:
+        selector: "//div[contains(concat(' ',normalize-space(@class),' '),' detail_product ')]//h2[1]"
+        postProcess:
+          - replace:
+              - regex: "^\\s+|\\s+$"
+                with: ""
+      Code:
+        selector: "$meta/dt[normalize-space(.)='商品コード']/following-sibling::dd[1]"
+        postProcess:
+          - javascript: |
+              var v = value || "";
+              return v.replace(/^[\s:：]+|[\s\u00a0]+$/gu, "").trim();
+      Details:
+        selector: "//div[contains(concat(' ',normalize-space(@class),' '),' undercol ')]/div[contains(concat(' ',normalize-space(@class),' '),' ma_b30 ')][1]//text()[normalize-space()]"
+        concat: "\n"
+        postProcess:
+          - replace:
+              - regex: "^\\s+|\\s+$"
+                with: ""
+              - regex: "\\n{3,}"
+                with: "\n\n"
+      Date:
+        selector: "$meta/dt[normalize-space(.)='発売日']/following-sibling::dd[1]"
+        postProcess:
+          - javascript: |
+              var v = (value || "").replace(/[\s\u00a0]/g, "");
+              if (!v) return "";
+              var m = v.match(/(\d{4})[年\/\-.]?(\d{1,2})[月\/\-.]?(\d{1,2})/);
+              if (!m) m = v.match(/(\d{4})(\d{2})(\d{2})/);
+              if (!m) return "";
+              var mm = ("0" + m[2]).slice(-2);
+              var dd = ("0" + m[3]).slice(-2);
+              return m[1] + "-" + mm + "-" + dd;
+          - parseDate: "2006-01-02"
+      Image:
+        selector: "//div[contains(concat(' ',normalize-space(@class),' '),' detail_main_img ')]//a[contains(@href,'upload/save_image/') or contains(@href,'uploadsaveimage')][1]/@href"
+        postProcess:
+          - javascript: |
+              var v = value || "";
+              if (!v) return "";
+              v = v.replace(/\?.*$/, "");
+              v = v.replace(/^\/\//, "https://");
+              if (/^https?:/i.test(v)) return v;
+              if (v.charAt(0) === "/") return "https://www.ko-shop.com" + v;
+              return "https://www.ko-shop.com/" + v;
+      Studio:
+        Name:
+          selector: "$meta/dt[normalize-space(.)='シリーズ']/following-sibling::dd[1]//a[1]"
+          postProcess:
+            - replace:
+                - regex: "^\\s+|\\s+$"
+                  with: ""
+      Tags:
+        Name:
+          selector: "$meta/dt[normalize-space(.)='カテゴリ']/following-sibling::dd[1]//a | $meta/dt[normalize-space(.)='ジャンル']/following-sibling::dd[1]//a | $meta/dt[normalize-space(.)='キーワード']/following-sibling::dd[1]//a | $meta/dt[normalize-space(.)='モデルタイプ']/following-sibling::dd[1]//a"
+          postProcess:
+            - replace:
+                - regex: "^\\s+|\\s+$"
+                  with: ""
+
 driver:
   headers:
     - Key: User-Agent
-      Value: Mozilla/5.0
+      Value: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36
   cookies:
     - CookieURL: "https://ko-shop.com"
+      Cookies:
+        - Name: modal
+          Value: off
+          Domain: .ko-shop.com
+          Path: "/"
+        - Name: KOSCOMID
+          Value: 8erpg4bqnc4juj3ghln6j4oh82
+          Domain: .ko-shop.com
+          Path: "/"
+        - Name: login_email
+          Value: eddie.lu%40tensi.org
+          Domain: .ko-shop.com
+          Path: "/"
+    - CookieURL: "https://www.ko-shop.com"
       Cookies:
         - Name: modal
           Value: off
