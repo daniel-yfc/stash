@@ -4,8 +4,9 @@
 # Card XPath UNVERIFIED ($x not run on list markup).
 # Detail selectors kept from product_id=40277 DOM.
 # Studio = シリーズ, not メーカー. No Groups from シリーズ.
-# useCDP: true for 18+ modal. No CookieURL.
-# Last Updated: 2026-08-27
+# Private CDP version: driver.useCDP: true for the 18+ modal; no driver.cookies.
+# Log in via the visible Chrome — the browser session carries cookies.
+# Last Updated: 2026-08-28
 
 sceneByURL:
   - action: scrapeXPath
@@ -19,11 +20,13 @@ sceneByName:
   action: scrapeXPath
   queryURL: "https://www.ko-shop.com/products/list.php?word={}"
   scraper: searchScraper
+  useCDP: true
 
 sceneByQueryFragment:
   action: scrapeXPath
   queryURL: "{url}"
   scraper: sceneScraper
+  useCDP: true
 
 xPathScrapers:
   searchScraper:
@@ -74,7 +77,7 @@ xPathScrapers:
         postProcess:
           - javascript: |
               var v = value || "";
-              return v.replace(/^[\s:：]+|[\s\u00a0]+$/gu, "").trim();
+              return v.replace(/^[\s:：]+|[\s ]+$/gu, "").trim();
       Details:
         selector: "//div[contains(concat(' ',normalize-space(@class),' '),' undercol ')]/div[contains(concat(' ',normalize-space(@class),' '),' ma_b30 ')][1]//text()[normalize-space()]"
         concat: "\n"
@@ -83,14 +86,14 @@ xPathScrapers:
               - regex: "^\\s+|\\s+$"
                 with: ""
               - regex: "\\n{3,}"
-                with: "\n\n"
+                with: "\\n\\n"
       URLs:
         fixed: "{inputURL}"
       Date:
         selector: "$meta/dt[normalize-space(.)='発売日']/following-sibling::dd[1]"
         postProcess:
           - javascript: |
-              var v = (value || "").replace(/[\s\u00a0]/g, "");
+              var v = (value || "").replace(/[\s ]/g, "");
               if (!v) return "";
               var m = v.match(/(\d{4})[年\/\-.]?(\d{1,2})[月\/\-.]?(\d{1,2})/);
               if (!m) m = v.match(/(\d{4})(\d{2})(\d{2})/);
@@ -126,37 +129,7 @@ xPathScrapers:
                   with: ""
 
 driver:
+  useCDP: true
   headers:
     - Key: User-Agent
       Value: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
-  cookies:
-    - CookieURL: "https://ko-shop.com"
-      Cookies:
-        - Name: modal
-          Value: off
-          Domain: ".ko-shop.com"
-          Path: "/"
-        - Name: KOSCOMID
-          Value: 8erpg4bqnc4juj3ghln6j4oh82
-          Domain: ".ko-shop.com"
-          Path: "/"
-        - Name: login_email
-          Value: "eddie.lu%40tensi.org"
-          Domain: ".ko-shop.com"
-          Path: "/"
-    - CookieURL: "https://www.ko-shop.com"
-      Cookies:
-        - Name: modal
-          Value: off
-          Domain: ".ko-shop.com"
-          Path: "/"
-        - Name: KOSCOMID
-          Value: 8erpg4bqnc4juj3ghln6j4oh82
-          Domain: ".ko-shop.com"
-          Path: "/"
-        - Name: login_email
-          Value: "eddie.lu%40tensi.org"
-          Domain: ".ko-shop.com"
-          Path: "/"
-
-# Last Updated: 2026-08-27

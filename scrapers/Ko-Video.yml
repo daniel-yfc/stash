@@ -3,11 +3,9 @@
 #   https://ko-video.com/products/list.php?name=雄穴
 #   (2026-08-27 snapshot). sceneByURL still UNVERIFIED against live detail pages.
 #
-# Age-gate / login note:
-# This site may use age-gate / login. Test with useCDP: true if scraping fails.
+# Private CDP version: this site uses age-gate / login, so useCDP: true is on
+# all entries and driver.cookies is removed (browser session carries cookies).
 # See: skills/stash-scraper-builder/references/scraping-failures.md
-
-name: "KO Video"
 
 sceneByURL:
   - action: scrapeXPath
@@ -21,11 +19,13 @@ sceneByName:
   action: scrapeXPath
   queryURL: https://ko-video.com/products/list.php?name={}
   scraper: searchScraper
+  useCDP: true
 
 sceneByQueryFragment:
   action: scrapeXPath
   queryURL: "{url}"
   scraper: sceneScraper
+  useCDP: true
 
 sceneByFragment:
   action: scrapeXPath
@@ -41,6 +41,7 @@ sceneByFragment:
       - regex: '^\s+|\s+$'
         with: ''
   scraper: searchScraper
+  useCDP: true
 
 xPathScrapers:
   searchScraper:
@@ -117,7 +118,11 @@ xPathScrapers:
               var v = value || "";
               if (!v) return "";
               var m = v.match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})/u);
-              if (m) return m[1] + "-" + m[2] + "-" + m[3];
+              if (m) {
+                var mm = ("0" + m[2]).slice(-2);
+                var dd = ("0" + m[3]).slice(-2);
+                return m[1] + "-" + mm + "-" + dd;
+              }
               return v.trim();
           - parseDate: "2006-01-02"
 
@@ -169,30 +174,9 @@ xPathScrapers:
               return "https://ko-video.com/" + v;
 
 driver:
+  useCDP: true
   headers:
     - Key: User-Agent
       Value: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
-  cookies:
-    - CookieURL: "https://ko-video.com"
-      Cookies:
-        - Name: Apache
-          Value: 172.216.245.13.1787829814850695
-          Domain: ".ko-shop.com"
-          Path: "/"
-        - Name: ECSESSID
-          Value: 5kvdvt79ocsbaprql7u8fvl7l5
-          Domain: ".ko-video.com"
-          Path: "/"
-    - CookieURL: "https://www.ko-shop.com"
-      Cookies:
-        - Name: Apache
-          Value: 172.216.245.13.1787829814850695
-          Domain: ".ko-shop.com"
-          Path: "/"
-        - Name: ECSESSID
-          Value: 5kvdvt79ocsbaprql7u8fvl7l5
-          Domain: ".ko-video.com"
-          Path: "/"
 
-
-# Last Updated 2026-08-27
+# Last Updated: 2026-08-28

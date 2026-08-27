@@ -2,8 +2,9 @@
 # Search verified 2026-08-27 from rendered /product/result?kw=雄穴
 # (ul.title_list cards: /product/detail/34124, 34114, 27341).
 # Detail sceneScraper UNVERIFIED on guest pages — product table is login-gated.
-# useCDP: true for sceneByURL. Do not add CookieURL.
-# Last Updated: 2026-08-27
+# Private CDP version: driver.useCDP: true on all entries; no driver.cookies.
+# Log in via the visible Chrome (CDP) — the browser session carries cookies.
+# Last Updated: 2026-08-28
 
 sceneByURL:
   - action: scrapeXPath
@@ -17,11 +18,13 @@ sceneByName:
   action: scrapeXPath
   queryURL: "https://www.ck-download.com/product/result?kw_opt=1&kw={}&st_opt=1&p_opt=1&mt_opt=1"
   scraper: searchScraper
+  useCDP: true
 
 sceneByQueryFragment:
   action: scrapeXPath
   queryURL: "{url}"
   scraper: sceneScraper
+  useCDP: true
 
 xPathScrapers:
   searchScraper:
@@ -125,17 +128,7 @@ xPathScrapers:
               return "https://www.ck-download.com/" + v;
 
 driver:
+  useCDP: true
   headers:
     - Key: User-Agent
       Value: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0
-  cookies:
-    - CookieURL: "https://www.ck-download.com"
-      Cookies:
-        - Name: USER_AUTO_LOGIN
-          Value: YYYYY
-          Domain: www.ck-download.com
-          Path: "/"
-        - Name: COAT
-          Value: XXXXX
-          Domain: www.ck-download.com
-          Path: "/"

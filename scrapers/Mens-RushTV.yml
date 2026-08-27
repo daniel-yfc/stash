@@ -6,11 +6,9 @@
 #   img/@alt is empty; title is in <p>.
 # sceneByURL still UNVERIFIED against live detail pages.
 #
-# Age-gate / login note:
-# This site may use age-gate / login. Test with useCDP: true if scraping fails.
+# Private CDP version: this site may use age-gate / login, so useCDP: true is
+# on all entries and driver.cookies is removed (browser session carries cookies).
 # See: skills/stash-scraper-builder/references/scraping-failures.md
-
-name: "Men's Rush TV"
 
 sceneByURL:
   - action: scrapeXPath
@@ -24,6 +22,7 @@ sceneByName:
   action: scrapeXPath
   queryURL: https://www.mensrush.tv/list.php?keyword={}
   scraper: searchScraper
+  useCDP: true
 
 sceneByQueryFragment:
   action: scrapeXPath
@@ -45,6 +44,7 @@ sceneByFragment:
       - regex: '^\s+|\s+$'
         with: ''
   scraper: searchScraper
+  useCDP: true
 
 xPathScrapers:
   searchScraper:
@@ -113,6 +113,19 @@ xPathScrapers:
       URLs:
         fixed: "{inputURL}"
 
+      Date:  # UNVERIFIED — date position on single.php not confirmed on a live page
+        selector: //div[@class='movie_detail'][1]//p[contains(.,'発売') or contains(.,'配信')]
+        postProcess:
+          - javascript: |
+              var v = value || "";
+              if (!v) return "";
+              var m = v.match(/(\d{4})[年\/\-.](\d{1,2})[月\/\-.]?(\d{1,2})/);
+              if (!m) return "";
+              var mm = ("0" + m[2]).slice(-2);
+              var dd = ("0" + m[3]).slice(-2);
+              return m[1] + "-" + mm + "-" + dd;
+          - parseDate: "2006-01-02"
+
       Studio:
         Name:
           selector: //div[@class='movie_detail'][1]//p//a[contains(@href,'list.php?maid=')][1]/text() | //div[@class='movie_detail'][1]//p//a[contains(@href,'fansme.jp/user/')][1]/text()
@@ -155,8 +168,8 @@ xPathScrapers:
           selector: //div[@class='movie_detail'][1]//p//a[contains(@href,'list.php?geid=')]/text()
           postProcess:
             - replace:
-                - regex: '^\s+|\s+$'
-                  with: ''
+              - regex: '^\s+|\s+$'
+                with: ''
 
       Details:
         selector: //div[@class='movie_detail']/h3[1]/following-sibling::p[1]//text()[normalize-space()]
@@ -174,35 +187,10 @@ xPathScrapers:
               if (v.indexOf("/") === 0) return "https://www.mensrush.tv" + v;
               return "https://www.mensrush.tv/" + v;
 
-
-
-
 driver:
+  useCDP: true
   headers:
     - Key: User-Agent
       Value: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
-  cookies:
-    - CookieURL: "https://www.mensrush.tv"
-      Cookies:
-        - Name: PHPSESSID
-          Value: v9gs1180t2eirknpipv03im692
-          Domain: ".mensrush.tv"
-          Path: "/"
-        - Name: PHPSESSID
-          Value: 0puogq2islpmtf8jkbab0l2fj2
-          Domain: ".mensrush.tv"
-          Path: "/"
 
-    - CookieURL: "https://mensrush.tv"
-      Cookies:
-        - Name: PHPSESSID
-          Value: v9gs1180t2eirknpipv03im692
-          Domain: ".mensrush.tv"
-          Path: "/"
-        - Name: PHPSESSID
-          Value: 0puogq2islpmtf8jkbab0l2fj2
-          Domain: ".mensrush.tv"
-          Path: "/"
-
-# Last Updated 2026-08-27
-
+# Last Updated: 2026-08-28
