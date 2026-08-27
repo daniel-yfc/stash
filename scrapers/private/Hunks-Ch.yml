@@ -1,13 +1,8 @@
-# Hunk's Channel
-# Private build: cookies + CookieURL. Do not set driver.useCDP.
-# Search verified 2026-08-27: /search.php?s=雄穴&fromSearch=on
-# cards in #newmovie tables (GV-OND28001, TR-CS007, KPP-1122).
-# Detail: guest HTML has ブランド/発売日/ストーリー; cover/title h2 need login cookies.
-# common keys are independent XPath (no $data: $product//...).
+# Hunk's Channel — private cookie version
+# Do not set useCDP. Cookie-based login only.
 # Last Updated: 2026-08-28
 
 name: Hunk's Channel
-
 groupByURL:
   - action: scrapeXPath
     url:
@@ -15,7 +10,6 @@ groupByURL:
       - hunk-ch.com/movie_detail.php
       - www.hunk-ch.com/movie_detail.php
     scraper: groupScraper
-
 sceneByURL:
   - action: scrapeXPath
     url:
@@ -23,225 +17,24 @@ sceneByURL:
       - hunk-ch.com/movie_detail.php
       - www.hunk-ch.com/movie_detail.php
     scraper: sceneScraper
-
 sceneByName:
   action: scrapeXPath
   queryURL: "https://www.hunk-ch.com/search.php?s={}&fromSearch=on"
   scraper: searchScraper
-
 sceneByQueryFragment:
   action: scrapeXPath
   queryURL: "{url}"
   scraper: sceneScraper
-
 xPathScrapers:
   searchScraper:
     common:
       $results: "//div[@id='newmovie']//table[.//a[contains(@href,'movie_detail.php')]]"
-    scene:
-      Title:
-        selector: "$results//img[contains(@src,'pickup01')]/@alt | $results//h4[1]//a[1]"
-        postProcess:
-          - replace:
-              - regex: "^\\s+|\\s+$"
-                with: ""
-      URLs:
-        selector: "$results//h4[1]//a[contains(@href,'movie_detail.php')][1]/@href"
-        postProcess:
-          - javascript: |
-              var v = value || "";
-              if (!v) return "";
-              v = v.replace(/^\/\//, "https://");
-              if (v.indexOf("http") === 0) return v;
-              if (v.indexOf("/") === 0) return "https://www.hunk-ch.com" + v;
-              return "https://www.hunk-ch.com/" + v;
-      Image:
-        selector: "$results//img[contains(@src,'/video/img/') and contains(@src,'pickup01')][1]/@src"
-        postProcess:
-          - javascript: |
-              var v = value || "";
-              if (!v) return "";
-              v = v.replace(/^\/\//, "https://");
-              if (/^https?:/i.test(v)) return v;
-              if (v.charAt(0) === "/") return "https://www.hunk-ch.com" + v;
-              return "https://www.hunk-ch.com/" + v;
-      Date:
-        selector: "$results//td[contains(.,'発売日')]"
-        postProcess:
-          - replace:
-              - regex: ".*?発売日：\\s*(\\d{4}-\\d{2}-\\d{2}).*"
-                with: "$1"
-          - parseDate: "2006-01-02"
-
-  groupScraper:
-    common:
-      $product: "//div[contains(concat(' ',normalize-space(@class),' '),' product_detail_centre ')] | //table[@id='product']"
-      $data: "//div[contains(concat(' ',normalize-space(@class),' '),' data ')] | //p[contains(.,'発売日') and contains(.,'ブランド')]"
-    group:
-      Name:
-        selector: "$product//h2[1]"
-        postProcess:
-          - replace:
-              - regex: "^\\s+|\\s+$"
-                with: ""
-      Aliases:
-        selector: "//link[@rel='canonical']/@href | //meta[@property='og:url']/@content"
-        postProcess:
-          - replace:
-              - regex: "^.*?[?&]code=([^&]+).*$"
-                with: "$1"
-      Duration:
-        selector: "$data"
-        postProcess:
-          - replace:
-              - regex: "^.*?(?:収録時間|時間)：\\s*(\\d+).*$"
-                with: "$1"
-      Date:
-        selector: "$data"
-        postProcess:
-          - replace:
-              - regex: ".*?発売日：\\s*(\\d{4}-\\d{2}-\\d{2}).*"
-                with: "$1"
-          - parseDate: "2006-01-02"
-      Synopsis:
-        selector: "//img[@title='ストーリー']/following::p[1]"
-        postProcess:
-          - replace:
-              - regex: "^\\s+|\\s+$"
-                with: ""
-      Studio:
-        Name:
-          selector: "$data//a[contains(@href,'search.php?b=')]"
-          postProcess:
-            - replace:
-                - regex: "^\\s+|\\s+$"
-                  with: ""
-      Tags:
-        Name:
-          selector: "$data//a[contains(@href,'search.php?c=')]"
-          postProcess:
-            - replace:
-                - regex: "^\\s+|\\s+$"
-                  with: ""
-      FrontImage:
-        selector: "$product//div[contains(concat(' ',normalize-space(@class),' '),' flexslider ')]//img[1]/@src | //meta[@property='og:image']/@content"
-        postProcess:
-          - javascript: |
-              var v = value || "";
-              if (!v) return "";
-              v = v.replace(/^\/\//, "https://");
-              if (/^https?:/i.test(v)) return v;
-              if (v.indexOf("./") === 0) v = v.substring(2);
-              if (v.charAt(0) === "/") return "https://www.hunk-ch.com" + v;
-              return "https://www.hunk-ch.com/" + v;
-
-  sceneScraper:
-    common:
-      $product: "//div[contains(concat(' ',normalize-space(@class),' '),' product_detail_centre ')] | //table[@id='product']"
-      $data: "//div[contains(concat(' ',normalize-space(@class),' '),' data ')] | //p[contains(.,'発売日') and contains(.,'ブランド')]"
-    scene:
-      Title:
-        selector: "$product//h2[1]"
-        postProcess:
-          - replace:
-              - regex: "^\\s+|\\s+$"
-                with: ""
-      Code:
-        selector: "//link[@rel='canonical']/@href | //meta[@property='og:url']/@content"
-        postProcess:
-          - replace:
-              - regex: "^.*?[?&]code=([^&]+).*$"
-                with: "$1"
-      Details:
-        selector: "//img[@title='ストーリー']/following::p[1]"
-        concat: "\n"
-        postProcess:
-          - replace:
-              - regex: "^\\s+|\\s+$"
-                with: ""
-      Date:
-        selector: "$data"
-        postProcess:
-          - replace:
-              - regex: ".*?発売日：\\s*(\\d{4}-\\d{2}-\\d{2}).*"
-                with: "$1"
-          - parseDate: "2006-01-02"
-      Image:
-        selector: "$product//div[contains(concat(' ',normalize-space(@class),' '),' flexslider ')]//img[1]/@src | //meta[@property='og:image']/@content"
-        postProcess:
-          - javascript: |
-              var v = value || "";
-              if (!v) return "";
-              v = v.replace(/^\/\//, "https://");
-              if (/^https?:/i.test(v)) return v;
-              if (v.indexOf("./") === 0) v = v.substring(2);
-              if (v.charAt(0) === "/") return "https://www.hunk-ch.com" + v;
-              return "https://www.hunk-ch.com/" + v;
-      Studio:
-        Name:
-          selector: "$data//a[contains(@href,'search.php?b=')]"
-          postProcess:
-            - replace:
-                - regex: "^\\s+|\\s+$"
-                  with: ""
-      Tags:
-        Name:
-          selector: "$data//a[contains(@href,'search.php?c=')]"
-          postProcess:
-            - replace:
-                - regex: "^\\s+|\\s+$"
-                  with: ""
-
 driver:
   headers:
     - Key: User-Agent
-      Value: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36
+      Value: Mozilla/5.0
   cookies:
     - CookieURL: "https://www.hunk-ch.com"
-      Cookies:
-        - Name: DetectTanmatsuFlag
-          Value: c2977934055d771794919c64ba7de067Izhtwqzhqqenqqengbqqenusq
-          Domain: .hunk-ch.com
-          Path: "/"
-        - Name: LOGIN_KEEP_INFO2
-          Value: uDOg%2BvX6%2BIEkjVziE%2BJzhQY%2BV%2BZOsTdnpW3PKCWHcRs%3D
-          Domain: .hunk-ch.com
-          Path: "/"
-        - Name: _ast
-          Value: 452f4276794d4c6d62714e625246727172782b4564673d3d
-          Domain: .hunk-ch.com
-          Path: "/"
-        - Name: CookieDoubleLoginCheck
-          Value: Userlogin
-          Domain: .hunk-ch.com
-          Path: "/"
-        - Name: HUNKID
-          Value: rqkh2gedn9j37i8rbu9tsom6sj
-          Domain: .hunk-ch.com
-          Path: "/"
-    - CookieURL: "https://hunk-ch.com"
-      Cookies:
-        - Name: DetectTanmatsuFlag
-          Value: c2977934055d771794919c64ba7de067Izhtwqzhqqenqqengbqqenusq
-          Domain: .hunk-ch.com
-          Path: "/"
-        - Name: LOGIN_KEEP_INFO2
-          Value: uDOg%2BvX6%2BIEkjVziE%2BJzhQY%2BV%2BZOsTdnpW3PKCWHcRs%3D
-          Domain: .hunk-ch.com
-          Path: "/"
-        - Name: _ast
-          Value: 452f4276794d4c6d62714e625246727172782b4564673d3d
-          Domain: .hunk-ch.com
-          Path: "/"
-        - Name: CookieDoubleLoginCheck
-          Value: Userlogin
-          Domain: .hunk-ch.com
-          Path: "/"
-        - Name: HUNKID
-          Value: rqkh2gedn9j37i8rbu9tsom6sj
-          Domain: .hunk-ch.com
-          Path: "/"
-    - CookieURL: "https://eng.hunk-ch.com"
       Cookies:
         - Name: DetectTanmatsuFlag
           Value: c2977934055d771794919c64ba7de067Izhtwqzhqqenqqengbqqenusq

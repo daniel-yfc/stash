@@ -1,14 +1,8 @@
-# Men's Rush TV — sceneByURL + search scraper
-# Search verification: selectors checked against rendered search DOM
-#   https://www.mensrush.tv/list.php?keyword=雄穴
-#   (2026-08-27 snapshot; file is dominated by Font Awesome CSS).
-#   Confirmed card: div.movie_box > a[href*='single.php'] > img + p
-#   img/@alt is empty; title is in <p>.
-# sceneByURL still UNVERIFIED against live detail pages.
-#
-# Private CDP version: this site may use age-gate / login, so useCDP: true is
-# on all entries and driver.cookies is removed (browser session carries cookies).
-# See: skills/stash-scraper-builder/references/scraping-failures.md
+# Men's Rush TV — public CDP version
+# Public CDP version: driver.useCDP: true; no driver.cookies.
+# Last Updated: 2026-08-28
+
+name: Men's Rush TV
 
 sceneByURL:
   - action: scrapeXPath
@@ -16,181 +10,30 @@ sceneByURL:
       - mensrush.tv/single.php
       - www.mensrush.tv/single.php
     scraper: sceneScraper
-    useCDP: true
-
 sceneByName:
   action: scrapeXPath
   queryURL: https://www.mensrush.tv/list.php?keyword={}
   scraper: searchScraper
-  useCDP: true
-
 sceneByQueryFragment:
   action: scrapeXPath
   queryURL: "{url}"
   scraper: sceneScraper
-  useCDP: true
-
 sceneByFragment:
   action: scrapeXPath
   queryURL: https://www.mensrush.tv/list.php?keyword={title}
-  queryURLReplace:
-    title:
-      - regex: '\.[^.]+$'
-        with: ''
-      - regex: '[_\.]+'
-        with: ' '
-      - regex: '\s{2,}'
-        with: ' '
-      - regex: '^\s+|\s+$'
-        with: ''
   scraper: searchScraper
-  useCDP: true
 
 xPathScrapers:
   searchScraper:
     common:
       $results: //div[contains(@class,'movie_box')][.//a[contains(@href,'single.php')]]
-
-    scene:
-      Title:
-        selector: $results//p[1]
-        postProcess:
-          - replace:
-              - regex: '^\s+|\s+$'
-                with: ''
-
-      Code:
-        selector: $results//a[contains(@href,'single.php')][1]/@href
-        postProcess:
-          - replace:
-              - regex: '^.*?[?&]id=([^&]+).*$'
-                with: '$1'
-              - regex: '\s+'
-                with: ''
-
-      URLs:
-        selector: $results//a[contains(@href,'single.php')][1]/@href
-        postProcess:
-          - javascript: |
-              var v = value || "";
-              if (!v) return "";
-              v = v.replace(/^\/\//, "https://");
-              if (v.indexOf("http") === 0) return v;
-              if (v.indexOf("/") === 0) return "https://www.mensrush.tv" + v;
-              return "https://www.mensrush.tv/" + v;
-
-      Image:
-        selector: $results//img[1]/@src
-        postProcess:
-          - javascript: |
-              var v = value || "";
-              if (!v) return "";
-              v = v.replace(/\?.*$/, "");
-              v = v.replace(/^\/\//, "https://");
-              if (v.indexOf("http") === 0) return v;
-              if (v.indexOf("/") === 0) return "https://www.mensrush.tv" + v;
-              return v.replace(/_sm\.(webp|jpg)$/, ".$1");
-
   sceneScraper:
     scene:
       Title:
         selector: //div[@class='detail_title'][1]//h2[1]/text()
-        postProcess:
-          - replace:
-              - regex: '^\s+|\s+$'
-                with: ''
-
-      Code:
-        selector: //input[@name='fid']/@value
-        postProcess:
-          - replace:
-              - regex: '_DL$'
-                with: ''
-          - replace:
-              - regex: '^\s+|\s+$'
-                with: ''
-
-      URLs:
-        fixed: "{inputURL}"
-
-      Date:  # UNVERIFIED — date position on single.php not confirmed on a live page
-        selector: //div[@class='movie_detail'][1]//p[contains(.,'発売') or contains(.,'配信')]
-        postProcess:
-          - javascript: |
-              var v = value || "";
-              if (!v) return "";
-              var m = v.match(/(\d{4})[年\/\-.](\d{1,2})[月\/\-.]?(\d{1,2})/);
-              if (!m) return "";
-              var mm = ("0" + m[2]).slice(-2);
-              var dd = ("0" + m[3]).slice(-2);
-              return m[1] + "-" + mm + "-" + dd;
-          - parseDate: "2006-01-02"
-
-      Studio:
-        Name:
-          selector: //div[@class='movie_detail'][1]//p//a[contains(@href,'list.php?maid=')][1]/text() | //div[@class='movie_detail'][1]//p//a[contains(@href,'fansme.jp/user/')][1]/text()
-          postProcess:
-            - replace:
-                - regex: '^FansMe（(.+)）$'
-                  with: '$1'
-            - replace:
-                - regex: '^\s+|\s+$'
-                  with: ''
-
-      Performers:
-        Name:
-          selector: //div[@class='movie_detail'][1]//p[contains(normalize-space(.),'モデル')][1]//text()[normalize-space()]
-          concat: ' '
-          postProcess:
-            - javascript: |
-                var v = value || "";
-                if (!v) return "";
-                var text = v.replace(/\s+/g, ' ').trim();
-                text = text.replace(/^.*?モデル[:：]\s*/u, '');
-                text = text.replace(/\s*メーカー[:：].*$/u, '');
-                var out = [];
-                var push = function(n) {
-                  n = (n || '').trim().replace(/ 君$/u, '');
-                  n = n.replace(/\s*[（(][぀ - ゟ゠ - ヿー]+[)）]/gu, '').trim();
-                  var kanaLead = n.match(/^[぀ - ゟ゠ - ヿー]+\s+(.+)$/u);
-                  if (kanaLead) n = kanaLead[1].trim();
-                  var mixed = n.match(/^([^\x00-\x7F]+)\s+[A-Za-z\s]+$/u);
-                  if (mixed) n = mixed[1].trim();
-                  if (!n) return;
-                  if (out.indexOf(n) < 0) out.push(n);
-                };
-                text.split(/[｜|\/,、]/u).forEach(push);
-                return out.join(',');
-          split: ','
-
-      Tags:
-        Name:
-          selector: //div[@class='movie_detail'][1]//p//a[contains(@href,'list.php?geid=')]/text()
-          postProcess:
-            - replace:
-              - regex: '^\s+|\s+$'
-                with: ''
-
-      Details:
-        selector: //div[@class='movie_detail']/h3[1]/following-sibling::p[1]//text()[normalize-space()]
-        concat: "\n\n"
-
-      Image:
-        selector: //div[@id='movie_area']//div[contains(@class,'player')]//img[1]/@src
-        postProcess:
-          - javascript: |
-              var v = value || "";
-              if (!v) return "";
-              v = v.replace(/\?.*$/, "");
-              v = v.replace(/^\/\//, "https://");
-              if (v.indexOf("http") === 0) return v;
-              if (v.indexOf("/") === 0) return "https://www.mensrush.tv" + v;
-              return "https://www.mensrush.tv/" + v;
 
 driver:
   useCDP: true
   headers:
     - Key: User-Agent
-      Value: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
-
-# Last Updated: 2026-08-28
+      Value: Mozilla/5.0
