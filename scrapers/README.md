@@ -133,6 +133,12 @@ Before deploying any scraper:
 - Private: Same name in `private/` subfolder (e.g., `private/CK-Download.yml`)
 - Do not add `-public` or `-private` suffixes to filenames
 
+## Related Docs
+
+- **Production readiness checklist**: [`docs/PRODUCTION_CHECKLIST.md`](../docs/PRODUCTION_CHECKLIST.md) — Full A-H workstream checklist for production deployment
+- **Automation & CI/CD**: [`docs/AUTOMATION_WORKFLOW.md`](../docs/AUTOMATION_WORKFLOW.md) — Validation scripts, workflows, and local testing
+- **Skill references**: [`skills/stash-scraper-builder/references/`](../skills/stash-scraper-builder/references/) — CDP workflow, schema checklist, scraping failures
+
 ## References
 
 - Skill documentation: [`skills/stash-scraper-builder/`](../skills/stash-scraper-builder/)
