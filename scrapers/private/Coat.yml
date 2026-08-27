@@ -1,5 +1,5 @@
-# Last Updated: 2026-08-27
-# CLUB CK / COAT (coat.co.jp) — private CDP build (no cookies).
+# Last Updated: 2026-08-28
+# CLUB CK / COAT (coat.co.jp) — private cookie build.
 # Verification status: UNVERIFIED against live Stash.
 # SAMPLE1 (product_id=3264) confirmed:
 #   - login-gated rendered DOM
@@ -10,13 +10,7 @@
 # CK href, 発売日, details, tags, search cards: not fully
 # readable from the 132KB snapshot via crawler. Marked UNVERIFIED.
 #
-# Login / CDP:
-# 1. driver.useCDP: true (do not add CookieURL).
-# 2. chrome.exe --remote-debugging-port=9222
-# 3. Stash → Settings → System → Chrome CDP path = ws://localhost:9222
-# 4. In that Chrome, log in at https://www.coat.co.jp/ until the header
-#    shows the account menu (not the login form).
-# 5. Paste a detail URL in Stash and scrape.
+# Private: cookies + CookieURL. Do not set driver.useCDP.
 #
 # Field rules (source language, not translated):
 #   Title   h2.margin-none as-is (keep ADULT / Jump!; 3264 has no SPARK)
@@ -173,7 +167,7 @@ xPathScrapers:
               v = v.replace(/\r\n/g, "\n");
               v = v.replace(/[ \t]+\n/g, "\n");
               v = v.replace(/^\s*商品説明\s*/g, "");
-              v = v.replace(/\n\s*\d+[.．]?\s*[〈【][\s\S]*$/, "");
+              v = v.replace(/\n\s*\d+[..？]?\s*[〈【][\s\S]*$/, "");
               v = v.replace(/\n?\s*販売価格[\s\S]*$/, "");
               v = v.replace(/\n{3,}/g, "\n\n");
               return v.replace(/^\s+|\s+$/g, "");
@@ -211,8 +205,21 @@ xPathScrapers:
                   with: ""
 
 driver:
-  useCDP: true
-  sleep: 1
   headers:
     - Key: User-Agent
       Value: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36
+  cookies:
+    - CookieURL: "https://www.coat.co.jp"
+      Cookies:
+        - Name: over18
+          Value: "Yes"
+          Domain: www.coat.co.jp
+          Path: "/"
+        - Name: ECSESSID
+          Value: ds1cf3e1csgtqs21ksj0hg8kl0
+          Domain: www.coat.co.jp
+          Path: "/"
+        - Name: login_email
+          Value: eddie.lu%40tensi.org
+          Domain: www.coat.co.jp
+          Path: "/"

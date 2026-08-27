@@ -3,7 +3,7 @@
 # Search verified 2026-08-27 from rendered /product/result?kw=雄穴
 # (ul.title_list cards: /product/detail/34124, 34114, 27341).
 # Detail sceneScraper UNVERIFIED on guest pages — product table is login-gated.
-# Last Updated: 2026-08-27
+# Last Updated: 2026-08-28
 
 name: CK-Download
 
@@ -131,10 +131,10 @@ driver:
     - CookieURL: "https://www.ck-download.com"
       Cookies:
         - Name: USER_AUTO_LOGIN
-          Value: YYYYY
+          Value: Q2FrZQ%3D%3D.NGNmYWE0OTcxNTI2NTg2OGNmOGI3M2I4NGEwMTJmOGEzOGFhNzZjZDM4MjdlOTQ0NGEzOGY4ZjY0ZGExNWY3ZOhMjOwJKWi7PfbEzqNSR1JXHEoRUyraLjCRIjdB8gprjNpsbcM8%2BjWeL%2BV6ONrbXEcyh8Lt1HY7MAmAyytdbTV%2BbJmLTUP46isqFD3rNgIDRrGbdiJgBCkkcJb%2FvLYi3w%3D%3D
           Domain: www.ck-download.com
           Path: "/"
         - Name: COAT
-          Value: XXXXX
+          Value: tb22q2vor6ie381kogs6483b18
           Domain: www.ck-download.com
           Path: "/"

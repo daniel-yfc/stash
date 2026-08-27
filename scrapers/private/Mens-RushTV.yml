@@ -4,7 +4,7 @@
 #   (2026-08-27 snapshot). Confirmed card: div.movie_box > a[href*='single.php'] > img + p
 #   img/@alt is empty; title is in <p>.
 # sceneByURL still UNVERIFIED against live detail pages.
-# Last Updated: 2026-08-27
+# Last Updated: 2026-08-28
 
 name: Men's Rush TV
 
@@ -129,15 +129,15 @@ xPathScrapers:
                 var out = [];
                 var push = function(n) {
                   n = (n || '').trim().replace(/ 君$/u, '');
-                  n = n.replace(/\s*[（(][぀-ゟ゠-ヿー]+[)）]/gu, '').trim();
-                  var kanaLead = n.match(/^[぀-ゟ゠-ヿー]+\s+(.+)$/u);
+                  n = n.replace(/\s*[（(][぀-ゟ゠-ハー]+[)）]/gu, '').trim();
+                  var kanaLead = n.match(/^[぀-ゟ゠-ハー]+\s+(.+)$/u);
                   if (kanaLead) n = kanaLead[1].trim();
                   var mixed = n.match(/^([^\x00-\x7F]+)\s+[A-Za-z\s]+$/u);
                   if (mixed) n = mixed[1].trim();
                   if (!n) return;
                   if (out.indexOf(n) < 0) out.push(n);
                 };
-                text.split(/[｜|,\\、]/u).forEach(push);
+                text.split(/[｜|,\\,]/u).forEach(push);
                 return out.join(',');
           split: ','
 
@@ -176,9 +176,17 @@ driver:
           Value: v9gs1180t2eirknpipv03im692
           Domain: .mensrush.tv
           Path: "/"
+        - Name: PHPSESSID
+          Value: 0puogq2islpmtf8jkbab0l2fj2
+          Domain: .mensrush.tv
+          Path: /affiliate
     - CookieURL: "https://mensrush.tv"
       Cookies:
         - Name: PHPSESSID
           Value: v9gs1180t2eirknpipv03im692
           Domain: .mensrush.tv
           Path: "/"
+        - Name: PHPSESSID
+          Value: 0puogq2islpmtf8jkbab0l2fj2
+          Domain: .mensrush.tv
+          Path: /affiliate

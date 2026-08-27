@@ -4,7 +4,7 @@
 # cards in #newmovie tables (GV-OND28001, TR-CS007, KPP-1122).
 # Detail: guest HTML has ブランド/発売日/ストーリー; cover/title h2 need login cookies.
 # common keys are independent XPath (no $data: $product//...).
-# Last Updated: 2026-08-27
+# Last Updated: 2026-08-28
 
 name: Hunk's Channel
 
@@ -197,7 +197,7 @@ driver:
     - Key: User-Agent
       Value: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36
   cookies:
-    - CookieURL: "https://eng.hunk-ch.com"
+    - CookieURL: "https://www.hunk-ch.com"
       Cookies:
         - Name: DetectTanmatsuFlag
           Value: c2977934055d771794919c64ba7de067Izhtwqzhqqenqqengbqqenusq
@@ -207,12 +207,16 @@ driver:
           Value: uDOg%2BvX6%2BIEkjVziE%2BJzhQY%2BV%2BZOsTdnpW3PKCWHcRs%3D
           Domain: .hunk-ch.com
           Path: "/"
-        - Name: HUNKID
-          Value: b71ulss2g2cbrr447snvcp0uja
-          Domain: .hunk-ch.com
-          Path: "/"
         - Name: _ast
           Value: 452f4276794d4c6d62714e625246727172782b4564673d3d
+          Domain: .hunk-ch.com
+          Path: "/"
+        - Name: CookieDoubleLoginCheck
+          Value: Userlogin
+          Domain: .hunk-ch.com
+          Path: "/"
+        - Name: HUNKID
+          Value: rqkh2gedn9j37i8rbu9tsom6sj
           Domain: .hunk-ch.com
           Path: "/"
     - CookieURL: "https://hunk-ch.com"
@@ -225,15 +229,19 @@ driver:
           Value: uDOg%2BvX6%2BIEkjVziE%2BJzhQY%2BV%2BZOsTdnpW3PKCWHcRs%3D
           Domain: .hunk-ch.com
           Path: "/"
-        - Name: HUNKID
-          Value: b71ulss2g2cbrr447snvcp0uja
-          Domain: .hunk-ch.com
-          Path: "/"
         - Name: _ast
           Value: 452f4276794d4c6d62714e625246727172782b4564673d3d
           Domain: .hunk-ch.com
           Path: "/"
-    - CookieURL: "https://www.hunk-ch.com"
+        - Name: CookieDoubleLoginCheck
+          Value: Userlogin
+          Domain: .hunk-ch.com
+          Path: "/"
+        - Name: HUNKID
+          Value: rqkh2gedn9j37i8rbu9tsom6sj
+          Domain: .hunk-ch.com
+          Path: "/"
+    - CookieURL: "https://eng.hunk-ch.com"
       Cookies:
         - Name: DetectTanmatsuFlag
           Value: c2977934055d771794919c64ba7de067Izhtwqzhqqenqqengbqqenusq
@@ -243,11 +251,15 @@ driver:
           Value: uDOg%2BvX6%2BIEkjVziE%2BJzhQY%2BV%2BZOsTdnpW3PKCWHcRs%3D
           Domain: .hunk-ch.com
           Path: "/"
-        - Name: HUNKID
-          Value: b71ulss2g2cbrr447snvcp0uja
-          Domain: .hunk-ch.com
-          Path: "/"
         - Name: _ast
           Value: 452f4276794d4c6d62714e625246727172782b4564673d3d
+          Domain: .hunk-ch.com
+          Path: "/"
+        - Name: CookieDoubleLoginCheck
+          Value: Userlogin
+          Domain: .hunk-ch.com
+          Path: "/"
+        - Name: HUNKID
+          Value: rqkh2gedn9j37i8rbu9tsom6sj
           Domain: .hunk-ch.com
           Path: "/"
