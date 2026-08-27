@@ -7,7 +7,7 @@
 #   - last #topicpath a[normalize-space()] = SPARK
 #   - eccube.classCategories product_code = COCODV563
 #   - #jacket exists; #eyecatch is pickup, not cover
-# CK href, 発売日，details, tags, search cards: not fully
+# CK href, 発売日, details, tags, search cards: not fully
 # readable from the 132KB snapshot via crawler. Marked UNVERIFIED.
 #
 # Private: cookies + CookieURL. Do not set useCDP in entry points.
@@ -16,7 +16,7 @@
 #   Title   h2.margin-none as-is (keep ADULT / Jump!; 3264 has no SPARK)
 #   Studio  last non-empty #topicpath link (レーベル)
 #   Code    eccube.classCategories product_code (COCODV563, not COCO563-HD)
-#   Date    発売日，not CK "2026.08.06 UP"
+#   Date    発売日, not CK "2026.08.06 UP"
 #   Image   #jacket /upload/save_image/{CODE}.jpg (strip EC-CUBE *h.jpg)
 #   URLs    canonical detail + first ck-download.com/product/detail/{id}
 #           (ignore footer homepage ck-download.com)
@@ -42,6 +42,21 @@ sceneByQueryFragment:
   action: scrapeXPath
   queryURL: "{url}"
   scraper: sceneScraper
+
+sceneByFragment:
+  action: scrapeXPath
+  queryURL: "https://www.coat.co.jp/products/list.php?mode=search&name={title}"
+  queryURLReplace:
+    title:
+      - regex: '\.[^.]+$'
+        with: ''
+      - regex: '[_\.]+'
+        with: ' '
+      - regex: '\s{2,}'
+        with: ' '
+      - regex: '^\s+|\s+$'
+        with: ''
+  scraper: searchScraper
 
 xPathScrapers:
   searchScraper:
@@ -94,7 +109,7 @@ xPathScrapers:
 
     scene:
       Title:
-        selector: "//h2[contains(@class,'margin-none')][normalize-space()] | $jacket//img/@alt"
+        selector: "//h2[contains(@class,'margin-none')][normalize-space()] | $jacket//img/@alt | //title"
         postProcess:
           - replace:
               - regex: "\\s{2,}"
@@ -208,6 +223,8 @@ driver:
   headers:
     - Key: User-Agent
       Value: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36
+    - Key: Accept-Language
+      Value: ja,en-US;q=0.8,en;q=0.6
   cookies:
     - CookieURL: "https://www.coat.co.jp"
       Cookies:

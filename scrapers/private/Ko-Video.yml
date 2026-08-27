@@ -1,6 +1,6 @@
 # KO Video — private build: cookies + CookieURL. Do not set useCDP in entry points.
 # Search verification: selectors checked against rendered search DOM
-#   https://ko-video.com/products/list.php?name=雄穴
+#   https://ko-video.com/products/list.php?mode=search&name=雄穴
 #   (2026-08-27 snapshot). sceneByURL still UNVERIFIED against live detail pages.
 # Last Updated: 2026-08-28
 
@@ -15,7 +15,7 @@ sceneByURL:
 
 sceneByName:
   action: scrapeXPath
-  queryURL: https://ko-video.com/products/list.php?name={}
+  queryURL: "https://ko-video.com/products/list.php?mode=search&name={}"
   scraper: searchScraper
 
 sceneByQueryFragment:
@@ -25,7 +25,7 @@ sceneByQueryFragment:
 
 sceneByFragment:
   action: scrapeXPath
-  queryURL: https://ko-video.com/products/list.php?name={title}
+  queryURL: "https://ko-video.com/products/list.php?mode=search&name={title}"
   queryURLReplace:
     title:
       - regex: '\.[^.]+$'
@@ -90,7 +90,7 @@ xPathScrapers:
 
     scene:
       Title:
-        selector: //div[contains(@class,'detail_main_col')]//div[@class='title_bar'][1]/h2[1]
+        selector: //div[contains(@class,'detail_main_col')]//div[@class='title_bar'][1]/h2[1] | //title
         postProcess:
           - replace:
               - regex: '^\s+|\s+$'
@@ -135,8 +135,8 @@ xPathScrapers:
                 if (!v) return "";
                 var n = v.replace(/\s+/g, ' ').trim();
                 if (!n) return "";
-                n = n.replace(/\s*[（(][぀-ゟ゠-ンー]+[)）]\s*/gu, '');
-                var kanaLead = n.match(/^[぀-ゟ゠-ンー]+\s+(.+)$/u);
+                n = n.replace(/\s*[（(][぀-ゟ゠-ー]+[)）]\s*/gu, '');
+                var kanaLead = n.match(/^[぀-ゟ゠-ー]+\s+(.+)$/u);
                 if (kanaLead) n = kanaLead[1].trim();
                 var mixed = n.match(/^([^\x00-\x7F]+)\s+[A-Za-z\s]+$/u);
                 if (mixed) n = mixed[1].trim();
@@ -169,6 +169,8 @@ driver:
   headers:
     - Key: User-Agent
       Value: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36
+    - Key: Accept-Language
+      Value: ja,en-US;q=0.8,en;q=0.6
   cookies:
     - CookieURL: "https://ko-video.com"
       Cookies:

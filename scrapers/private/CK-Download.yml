@@ -24,6 +24,21 @@ sceneByQueryFragment:
   queryURL: "{url}"
   scraper: sceneScraper
 
+sceneByFragment:
+  action: scrapeXPath
+  queryURL: "https://www.ck-download.com/product/result?kw_opt=1&kw={title}&st_opt=1&p_opt=1&mt_opt=1"
+  queryURLReplace:
+    title:
+      - regex: '\.[^.]+$'
+        with: ''
+      - regex: '[_\.]+'
+        with: ' '
+      - regex: '\s{2,}'
+        with: ' '
+      - regex: '^\s+|\s+$'
+        with: ''
+  scraper: searchScraper
+
 xPathScrapers:
   searchScraper:
     common:
@@ -69,7 +84,7 @@ xPathScrapers:
       $cats: "//div[contains(@class,'prod_category')][1]"
     scene:
       Title:
-        selector: "$data//th[normalize-space(.)='DVD タイトル']/following-sibling::td[1]"
+        selector: "$data//th[normalize-space(.)='DVD タイトル']/following-sibling::td[1] | //h1[normalize-space()] | //title"
         postProcess:
           - replace:
               - regex: "^\\s+|\\s+$"
@@ -127,6 +142,8 @@ driver:
   headers:
     - Key: User-Agent
       Value: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0
+    - Key: Accept-Language
+      Value: ja,en-US;q=0.8,en;q=0.6
   cookies:
     - CookieURL: "https://www.ck-download.com"
       Cookies:
