@@ -1,5 +1,7 @@
 # Scraper Versions
 
+> **快速總覽（zh-TW）：** 本目錄區分公開版（`scrapers/*.yml`）與私有版（`scrapers/private/*.yml`）刮削器。公開版不含登入憑證，可安全分享；私有版可能使用 CDP 會話或 cookie，僅限私人 repo 使用。永遠不要把 session token 寫入公開 repo。
+
 This directory contains Stash scraper YAML files organized by deployment type.
 
 ## Directory Structure
