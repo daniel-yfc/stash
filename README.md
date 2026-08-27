@@ -4,6 +4,15 @@
 
 Build StashApp scrapers that conform to [CommunityScrapers schema](https://deepwiki.com/stashapp/CommunityScrapers/).
 
+## Quick Start
+
+**Choose your path:**
+
+- 🤖 **Building scrapers?** → [`AGENTS.md`](AGENTS.md) — AI agent instructions
+- 🚀 **Deploying scrapers?** → [`scrapers/README.md`](scrapers/README.md) — Public vs private versions
+- ✅ **Validating scrapers?** → [`docs/PRODUCTION_CHECKLIST.md`](docs/PRODUCTION_CHECKLIST.md) — Production readiness
+- ⚙️ **Setting up CI/CD?** → [`docs/AUTOMATION_WORKFLOW.md`](docs/AUTOMATION_WORKFLOW.md) — Workflows & scripts
+
 ## Overview
 
 This skill enables AI agents to generate, modify, and debug StashApp scrapers that:
@@ -11,6 +20,23 @@ This skill enables AI agents to generate, modify, and debug StashApp scrapers th
 - ✅ Load successfully (valid YAML, correct schema)
 - ✅ Scrape successfully (proper selectors, post-processing)
 - ✅ Follow community best practices (anchors, Last Updated, CamelCase)
+
+## Documentation Map
+
+```
+README.md (you are here)
+├── AGENTS.md                          # AI agent: how to build scrapers
+├── scrapers/
+│   └── README.md                      # Deployment: public vs private versions
+├── docs/
+│   ├── PRODUCTION_CHECKLIST.md        # Validation: is scraper production-ready?
+│   ├── AUTOMATION_WORKFLOW.md         # CI/CD: workflows, validation scripts
+│   ├── ARCHITECTURE.md                # System: high-level architecture
+│   └── LINK-CHECK.md                  # CI: link validation workflow
+└── skills/stash-scraper-builder/
+    ├── SKILL.md                       # Skill definition
+    └── references/                    # 20 reference files (xpath, dates, schema, etc.)
+```
 
 ## Completed Workstreams
 
@@ -79,13 +105,13 @@ This skill enables AI agents to generate, modify, and debug StashApp scrapers th
 
 ### For AI Agents
 
-1. Read `skills/stash-scraper-builder/SKILL.md`
+1. Read [`skills/stash-scraper-builder/SKILL.md`](skills/stash-scraper-builder/SKILL.md)
 2. Load reference files on demand (see load table in SKILL.md)
 3. Follow the workflow: Inspect → Choose action → Build → Verify → Validate → Emit
 
 ### For Humans
 
-- **Skill docs:** `skills/stash-scraper-builder/references/`
+- **Skill docs:** [`skills/stash-scraper-builder/references/`](skills/stash-scraper-builder/references/)
 - **Validator:** `validator/validate.js`
 - **Schema:** [CommunityScrapers](https://github.com/stashapp/CommunityScrapers/blob/develop/scraper.schema.json)
 
