@@ -1,0 +1,117 @@
+name: KO-Tube
+sceneByURL:
+  - action: scrapeXPath
+    url:
+      - ko-tube.com/product/index/
+      - ko-tube.com/product/index2/
+      - ko-tube.com/package/index/
+    scraper: sceneScraper
+sceneByName:
+  action: scrapeXPath
+  queryURL: https://www.ko-tube.com/search/index?kw={}&sk=0
+  scraper: sceneSearch
+groupByURL:
+  - action: scrapeXPath
+    url:
+      - ko-tube.com/package/index/
+    scraper: groupScraper
+xPathScrapers:
+  sceneSearch:
+    common:
+      $item: //a[contains(@href, "/product/index") or contains(@href, "/package/index/")]
+    scene:
+      Title: $item
+      URL: $item/@href
+      Image: $item//img/@src
+  sceneScraper:
+    scene:
+      Title: //h1[contains(@class, "title") or contains(text(), "作品詳細") or contains(text(), "パッケージ")]/text()
+      Code:
+        selector: //td[contains(text(), "作品番号")]/following-sibling::td[1]/text()
+        postProcess:
+          - trim
+      Date:
+        selector: //td[contains(text(), "DVD 発売") or contains(text(), "発売")]/following-sibling::td[1]/text()
+        postProcess:
+          - replace:
+              - regex: "([0-9]{4}) 年 ([0-9]{1,2}) 月"
+                with: $1-$2-01
+          - javascript: |
+              var p = value.split("-");
+              if (p.length >= 2) {
+                return p[0] + "-" + ("0" + p[1]).slice(-2) + "-" + (p[2] ? ("0" + p[2]).slice(-2) : "01");
+              }
+              return value;
+      Details:
+        selector: //div[contains(@class, "description") or contains(@class, "detail")]//text()
+        concat: "\n"
+      Image:
+        - //img[contains(@src, "/picture/parent/") and contains(@src, "_3.jpg")]/@src
+        - //img[contains(@src, "/picture/")]/@src
+      Studio:
+        Name:
+          selector: //td[contains(text(), "レーベル")]/following-sibling::td[1]/text()
+          postProcess:
+            - trim
+      Tags:
+        Name:
+          selector: //td[contains(text(), "プレイ")]/following-sibling::td[1]/text()
+          postProcess:
+            - trim
+          split: "、"
+      Performers:
+        Name:
+          selector: //td[contains(text(), "モデル")]/following-sibling::td[1]/text()
+          postProcess:
+            - trim
+          split: "、"
+      URLs:
+        - fixed: "{inputURL}"
+        - //a[contains(@href, "ko-video.com")]/@href
+      Groups:
+        Name: //h1[contains(@class, "title")]/text()
+  groupScraper:
+    group:
+      Name: //h1[contains(@class, "title") or contains(text(), "パッケージ")]/text()
+      Date:
+        selector: //td[contains(text(), "DVD 発売") or contains(text(), "発売")]/following-sibling::td[1]/text()
+        postProcess:
+          - replace:
+              - regex: "([0-9]{4}) 年 ([0-9]{1,2}) 月"
+                with: $1-$2-01
+          - javascript: |
+              var p = value.split("-");
+              if (p.length >= 2) {
+                return p[0] + "-" + ("0" + p[1]).slice(-2) + "-" + (p[2] ? ("0" + p[2]).slice(-2) : "01");
+              }
+              return value;
+      Synopsis:
+        selector: //div[contains(@class, "description") or contains(@class, "detail")]//text()
+        concat: "\n"
+      FrontImage:
+        - //img[contains(@src, "/picture/parent/") and contains(@src, "_3.jpg")]/@src
+        - //img[contains(@src, "/picture/")]/@src
+      Studio:
+        Name:
+          selector: //td[contains(text(), "レーベル")]/following-sibling::td[1]/text()
+          postProcess:
+            - trim
+      Tags:
+        Name:
+          selector: //td[contains(text(), "プレイ")]/following-sibling::td[1]/text()
+          postProcess:
+            - trim
+          split: "、"
+      Performers:
+        Name:
+          selector: //td[contains(text(), "モデル")]/following-sibling::td[1]/text()
+          postProcess:
+            - trim
+          split: "、"
+      URLs:
+        - fixed: "{inputURL}"
+        - //a[contains(@href, "ko-video.com")]/@href
+      Scenes:
+        Title: //a[contains(@href, "/product/index2/")]/text()
+        URL: //a[contains(@href, "/product/index2/")]/@href
+# Last Updated August 28, 2026
