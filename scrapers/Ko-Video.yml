@@ -1,11 +1,12 @@
 # KO Video — sceneByURL + search scraper
+# Public CDP version: driver.useCDP: true; no driver.cookies.
 # Search verification: selectors checked against rendered search DOM
-#   https://ko-video.com/products/list.php?name=雄穴
+#   https://ko-video.com/products/list.php?mode=search&name=雄穴
 #   (2026-08-27 snapshot). sceneByURL still UNVERIFIED against live detail pages.
 #
-# Public CDP version: this site uses age-gate / login, so driver.useCDP: true;
-# no driver.cookies (browser session carries cookies).
+# This site uses age-gate / login. Public CDP version requires browser session.
 # See: skills/stash-scraper-builder/references/scraping-failures.md
+# Last Updated: 2026-08-28
 
 name: KO Video
 
@@ -18,7 +19,7 @@ sceneByURL:
 
 sceneByName:
   action: scrapeXPath
-  queryURL: https://ko-video.com/products/list.php?name={}
+  queryURL: "https://ko-video.com/products/list.php?mode=search&name={}"
   scraper: searchScraper
 
 sceneByQueryFragment:
@@ -28,7 +29,7 @@ sceneByQueryFragment:
 
 sceneByFragment:
   action: scrapeXPath
-  queryURL: https://ko-video.com/products/list.php?name={title}
+  queryURL: "https://ko-video.com/products/list.php?mode=search&name={title}"
   queryURLReplace:
     title:
       - regex: '\.[^.]+$'
@@ -93,7 +94,7 @@ xPathScrapers:
 
     scene:
       Title:
-        selector: //div[contains(@class,'detail_main_col')]//div[@class='title_bar'][1]/h2[1]/text()
+        selector: //div[contains(@class,'detail_main_col')]//div[@class='title_bar'][1]/h2[1]/text() | //title
         postProcess:
           - replace:
               - regex: '^\s+|\s+$'
@@ -141,8 +142,8 @@ xPathScrapers:
                 if (!v) return "";
                 var n = v.replace(/\s+/g, ' ').trim();
                 if (!n) return "";
-                n = n.replace(/\s*[（(][぀-ゟ゠-ンー]+[)）]\s*/gu, '');
-                var kanaLead = n.match(/^[぀-ゟ゠-ンー]+\s+(.+)$/u);
+                n = n.replace(/\s*[（(][぀-ゟ゠-ハー]+[)）]\s*/gu, '');
+                var kanaLead = n.match(/^[぀-ゟ゠-ハー]+\s+(.+)$/u);
                 if (kanaLead) n = kanaLead[1].trim();
                 var mixed = n.match(/^([^\x00-\x7F]+)\s+[A-Za-z\s]+$/u);
                 if (mixed) n = mixed[1].trim();
