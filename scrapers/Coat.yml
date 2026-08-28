@@ -1,4 +1,3 @@
-# Last Updated: 2026-08-28
 # CLUB CK / COAT (coat.co.jp) — public CDP version.
 # Verification status: UNVERIFIED against live Stash.
 # SAMPLE1 (product_id=3264) confirmed:
@@ -23,6 +22,7 @@
 #   Details intro blurb only; cut numbered 1.〈 scene list
 #   Tags    category chips; keep イケメン/アイドル as one tag
 # Search does not paginate. Stash only sees the first result page.
+# Last Updated: 2026-08-28
 
 name: COAT
 
@@ -42,6 +42,21 @@ sceneByQueryFragment:
   action: scrapeXPath
   queryURL: "{url}"
   scraper: sceneScraper
+
+sceneByFragment:
+  action: scrapeXPath
+  queryURL: "https://www.coat.co.jp/products/list.php?mode=search&name={title}"
+  queryURLReplace:
+    title:
+      - regex: '\.[^.]+$'
+        with: ''
+      - regex: '[_\.]+'
+        with: ' '
+      - regex: '\s{2,}'
+        with: ' '
+      - regex: '^\s+|\s+$'
+        with: ''
+  scraper: searchScraper
 
 xPathScrapers:
   searchScraper:
@@ -94,7 +109,7 @@ xPathScrapers:
 
     scene:
       Title:
-        selector: "//h2[contains(@class,'margin-none')][normalize-space()] | $jacket//img/@alt"
+        selector: "//h2[contains(@class,'margin-none')][normalize-space()] | $jacket//img/@alt | //title"
         postProcess:
           - replace:
               - regex: "\\s{2,}"
@@ -168,7 +183,7 @@ xPathScrapers:
               v = v.replace(/[ \t]+\n/g, "\n");
               v = v.replace(/^\s*商品説明\s*/g, "");
               v = v.replace(/\n\s*\d+[..？]?\s*[〈【][\s\S]*$/, "");
-              v = v.replace(/\n?\s*販売価格[\s\S]*$/, "");
+              v = v.replace(/\n?\s*販売價格[\s\S]*$/, "");
               v = v.replace(/\n{3,}/g, "\n\n");
               return v.replace(/^\s+|\s+$/g, "");
 
