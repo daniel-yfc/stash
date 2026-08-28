@@ -1,0 +1,88 @@
+name: Bravo-Japan
+sceneByURL:
+  - action: scrapeXPath
+    url:
+      - bravo-japan.com/dvds/
+      - bravo-japan.com/clips/
+    scraper: sceneScraper
+groupByURL:
+  - action: scrapeXPath
+    url:
+      - bravo-japan.com/dvds/
+    scraper: groupScraper
+xPathScrapers:
+  sceneScraper:
+    scene:
+      Title: //h2[1]
+      Code:
+        selector: //div[contains(text(), "品番")]/following-sibling::div[1]//text()
+        postProcess:
+          - trim
+          - replace:
+              - regex: "^(BR|BW)-?"
+                with: ""
+        fixed: "BR-{result}"
+      Date:
+        selector: //div[contains(text(), "発売日")]/following-sibling::div[1]//text()
+        postProcess:
+          - replace:
+              - regex: "([0-9]{4}) 年 ([0-9]{1,2}) 月 ([0-9]{1,2}) 日"
+                with: $1-$2-$3
+          - javascript: |
+              var p = value.split("-");
+              if (p.length >= 2) {
+                return p[0] + "-" + ("0" + p[1]).slice(-2) + "-" + (p[2] ? ("0" + p[2]).slice(-2) : "01");
+              }
+              return value;
+      Details:
+        selector: //div[contains(@class, "description") or contains(@class, "detail")]//text()
+        concat: "\n"
+      Image:
+        - //img[contains(@src, "static.wixstatic.com")]/@src
+        - //meta[@property="og:image"]/@content
+      Studio:
+        Name:
+          selector: //div[contains(text(), "レーベル")]/following-sibling::div[1]//text()
+          postProcess:
+            - trim
+      URLs:
+        - fixed: "{inputURL}"
+        - //a[contains(@href, "hunk-ch.com") or contains(@href, "ko-tube.com") or contains(@href, "ck-download.com") or contains(@href, "mensrush.tv") or contains(@href, "stamen.tv")]/@href
+      Groups:
+        Name: //h2[1]
+  groupScraper:
+    group:
+      Name: //h2[1]
+      Date:
+        selector: //div[contains(text(), "発売日")]/following-sibling::div[1]//text()
+        postProcess:
+          - replace:
+              - regex: "([0-9]{4}) 年 ([0-9]{1,2}) 月 ([0-9]{1,2}) 日"
+                with: $1-$2-$3
+          - javascript: |
+              var p = value.split("-");
+              if (p.length >= 2) {
+                return p[0] + "-" + ("0" + p[1]).slice(-2) + "-" + (p[2] ? ("0" + p[2]).slice(-2) : "01");
+              }
+              return value;
+      Duration:
+        selector: //div[contains(text(), "収録時間")]/following-sibling::div[1]//text()
+        postProcess:
+          - replace:
+              - regex: "([0-9]+)"
+                with: $1:00
+      Synopsis:
+        selector: //div[contains(@class, "description") or contains(@class, "detail")]//text()
+        concat: "\n"
+      FrontImage:
+        - //img[contains(@src, "static.wixstatic.com")]/@src
+        - //meta[@property="og:image"]/@content
+      Studio:
+        Name:
+          selector: //div[contains(text(), "レーベル")]/following-sibling::div[1]//text()
+          postProcess:
+            - trim
+      URLs:
+        - fixed: "{inputURL}"
+        - //a[contains(@href, "hunk-ch.com") or contains(@href, "ko-tube.com") or contains(@href, "ck-download.com") or contains(@href, "mensrush.tv") or contains(@href, "stamen.tv")]/@href
+# Last Updated August 28, 2026
