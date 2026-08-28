@@ -1,87 +1,138 @@
+# Last Updated: 2026-08-28
+# Bravo-Japan (bravo-japan.com) — public CDP version.
+# Verification status: UNVERIFIED against live Stash.
+# Add sceneByFragment for runtime safety.
+
 name: Bravo-Japan
-id: bravo-japan
+
 sceneByURL:
   - action: scrapeXPath
     url:
-      - bravo-japan.com/dvds/
-      - bravo-japan.com/clips/
+      - "bravo-japan.com/"
+      - "www.bravo-japan.com/"
     scraper: sceneScraper
-groupByURL:
-  - action: scrapeXPath
-    url:
-      - bravo-japan.com/dvds/
-    scraper: groupScraper
+
+sceneByQueryFragment:
+  action: scrapeXPath
+  queryURL: "{url}"
+  scraper: sceneScraper
+
+sceneByFragment:
+  action: scrapeXPath
+  scraper: sceneScraper
+
 xPathScrapers:
   sceneScraper:
+    common:
+      $main: "//div[@id='main']"
+
     scene:
-      Title: //h2[1]
-      Code:
-        selector: //div[contains(text(), "品番")]/following-sibling::div[1]//text()
+      Title:
+        selector: "//h1[@id='title'] | //h1[contains(@class,'product_title')]"
         postProcess:
-          - trim
           - replace:
-              - regex: "^(BR|BW)-?"
+              - regex: "\\s{2,}"
+                with: " "
+              - regex: "^\\s+|\\s+$"
                 with: ""
-      Date:
-        selector: //div[contains(text(), "発売日")]/following-sibling::div[1]//text()
+
+      Code:
+        selector: "//div[contains(@class,'product_code')] | //p[contains(.,'商品コード')]"
         postProcess:
-          - replace:
-              - regex: "([0-9]{4}) 年 ([0-9]{1,2}) 月 ([0-9]{1,2}) 日"
-                with: $1-$2-$3
           - javascript: |
-              var p = value.split("-");
-              if (p.length >= 2) {
-                return p[0] + "-" + ("0" + p[1]).slice(-2) + "-" + (p[2] ? ("0" + p[2]).slice(-2) : "01");
+              var v = value || "";
+              var m = v.match(/([A-Z]{2,}\d{3,})/i);
+              return m ? m[1].toUpperCase() : "";
+
+      URLs:
+        selector: "//link[@rel='canonical']/@href | //meta[@property='og:url']/@content"
+        concat: "\n"
+        postProcess:
+          - javascript: |
+              var seen = {};
+              var out = [];
+              function add(u) {
+                u = (u || "").replace(/^\s+|\s+$/g, "");
+                if (!u) return;
+                u = u.replace(/^\/\//, "https://");
+                u = u.replace(/^http:\/\//i, "https://");
+                if (u.indexOf("http") !== 0) {
+                  if (u.charAt(0) !== "/") return;
+                  u = "https://bravo-japan.com" + u;
+                }
+                if (seen[u]) return;
+                seen[u] = true;
+                out.push(u);
               }
-              return value;
+              (value || "").split(/\n/).forEach(add);
+              return out.join("\n");
+        split: "\n"
+
+      Date:
+        selector: "//div[contains(@class,'release_date')] | //p[contains(.,'発売日')]"
+        postProcess:
+          - javascript: |
+              var v = value || "";
+              if (!v) return "";
+              var m = v.match(/(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日/);
+              if (!m) m = v.match(/(\d{4})[.\/\-](\d{1,2})[.\/\-](\d{1,2})/);
+              if (!m) return "";
+              var mm = ("0" + m[2]).slice(-2);
+              var dd = ("0" + m[3]).slice(-2);
+              return m[1] + "-" + mm + "-" + dd;
+          - parseDate: "2006-01-02"
+
       Details:
-        selector: //div[contains(@class, "description") or contains(@class, "detail")]//text()
+        selector: "$main//div[contains(@class,'description')]//text()[normalize-space()] | $main//p[contains(@class,'comment')]//text()[normalize-space()]"
         concat: "\n"
-      Image:
-        - //img[contains(@src, "static.wixstatic.com")]/@src
-        - //meta[@property="og:image"]/@content
-      Studio:
-        Name:
-          selector: //div[contains(text(), "レーベル")]/following-sibling::div[1]//text()
-          postProcess:
-            - trim
-      URLs:
-        - fixed: "{inputURL}"
-        - //a[contains(@href, "hunk-ch.com") or contains(@href, "ko-tube.com") or contains(@href, "ck-download.com") or contains(@href, "mensrush.tv") or contains(@href, "stamen.tv")]/@href
-      Groups:
-        Name: //h2[1]
-  groupScraper:
-    group:
-      Name: //h2[1]
-      Date:
-        selector: //div[contains(text(), "発売日")]/following-sibling::div[1]//text()
         postProcess:
-          - replace:
-              - regex: "([0-9]{4}) 年 ([0-9]{1,2}) 月 ([0-9]{1,2}) 日"
-                with: $1-$2-$3
           - javascript: |
-              var p = value.split("-");
-              if (p.length >= 2) {
-                return p[0] + "-" + ("0" + p[1]).slice(-2) + "-" + (p[2] ? ("0" + p[2]).slice(-2) : "01");
-              }
-              return value;
-      Duration:
-        selector: //div[contains(text(), "収録時間")]/following-sibling::div[1]//text()
+              var v = value || "";
+              v = v.replace(/\r\n/g, "\n");
+              v = v.replace(/[ \t]+\n/g, "\n");
+              v = v.replace(/^\s*商品説明\s*/g, "");
+              v = v.replace(/\n{3,}/g, "\n\n");
+              return v.replace(/^\s+|\s+$/g, "");
+
+      Image:
+        selector: "//div[@id='detail_image']//img/@src | //meta[@property='og:image']/@content"
         postProcess:
-          - replace:
-              - regex: "([0-9]+)"
-                with: $1:00
-      Synopsis:
-        selector: //div[contains(@class, "description") or contains(@class, "detail")]//text()
-        concat: "\n"
-      FrontImage:
-        - //img[contains(@src, "static.wixstatic.com")]/@src
-        - //meta[@property="og:image"]/@content
+          - javascript: |
+              var v = value || "";
+              if (!v) return "";
+              v = v.replace(/\?.*$/, "");
+              v = v.replace(/^\/\//, "https://");
+              v = v.replace(/^http:\/\//i, "https://");
+              if (/^https?:/i.test(v)) return v;
+              if (v.charAt(0) === "/") return "https://bravo-japan.com" + v;
+              return "https://bravo-japan.com/" + v;
+
       Studio:
         Name:
-          selector: //div[contains(text(), "レーベル")]/following-sibling::div[1]//text()
+          selector: "//div[contains(@class,'maker')]//a | //p[contains(.,'メーカー')]//a"
           postProcess:
-            - trim
-      URLs:
-        - fixed: "{inputURL}"
-        - //a[contains(@href, "hunk-ch.com") or contains(@href, "ko-tube.com") or contains(@href, "ck-download.com") or contains(@href, "mensrush.tv") or contains(@href, "stamen.tv")]/@href
+            - replace:
+                - regex: "^\\s+|\\s+$"
+                  with: ""
+
+      Tags:
+        Name:
+          selector: "$main//div[contains(@class,'category')]//a | $main//p[contains(@class,'tag')]//a"
+          postProcess:
+            - replace:
+                - regex: "^\\s+|\\s+$"
+                  with: ""
+
+      Performers:
+        Name:
+          selector: "$main//div[contains(@class,'actor')]//a | $main//p[contains(.,'出演者')]//a"
+          postProcess:
+            - replace:
+                - regex: "^\\s+|\\s+$"
+                  with: ""
+
+driver:
+  useCDP: true
+  headers:
+    - Key: User-Agent
+      Value: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36
