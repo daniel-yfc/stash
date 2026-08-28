@@ -23,7 +23,7 @@ Runtime model: https://deepwiki.com/stashapp/CommunityScrapers/
 
 ## Always-on rules
 
-- Return the **entire** YAML file. Never a diff, fragment, or “the rest is unchanged.”
+- Return the **entire** YAML file. Never a diff, fragment, or "the rest is unchanged."
 - Change only what the user asked. Do not reorder or rewrite unrelated blocks.
 - Explanations: English plus a short zh-TW orientation. Scraped values stay in the source language — do not translate titles, performers, dates, or details.
 - Do **not** emit root keys `name`, `documentHeader`, or `$vars`. The filename is the scraper name. `#` comments are allowed.
@@ -35,6 +35,17 @@ Runtime model: https://deepwiki.com/stashapp/CommunityScrapers/
 - Never invent `Groups` from シリーズ / レーベル unless the user explicitly wants that mapping.
 - `performerByFragment` cannot use `scrapeXPath` or `scrapeJson` (script only).
 - If the user asks for stash-box, say it is out of scope. Do not emit a partial `stash` / `stashServer` block.
+
+### Driver Configuration Rules (Mandatory)
+
+- **`driver.useCDP` is allowed only in the top-level `driver` block, never inside any entry point.** Entry points (`sceneByURL`, `sceneByName`, etc.) must not contain `useCDP`.
+- **Public scrapers must not contain `driver.cookies`.** Session cookies belong only in `scrapers/private/*.yml`.
+- **Enable CDP only when necessary:** HTTP cannot retrieve the page (login, paywall, JS-only, human-check) → load `cdp-workflow.md`. Otherwise leave CDP **off**.
+
+### Runtime Safety Rules
+
+- **Add `sceneByFragment` when the site supports fragment-based scraping.** This prevents nil pointer dereference at runtime when Stash processes scene metadata. See `references/scraping-failures.md` for details.
+- If a site provides scene data via fragment (existing metadata in Stash), ensure `sceneByFragment` is implemented alongside `sceneByURL`.
 
 ## Choose action
 
@@ -52,6 +63,7 @@ Cover every mode the site **verifiably** supports, and only those.
 - Do not invent a `queryURL`.
 - Search `queryURL` uses `{}`. Query-fragment `queryURL` uses `{url}`.
 - Search is optional. Do not add it just to pass a checklist. Do not mark a mode `VERIFIED` unless it was tested.
+- Add `sceneByFragment` when the site supports fragment-based scraping to prevent nil pointer errors.
 
 ## Output skeleton (mandatory shape)
 
@@ -85,15 +97,15 @@ xPathScrapers:
         Name: "$info//a[contains(@href,'/actor/')]"
 ```
 
-JSON equivalent: `action: scrapeJson` + `jsonScrapers:` (same `scraper:` name). Add `sceneByName` / `sceneByQueryFragment` / `performerByURL` / `groupByURL` only when verified.
+JSON equivalent: `action: scrapeJson` + `jsonScrapers:` (same `scraper:` name). Add `sceneByName` / `sceneByQueryFragment` / `performerByURL` / `groupByURL` only when verified. Add `sceneByFragment` when the site supports fragment-based scraping.
 
 ## Workflow
 
 1. **Inspect.** Real URL patterns, entity types, public vs gated, whether a real search exists, one live URL per mode.
 2. **Choose action and modes** (rules above).
-3. **Build.** Stable selectors; `common` + `$` keys; copy title / performer cleaning from references when needed.
+3. **Build.** Stable selectors; `common` + `$` keys; copy title / performer cleaning from references when needed. Ensure `driver.useCDP` (if needed) is in top-level `driver` block only.
 4. **Verify.** `$x("...")` or the real JSON path on a live page. Empty node = fail. If unverifiable, mark `# UNVERIFIED` and say so.
-5. **Validate.** Run `schema-checklist.md`. Schema wins over docs. Prefer the CommunityScrapers schema over the local stub.
+5. **Validate.** Run `schema-checklist.md`. Schema wins over docs. Prefer the CommunityScrapers schema over the local stub. Check driver configuration rules.
 6. **Emit.** Short English explanation + zh-TW one-liner; complete YAML; verification status; script install notes and/or CDP setup only when that path was used.
 
 ## Definition of done
@@ -101,8 +113,10 @@ JSON equivalent: `action: scrapeJson` + `jsonScrapers:` (same `scraper:` name). 
 - Validator passes (no schema / reference errors).
 - Output is a complete YAML file in the skeleton shape above.
 - Every **implemented** mode was tested on ≥ 3 real pages/queries, or selectors are marked `# UNVERIFIED`.
-- Key fields (Title, Date, Studio, Image) match expected values on tested pages — not merely “selector matched something.”
+- Key fields (Title, Date, Studio, Image) match expected values on tested pages — not merely "selector matched something."
 - No invented search modes, no root `name` / `documentHeader` / `$vars`, no translated scraped values.
+- Driver configuration follows rules: `useCDP` only in top-level `driver`, no `driver.cookies` in public scrapers.
+- `sceneByFragment` is present when the site supports fragment-based scraping.
 
 ## Troubleshooting
 
@@ -110,6 +124,7 @@ JSON equivalent: `action: scrapeJson` + `jsonScrapers:` (same `scraper:` name). 
 - **All fields empty** — `$x()` the selectors; check age-gate / interstitial; check `useCDP` / cookies. See `references/scraping-failures.md`.
 - **Only Date is nil** — raw string vs Go layout; `replace` before `parseDate`. See `references/date-formats.md` and `references/post-processing.md`.
 - **Studio or Details wrong** — do not use メーカー as studio when レーベル / シリーズ is the label; strip HTML from Details.
+- **Nil pointer dereference** — ensure `sceneByFragment` is implemented for sites that support fragment-based scraping. See `references/scraping-failures.md`.
 
 ## Data model reminders
 
@@ -128,6 +143,9 @@ JSON equivalent: `action: scrapeJson` + `jsonScrapers:` (same `scraper:` name). 
 - Using `YYYY-MM-DD` as a `parseDate` layout.
 - Overly deep or positional XPath (`div[3]`).
 - Translating scraped values.
+- Placing `useCDP` inside entry points instead of top-level `driver`.
+- Including `driver.cookies` in public scrapers.
+- Omitting `sceneByFragment` when the site supports fragment-based scraping.
 
 ## Load when needed
 
@@ -160,3 +178,4 @@ Canonical DeepWiki pages:
 - Testing: https://deepwiki.com/stashapp/CommunityScrapers/10.2-testing-scrapers
 - Best practices: https://deepwiki.com/stashapp/CommunityScrapers/10.3-best-practices
 - Scraping failures: https://deepwiki.com/stashapp/CommunityScrapers/11.2-scraping-failures
+- Driver configuration: https://deepwiki.com/stashapp/CommunityScrapers/8.4-driver-configuration
