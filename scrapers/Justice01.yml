@@ -1,36 +1,138 @@
+# Last Updated: 2026-08-28
+# Justice01 (justice01.jp) — public CDP version.
+# Verification status: UNVERIFIED against live Stash.
+# Add sceneByFragment for runtime safety.
+
 name: Justice01
-id: justice01
+
 sceneByURL:
   - action: scrapeXPath
     url:
-      - justice01.com/
+      - "justice01.jp/"
+      - "www.justice01.jp/"
     scraper: sceneScraper
-sceneByName:
+
+sceneByQueryFragment:
   action: scrapeXPath
-  queryURL: https://www.justice01.com/search.php?s={}&image=商品検索&fromSearch=on
-  scraper: sceneSearch
+  queryURL: "{url}"
+  scraper: sceneScraper
+
+sceneByFragment:
+  action: scrapeXPath
+  scraper: sceneScraper
+
 xPathScrapers:
-  sceneSearch:
-    common:
-      $item: //div[contains(@class, "item") or contains(@class, "product")]
-    scene:
-      Title: $item//h3//text()
-      URL: $item//a/@href
-      Image: $item//img/@src
   sceneScraper:
+    common:
+      $main: "//div[@id='main']"
+
     scene:
-      Title: //h2//text()
-      Details:
-        selector: //div[contains(@class, "content")]//text()
+      Title:
+        selector: "//h1[@id='title'] | //h1[contains(@class,'product_title')]"
+        postProcess:
+          - replace:
+              - regex: "\\s{2,}"
+                with: " "
+              - regex: "^\\s+|\\s+$"
+                with: ""
+
+      Code:
+        selector: "//div[contains(@class,'product_code')] | //p[contains(.,'商品コード')]"
+        postProcess:
+          - javascript: |
+              var v = value || "";
+              var m = v.match(/([A-Z]{2,}\d{3,})/i);
+              return m ? m[1].toUpperCase() : "";
+
+      URLs:
+        selector: "//link[@rel='canonical']/@href | //meta[@property='og:url']/@content"
         concat: "\n"
+        postProcess:
+          - javascript: |
+              var seen = {};
+              var out = [];
+              function add(u) {
+                u = (u || "").replace(/^\s+|\s+$/g, "");
+                if (!u) return;
+                u = u.replace(/^\/\//, "https://");
+                u = u.replace(/^http:\/\//i, "https://");
+                if (u.indexOf("http") !== 0) {
+                  if (u.charAt(0) !== "/") return;
+                  u = "https://justice01.jp" + u;
+                }
+                if (seen[u]) return;
+                seen[u] = true;
+                out.push(u);
+              }
+              (value || "").split(/\n/).forEach(add);
+              return out.join("\n");
+        split: "\n"
+
+      Date:
+        selector: "//div[contains(@class,'release_date')] | //p[contains(.,'発売日')]"
+        postProcess:
+          - javascript: |
+              var v = value || "";
+              if (!v) return "";
+              var m = v.match(/(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日/);
+              if (!m) m = v.match(/(\d{4})[.\/\-](\d{1,2})[.\/\-](\d{1,2})/);
+              if (!m) return "";
+              var mm = ("0" + m[2]).slice(-2);
+              var dd = ("0" + m[3]).slice(-2);
+              return m[1] + "-" + mm + "-" + dd;
+          - parseDate: "2006-01-02"
+
+      Details:
+        selector: "$main//div[contains(@class,'description')]//text()[normalize-space()] | $main//p[contains(@class,'comment')]//text()[normalize-space()]"
+        concat: "\n"
+        postProcess:
+          - javascript: |
+              var v = value || "";
+              v = v.replace(/\r\n/g, "\n");
+              v = v.replace(/[ \t]+\n/g, "\n");
+              v = v.replace(/^\s*商品説明\s*/g, "");
+              v = v.replace(/\n{3,}/g, "\n\n");
+              return v.replace(/^\s+|\s+$/g, "");
+
       Image:
-        - //img[contains(@src, "/wp-content/")]/@src
-        - //meta[@property="og:image"]/@content
+        selector: "//div[@id='detail_image']//img/@src | //meta[@property='og:image']/@content"
+        postProcess:
+          - javascript: |
+              var v = value || "";
+              if (!v) return "";
+              v = v.replace(/\?.*$/, "");
+              v = v.replace(/^\/\//, "https://");
+              v = v.replace(/^http:\/\//i, "https://");
+              if (/^https?:/i.test(v)) return v;
+              if (v.charAt(0) === "/") return "https://justice01.jp" + v;
+              return "https://justice01.jp/" + v;
+
       Studio:
-        Name: "Justice"
+        Name:
+          selector: "//div[contains(@class,'maker')]//a | //p[contains(.,'メーカー')]//a"
+          postProcess:
+            - replace:
+                - regex: "^\\s+|\\s+$"
+                  with: ""
+
       Tags:
         Name:
-          - //a[@rel="category tag"]//text()
-          - //a[contains(@href, "/tag/")]//text()
-      URLs:
-        - fixed: "{inputURL}"
+          selector: "$main//div[contains(@class,'category')]//a | $main//p[contains(@class,'tag')]//a"
+          postProcess:
+            - replace:
+                - regex: "^\\s+|\\s+$"
+                  with: ""
+
+      Performers:
+        Name:
+          selector: "$main//div[contains(@class,'actor')]//a | $main//p[contains(.,'出演者')]//a"
+          postProcess:
+            - replace:
+                - regex: "^\\s+|\\s+$"
+                  with: ""
+
+driver:
+  useCDP: true
+  headers:
+    - Key: User-Agent
+      Value: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36
