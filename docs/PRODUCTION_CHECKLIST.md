@@ -1,84 +1,168 @@
-# 檢查清單
+# Production Checklist
 
-> 版本：v1.1｜日期：2026-08-2７
-> 適用：本儲存庫當中 'scrapers/*.yml' 以及所有開發中的 scarpers
+> **刮削器生產就檢清單。** 本文件聚焦於業務邏輯和內容品質檢核。
+
+## 技術檢核
+
+**請先完成技術檢核：** [`SCRAPER_QUALITY_GATE.md`](./SCRAPER_QUALITY_GATE.md)
+
+技術檢核包含：
+- 5 條規則預檢（name, useCDP, cookies, sceneByFragment, Last Updated）
+- Schema 驗證
+- CI/CD workflow
+- 自動化腳本
 
 ---
 
-## 快速檢查
+## A-H Workstream 業務檢核
 
-執行自動化驗證：
-```bash
-chmod +x scripts/validate-scrapers.sh
-./scripts/validate-scrapers.sh
-```
+### Workstream A: Entry Contract
+
+- [ ] 完整的 YAML 輸出（非片段）
+- [ ] 必要的 `sceneByURL[].action/url/scraper` 骨架
+- [ ] 未發明搜尋模式
+- [ ] 無 root `name`, `documentHeader`, `$vars`（技術檢核已覆蓋）
+
+### Workstream B+C: Templates & Dates
+
+- [ ] `scrapeJson` 定義僅在 `jsonScrapers`
+- [ ] `parseDate` 使用 Go reference time (`2006-01-02`)
+- [ ] `sceneByQueryFragment.queryURL` 使用 `{url}`
+
+### Workstream D: Validation
+
+- [ ] 官方 CommunityScrapers schema 為權威
+- [ ] Cookie/CDP 設定文件化
+- [ ] `url` 陣列按 A-Z 排序（`validator -s`）
+
+### Workstream E: Runtime Modes
+
+- [ ] CDP: 官方設定路徑，可見 Chrome
+- [ ] Script: I/O contract, `# requires:`, 錯誤處理
+- [ ] Failures: HTTP status → UA/CDP diagnosis
+
+### Workstream F: Field Quality
+
+- [ ] Title cleaning: tags → extension → whitespace → trim
+- [ ] Performer names: canonical JS, preserve `・` / `-`
+- [ ] 預設 `Gender`: 省略
+
+### Workstream G: Structure & Community Form
+
+- [ ] YAML anchors (3+ reuse)
+- [ ] `# Last Updated YYYY-MM-DD` at EOF（技術檢核已覆蓋）
+- [ ] CamelCase 檔名
+- [ ] `url` sorted A-Z
+- [ ] 無 `subScraper` by default
+
+### Workstream H: Regression Gate
+
+- [ ] Eval pack 5 tasks (XPath/JSON/Script/Date/CDP)
+- [ ] Test matrix: 6 scenarios + network 3–5 domains
+- [ ] Expected vs Actual verification
 
 ---
 
-## 詳細檢查清單
+## 內容品質檢核
 
-### 1. 基本結構
+### 欄位準確性
 
-- [ ] 使用 `sceneByURL` 作為主要入口
-- [ ] `url` 使用陣列格式（非字串）
-- [ ] `url` 陣列按字母 A–Z 排序
-- [ ] root `name` 欄位（若無，則以檔名作為`name`）
-- [ ] 無 `documentHeader` 或 `$vars`
-- [ ] 若有 `sceneByName`，必須同時有 `sceneByQueryFragment`
+- [ ] **Title** - 無多餘空格、標籤、網站名稱
+- [ ] **Date** - 格式正確 (YYYY-MM-DD)，非上傳日期
+- [ ] **Studio** - 正確的 label（非製造商）
+- [ ] **Performers** - 正確的漢字/假名，無重複
+- [ ] **Tags** - 有意義的分類，無重複
+- [ ] **Details** - 無 HTML、無場景列表、無價格資訊
+- [ ] **Image** - 高解析度封面，非縮圖
+- [ ] **Code** - 符合網站格式
 
-### 2. Selector 穩定性
+### 網站特定規則
 
-- [ ] 使用 `common:` 區塊，鍵名以 `$` 開頭（如 `$info`）
-- [ ] 無 common-to-common 引用
-- [ ] 優先使用屬性選擇器（`@id`, `@itemprop`, `@data-*`）
-- [ ] 避免位置索引（`div[3]`），改用文字或屬性錨點
-- [ ] 已用 DevTools `$x()` 驗證所有 selector
+- [ ] 遵循網站的 label/studio 區分
+- [ ] 正確的 performer 來源（從網站刮取，非 invented）
+- [ ] 正確的 tag 分類（符合網站結構）
+- [ ] Details 內容完整但精簡（去除冗餘）
 
-### 3. 日期處理  
+### 多 URL 處理
 
-- [ ] `parseDate` 使用 Go 參考時間格式（如 `"2006-01-02"`）
-- [ ] `replace` 在 `parseDate` 之前（處理 `&nbsp;`、空白）
-- [ ] 日期格式與網站實際輸出匹配
-- [ ] 若網站有時區，已處理或註明
+- [ ] 跨網站 URL 正確（hunk-ch, ko-tube, mensrush 等）
+- [ ] URL 格式正確（https, 無多餘參數）
+- [ ] 無重複 URL
+- [ ] 排序正確（A-Z）
 
-### 4. 標題清洗  
+---
 
-- [ ] 依序套用：括號標籤 → 副檔名 → 折疊空白 → trim
-- [ ] 保留真實標題括號（如 `【系列】`）
-- [ ] 未使用貪婪 `.*`
+## 測試驗證
 
-### 5. Performer 處理 
+### 基本測試
 
-- [ ] 使用 canonical JavaScript（不修改邏輯）
-- [ ] 保留 `・` 和 `-` 符號
-- [ ] 無明確性別欄位時，不寫 `Gender` 或用 `fixed` 並註明原因
+- [ ] 至少測試 3 個真實 URL
+- [ ] 所有必要欄位正確
+- [ ] 無空值或錯誤資料
+- [ ] 標註驗證狀態（`VERIFIED` / `UNVERIFIED`）
 
-### 6. 結構與最佳實踐  
+### 進階測試
 
-- [ ] 檔名為 CamelCase（如 `KoVideo.yml`）
-- [ ] 檔尾有 `# Last Updated: YYYY-MM-DD`
-- [ ] 若有 `subScraper`，已評估 rate limit 風險
-- [ ] 若有多個網站共用模板，考慮網路刮削器模式
+- [ ] 搜尋功能正常（如果有 sceneByName）
+- [ ] Fragment 處理正確（如果有 sceneByFragment）
+- [ ] Group/scene 關係正確（如果有 groupByURL）
+- [ ] 多語言處理正確（日文、中文、英文）
 
-### 7. 驗證  
+---
 
-- [ ] 已通過官方 validator：
-  ```bash
-  deno run -R=scrapers -R=validator/scraper.schema.json validator/index-zh-TW.mjs scrapers/YourScraper.yml
-  ```
-- [ ] 無 CookieURL/useCDP 衝突
-- [ ] 無 `performerByFragment` 使用 `scrapeXPath` 或 `scrapeJson`
+## 文件完整性
 
-### 8. 執行 
+- [ ] `# Last Updated` 日期正確（技術檢核已覆蓋）
+- [ ] 驗證狀態標註清楚
+- [ ] 測試 URL 記錄完整
+- [ ] 已知問題記錄在註解中
+- [ ] CDP setup 說明（如果需要）
 
-- [ ] 若有 `driver.clicks`，使用 `xpath` 欄位（非 `selector`）
-- [ ] 若有 `useCDP: true`，已附可見 Chrome 設定步驟
-- [ ] 若有 403 問題，已設定 `driver.headers` 或 Stash UA
+---
 
-### 9. 測試 
+## 安全性檢核
 
-- [ ] 已測試 3+ 個真實的 URL 
-- [ ] 驗證 Title/Date/Studio/Image/Details 符合預期值
-- [ ] 所有 selector 已驗證或標記 `# UNVERIFIED` 並註明原因
-4. 在真實網站測試 3+ URL
-5. 提交 PR 到 CommunityScrapers（可選）
+- [ ] Public scraper 無 session tokens
+- [ ] 無硬編碼的 credentials
+- [ ] CDP 配置正確（如果需要）
+- [ ] 無敏感資訊洩漏
+
+---
+
+## 最終確認
+
+在合併到 main branch 前，確認：
+
+- [ ] **技術檢核** 通過（參見 [`SCRAPER_QUALITY_GATE.md`](./SCRAPER_QUALITY_GATE.md)）
+- [ ] **業務檢核** 通過（本文件）
+- [ ] **內容品質** 通過（本文件）
+- [ ] **測試驗證** 通過（本文件）
+- [ ] **文件完整性** 通過（本文件）
+- [ ] **安全性檢核** 通過（本文件）
+
+---
+
+## 相關文件
+
+- [`SCRAPER_QUALITY_GATE.md`](./SCRAPER_QUALITY_GATE.md) - 技術檢核完整流程
+- [`AGENTS.md`](../AGENTS.md) - AI agent 規則
+- [`skills/stash-scraper-builder/SKILL.md`](../skills/stash-scraper-builder/SKILL.md) - Skill 定義
+- [`skills/stash-scraper-builder/references/`](../skills/stash-scraper-builder/references/) - 參考文件
+- [`validator/index-zh-TW.mjs`](../validator/index-zh-TW.mjs) - 驗證器
+
+---
+
+## 使用流程
+
+1. **本地開發** → 完成 scraper 編寫
+2. **技術檢核** → 執行 `bash scripts/scraper-quality-gate.sh scrapers/YourScraper.yml`
+3. **業務檢核** → 使用本文件檢查 A-H workstream 和內容品質
+4. **測試驗證** → 在 Stash 中測試真實 URL
+5. **文件更新** → 更新 `# Last Updated` 和驗證狀態
+6. **CI/CD** → Push 到 GitHub，等待 workflow 通過
+7. **合併** → 合併到 main branch
+
+---
+
+**版本：** 2026-08-28  
+**維護者：** Stash Scraper Builder Team
