@@ -1,0 +1,104 @@
+name: Scraper Quality Gate
+
+on:
+  push:
+    paths:
+      - 'scrapers/**/*.yml'
+      - 'scrapers/*.yml'
+      - 'validator/**'
+      - 'scripts/scraper-quality-gate.sh'
+      - 'skills/stash-scraper-builder/references/scraper.schema.json'
+  pull_request:
+    paths:
+      - 'scrapers/**/*.yml'
+      - 'scrapers/*.yml'
+      - 'validator/**'
+      - 'scripts/scraper-quality-gate.sh'
+      - 'skills/stash-scraper-builder/references/scraper.schema.json'
+
+jobs:
+  quality-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+
+      - name: Make scripts executable
+        run: chmod +x scripts/scraper-quality-gate.sh
+
+      - name: Get changed scraper files
+        id: changed-scrapers
+        uses: tj-actions/changed-files@v41
+        with:
+          files: |
+            scrapers/*.yml
+            scrapers/**/*.yml
+
+      - name: Run Quality Gate on changed scrapers
+        if: steps.changed-scrapers.outputs.any_changed == 'true'
+        run: |
+          echo "=== Running Scraper Quality Gate ==="
+          echo ""
+          
+          # Get list of changed scraper files
+          CHANGED_SCRAPERS="${{ steps.changed-scrapers.outputs.all_changed_files }}"
+          
+          if [ -z "$CHANGED_SCRAPERS" ]; then
+            echo "No scraper files changed"
+            exit 0
+          fi
+          
+          echo "Changed scrapers:"
+          echo "$CHANGED_SCRAPERS"
+          echo ""
+          
+          FAILED=0
+          for scraper in $CHANGED_SCRAPERS; do
+            echo "======================================"
+            echo "Processing: $scraper"
+            echo "======================================"
+            
+            if bash scripts/scraper-quality-gate.sh "$scraper"; then
+              echo ""
+              echo "✅ $scraper PASSED"
+            else
+              echo ""
+              echo "❌ $scraper FAILED"
+              FAILED=1
+            fi
+            echo ""
+          done
+          
+          if [ $FAILED -eq 1 ]; then
+            echo "======================================"
+            echo "   Quality Gate FAILED ❌"
+            echo "======================================"
+            echo ""
+            echo "Please fix the errors above and push again."
+            echo "See docs/SCRAPER_QUALITY_GATE.md for details."
+            exit 1
+          else
+            echo "======================================"
+            echo "   All scrapers PASSED ✅"
+            echo "======================================"
+          fi
+        
+      - name: Quality Gate Summary
+        if: always()
+        run: |
+          echo ""
+          echo "=== Quality Gate Summary ==="
+          echo ""
+          echo "Checked scrapers:"
+          echo "${{ steps.changed-scrapers.outputs.all_changed_files }}"
+          echo ""
+          echo "Documentation:"
+          echo "- Technical checks: docs/SCRAPER_QUALITY_GATE.md"
+          echo "- Business checks: docs/PRODUCTION_CHECKLIST.md"
+          echo "- Local testing: bash scripts/scraper-quality-gate.sh <scraper.yml>"
+          echo ""
