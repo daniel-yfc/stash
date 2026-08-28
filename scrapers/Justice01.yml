@@ -1,0 +1,27 @@
+name: Justice01
+id: justice01
+sceneByURL:
+  - action: scrapeXPath
+    url:
+      - justice01.com/
+    scraper: sceneScraper
+
+xPathScrapers:
+  sceneScraper:
+    scene:
+      Title:
+        - //h2//text()
+        - //h1//text()
+      Details:
+        - //div[contains(@class, "content")]//text()
+        - //article//text()
+        - //main//text()
+      Image:
+        - //img/@src
+      Studio:
+        Name: "Justice"
+      Tags:
+        Name:
+          - //a[@rel="category tag"]//text()
+          - //a[contains(@href, "/tag/")]//text()
+          - //a[contains(@href, "/category/")]//text()
