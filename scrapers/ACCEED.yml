@@ -1,0 +1,41 @@
+name: ACCEED
+sceneByURL:
+  - action: scrapeXPath
+    url:
+      - acceed.jp/detail.
+    scraper: sceneScraper
+sceneByName:
+  action: scrapeXPath
+  queryURL: https://acceed.jp/search.php?s={}&image=商品検索&fromSearch=on
+  scraper: sceneSearch
+xPathScrapers:
+  sceneSearch:
+    common:
+      $item: //dl[contains(@class, "item")]
+    scene:
+      Title: $item//dt//a/text()
+      URL: $item//dt//a/@href
+      Image: $item//img/@src
+  sceneScraper:
+    scene:
+      Title: //h1/text()
+      Code:
+        fixed: "{inputURL}"
+        postProcess:
+          - replace:
+              - regex: ".*detail\.([^.]+)\.html.*"
+                with: $1
+      Details: //div[contains(@class, "description") or contains(@class, "detail") or contains(@class, "comment")]//text()
+      Image:
+        - //meta[@property="og:image"]/@content
+        - //img[contains(@src, "pic_base/product/")]/@src
+      Studio:
+        Name: "ACCEED"
+      Tags:
+        Name:
+          - //a[contains(@href, "search.php") and contains(@href, "c=")]/text()
+      Performers:
+        Name:
+          - //a[contains(@href, "search.php") and contains(@href, "model=")]/text()
+      URLs:
+        - fixed: "{inputURL}"
