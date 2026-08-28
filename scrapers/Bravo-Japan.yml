@@ -1,4 +1,5 @@
 name: Bravo-Japan
+id: bravo-japan
 sceneByURL:
   - action: scrapeXPath
     url:
@@ -21,7 +22,6 @@ xPathScrapers:
           - replace:
               - regex: "^(BR|BW)-?"
                 with: ""
-        fixed: "BR-{result}"
       Date:
         selector: //div[contains(text(), "発売日")]/following-sibling::div[1]//text()
         postProcess:
@@ -85,4 +85,3 @@ xPathScrapers:
       URLs:
         - fixed: "{inputURL}"
         - //a[contains(@href, "hunk-ch.com") or contains(@href, "ko-tube.com") or contains(@href, "ck-download.com") or contains(@href, "mensrush.tv") or contains(@href, "stamen.tv")]/@href
-# Last Updated August 28, 2026

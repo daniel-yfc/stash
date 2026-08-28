@@ -1,4 +1,5 @@
 name: KO-Tube
+id: ko-tube
 sceneByURL:
   - action: scrapeXPath
     url:
@@ -114,4 +115,3 @@ xPathScrapers:
       Scenes:
         Title: //a[contains(@href, "/product/index2/")]/text()
         URL: //a[contains(@href, "/product/index2/")]/@href
-# Last Updated August 28, 2026

@@ -5,23 +5,32 @@ sceneByURL:
     url:
       - justice01.com/
     scraper: sceneScraper
-
+sceneByName:
+  action: scrapeXPath
+  queryURL: https://www.justice01.com/search.php?s={}&image=商品検索&fromSearch=on
+  scraper: sceneSearch
 xPathScrapers:
+  sceneSearch:
+    common:
+      $item: //div[contains(@class, "item") or contains(@class, "product")]
+    scene:
+      Title: $item//h3//text()
+      URL: $item//a/@href
+      Image: $item//img/@src
   sceneScraper:
     scene:
-      Title:
-        - //h2//text()
-        - //h1//text()
+      Title: //h2//text()
       Details:
-        - //div[contains(@class, "content")]//text()
-        - //article//text()
-        - //main//text()
+        selector: //div[contains(@class, "content")]//text()
+        concat: "\n"
       Image:
-        - //img/@src
+        - //img[contains(@src, "/wp-content/")]/@src
+        - //meta[@property="og:image"]/@content
       Studio:
         Name: "Justice"
       Tags:
         Name:
           - //a[@rel="category tag"]//text()
           - //a[contains(@href, "/tag/")]//text()
-          - //a[contains(@href, "/category/")]//text()
+      URLs:
+        - fixed: "{inputURL}"

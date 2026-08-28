@@ -1,4 +1,5 @@
 name: Games-Video
+id: games-video
 sceneByURL:
   - action: scrapeXPath
     url:
@@ -44,7 +45,7 @@ xPathScrapers:
         selector: //td[contains(., "日発売")]
         postProcess:
           - replace:
-              - regex: ".*?([0-9]{4})年([0-9]{1,2})月([0-9]{1,2})日.*"
+              - regex: ".*?([0-9]{4}) 年 ([0-9]{1,2}) 月 ([0-9]{1,2}) 日.*"
                 with: $1-$2-$3
           - javascript: |
               var p = value.split("-");
@@ -92,7 +93,7 @@ xPathScrapers:
         selector: //td[contains(., "日発売")]
         postProcess:
           - replace:
-              - regex: ".*?([0-9]{4})年([0-9]{1,2})月([0-9]{1,2})日.*"
+              - regex: ".*?([0-9]{4}) 年 ([0-9]{1,2}) 月 ([0-9]{1,2}) 日.*"
                 with: $1-$2-$3
           - javascript: |
               var p = value.split("-");
@@ -132,4 +133,3 @@ xPathScrapers:
       URLs:
         - fixed: "{inputURL}"
         - //a[contains(@href, "hunk-ch.com")]/@href
-# Last Updated August 28, 2026

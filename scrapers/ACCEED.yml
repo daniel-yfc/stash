@@ -1,4 +1,5 @@
 name: ACCEED
+id: acceed
 sceneByURL:
   - action: scrapeXPath
     url:
@@ -16,6 +17,12 @@ xPathScrapers:
       Title: $item//dt//a/text()
       URL: $item//dt//a/@href
       Image: $item//img/@src
+      Code:
+        selector: $item//dt//a/@href
+        postProcess:
+          - replace:
+              - regex: ".*detail\.([^.]+)\.html.*"
+                with: $1
   sceneScraper:
     scene:
       Title: //h1/text()
@@ -25,7 +32,21 @@ xPathScrapers:
           - replace:
               - regex: ".*detail\.([^.]+)\.html.*"
                 with: $1
-      Details: //div[contains(@class, "description") or contains(@class, "detail") or contains(@class, "comment")]//text()
+      Date:
+        selector: //div[contains(text(), "発売日") or contains(text(), "販売日")]/text()
+        postProcess:
+          - replace:
+              - regex: "([0-9]{4}) 年 ([0-9]{1,2}) 月 ([0-9]{1,2}) 日"
+                with: $1-$2-$3
+          - javascript: |
+              var p = value.split("-");
+              if (p.length >= 2) {
+                return p[0] + "-" + ("0" + p[1]).slice(-2) + "-" + (p[2] ? ("0" + p[2]).slice(-2) : "01");
+              }
+              return value;
+      Details:
+        selector: //div[contains(@class, "description") or contains(@class, "detail") or contains(@class, "comment")]//text()
+        concat: "\n"
       Image:
         - //meta[@property="og:image"]/@content
         - //img[contains(@src, "pic_base/product/")]/@src
