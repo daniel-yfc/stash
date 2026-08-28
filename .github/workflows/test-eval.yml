@@ -1,0 +1,82 @@
+name: Test Eval Workflow
+
+on:
+  workflow_dispatch:  # Manual trigger
+    inputs:
+      scraper_file:
+        description: 'Scraper file to test (e.g., ACCEED.yml)'
+        required: false
+        default: 'ACCEED.yml'
+        type: string
+
+jobs:
+  test-eval:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pyyaml
+
+      - name: Show workflow info
+        run: |
+          echo "🔍 Testing eval workflow"
+          echo "Scraper file: ${{ inputs.scraper_file || 'ACCEED.yml' }}"
+          echo ""
+          echo "📁 Directory structure:"
+          ls -la
+          echo ""
+          echo "📂 Scripts:"
+          ls -la scripts/
+          echo ""
+          echo "🧪 Tests:"
+          ls -la tests/
+
+      - name: Test eval-run.sh script
+        run: |
+          echo "🚀 Running eval-run.sh..."
+          cd scripts
+          bash eval-run.sh || echo "⚠️ eval-run.sh failed or not implemented yet"
+        continue-on-error: true
+
+      - name: Run Python tests
+        run: |
+          echo "🧪 Running Python tests..."
+          cd tests
+          python -m pytest . -v || echo "⚠️ Some tests failed"
+        continue-on-error: true
+
+      - name: Test validator
+        run: |
+          echo "🔍 Testing validator..."
+          cd validator
+          deno run --allow-read --allow-write index-zh-TW.mjs ../scrapers/${{ inputs.scraper_file || 'ACCEED.yml' }}
+        continue-on-error: true
+
+      - name: Summary
+        run: |
+          echo "✅ Test workflow completed!"
+          echo ""
+          echo "📊 Results:"
+          echo "- eval-run.sh: Tested (check logs above)"
+          echo "- Python tests: Tested (check logs above)"
+          echo "- Validator: Tested with ${{ inputs.scraper_file || 'ACCEED.yml' }}"
+          echo ""
+          echo "💡 Next steps:"
+          echo "1. Check the logs above for any errors"
+          echo "2. If all tests pass, eval.yml is working!"
+          echo "3. If tests fail, review the errors and fix them"
