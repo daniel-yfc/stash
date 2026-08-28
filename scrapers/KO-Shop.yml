@@ -1,10 +1,10 @@
 # KO Shop
+# Public CDP version: driver.useCDP: true; no driver.cookies.
 # Search URL verified 2026-08-27: /products/list.php?word=雄穴
 # → /products/detail.php?product_id=42743, 42707, 42727.
 # Card XPath UNVERIFIED ($x not run on list markup).
 # Detail selectors kept from product_id=40277 DOM.
 # Studio = シリーズ，not メーカー. No Groups from シリーズ.
-# Public CDP version: driver.useCDP: true; no driver.cookies.
 # Last Updated: 2026-08-28
 
 name: KO Shop
@@ -25,6 +25,21 @@ sceneByQueryFragment:
   action: scrapeXPath
   queryURL: "{url}"
   scraper: sceneScraper
+
+sceneByFragment:
+  action: scrapeXPath
+  queryURL: "https://www.ko-shop.com/products/list.php?word={title}"
+  queryURLReplace:
+    title:
+      - regex: '\.[^.]+$'
+        with: ''
+      - regex: '[_\.]+'
+        with: ' '
+      - regex: '\s{2,}'
+        with: ' '
+      - regex: '^\s+|\s+$'
+        with: ''
+  scraper: searchScraper
 
 xPathScrapers:
   searchScraper:
@@ -65,7 +80,7 @@ xPathScrapers:
       $meta: "//div[contains(concat(' ',normalize-space(@class),' '),' detail_product ')]//dl[1]"
     scene:
       Title:
-        selector: "//div[contains(concat(' ',normalize-space(@class),' '),' detail_product ')]//h2[1]"
+        selector: "//div[contains(concat(' ',normalize-space(@class),' '),' detail_product ')]//h2[1] | //title"
         postProcess:
           - replace:
               - regex: "^\\s+|\\s+$"
