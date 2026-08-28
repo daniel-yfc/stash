@@ -1,4 +1,5 @@
 # Men's Rush TV — sceneByURL + search scraper
+# Public CDP version: driver.useCDP: true; no driver.cookies.
 # Search verification: selectors checked against rendered search DOM
 #   https://www.mensrush.tv/list.php?keyword=雄穴
 #   (2026-08-27 snapshot; file is dominated by Font Awesome CSS).
@@ -6,9 +7,9 @@
 #   img/@alt is empty; title is in <p>.
 # sceneByURL still UNVERIFIED against live detail pages.
 #
-# Public CDP version: this site may use age-gate / login, so driver.useCDP: true;
-# no driver.cookies (browser session carries cookies).
+# This site may use age-gate / login. Public CDP version requires browser session.
 # See: skills/stash-scraper-builder/references/scraping-failures.md
+# Last Updated: 2026-08-28
 
 name: Men's Rush TV
 
@@ -21,7 +22,7 @@ sceneByURL:
 
 sceneByName:
   action: scrapeXPath
-  queryURL: https://www.mensrush.tv/list.php?keyword={}
+  queryURL: "https://www.mensrush.tv/list.php?keyword={}"
   scraper: searchScraper
 
 sceneByQueryFragment:
@@ -31,7 +32,7 @@ sceneByQueryFragment:
 
 sceneByFragment:
   action: scrapeXPath
-  queryURL: https://www.mensrush.tv/list.php?keyword={title}
+  queryURL: "https://www.mensrush.tv/list.php?keyword={title}"
   queryURLReplace:
     title:
       - regex: '\.[^.]+$'
@@ -92,7 +93,7 @@ xPathScrapers:
   sceneScraper:
     scene:
       Title:
-        selector: //div[@class='detail_title'][1]//h2[1]/text()
+        selector: //div[@class='detail_title'][1]//h2[1]/text() | //title
         postProcess:
           - replace:
               - regex: '^\s+|\s+$'
@@ -149,8 +150,8 @@ xPathScrapers:
                 var out = [];
                 var push = function(n) {
                   n = (n || '').trim().replace(/ 君$/u, '');
-                  n = n.replace(/\s*[（(][぀-ゟ゠-ンー]+[)）]/gu, '').trim();
-                  var kanaLead = n.match(/^[぀-ゟ゠-ンー]+\s+(.+)$/u);
+                  n = n.replace(/\s*[（(][぀-ゟ゠-ハー]+[)）]/gu, '').trim();
+                  var kanaLead = n.match(/^[぀-ゟ゠-ハー]+\s+(.+)$/u);
                   if (kanaLead) n = kanaLead[1].trim();
                   var mixed = n.match(/^([^\x00-\x7F]+)\s+[A-Za-z\s]+$/u);
                   if (mixed) n = mixed[1].trim();
