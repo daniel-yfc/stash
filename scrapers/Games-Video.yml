@@ -1,0 +1,135 @@
+name: Games-Video
+sceneByURL:
+  - action: scrapeXPath
+    url:
+      - games-video.co.jp/dvd_detail.php
+    scraper: sceneScraper
+sceneByName:
+  action: scrapeXPath
+  queryURL: https://www.games-video.co.jp/search.php?s={}&image=商品検索&fromSearch=on
+  scraper: sceneSearch
+sceneByQueryFragment:
+  action: scrapeXPath
+  queryURL: "{url}"
+  scraper: sceneScraper
+groupByURL:
+  - action: scrapeXPath
+    url:
+      - games-video.co.jp/dvd_detail.php
+    scraper: groupScraper
+xPathScrapers:
+  sceneSearch:
+    common:
+      $item: //a[contains(@href, "dvd_detail.php?code=")]
+    scene:
+      Title: $item
+      URL: $item/@href
+      Image: $item//img/@src
+      Code:
+        selector: $item/@href
+        postProcess:
+          - replace:
+              - regex: ".*code="
+                with: ""
+  sceneScraper:
+    scene:
+      Title: (//h2)[1]
+      Code:
+        fixed: "{inputURL}"
+        postProcess:
+          - replace:
+              - regex: ".*[?&]code=([^&]+).*"
+                with: $1
+      Date:
+        selector: //td[contains(., "日発売")]
+        postProcess:
+          - replace:
+              - regex: ".*?([0-9]{4})年([0-9]{1,2})月([0-9]{1,2})日.*"
+                with: $1-$2-$3
+          - javascript: |
+              var p = value.split("-");
+              if (p.length === 3) {
+                return p[0] + "-" + ("0" + p[1]).slice(-2) + "-" + ("0" + p[2]).slice(-2);
+              }
+              return value;
+      Details:
+        selector: //h3[contains(., "作品詳細")]/following-sibling::*[not(self::h3)][preceding-sibling::h3[1][contains(., "作品詳細")]]
+        concat: "\n"
+      Image:
+        - //img[contains(@src, "/product/l/")]/@src
+        - //img[contains(@src, "/product/")]/@src
+      Studio:
+        Name:
+          selector: //td[contains(., "レーベル")]
+          postProcess:
+            - replace:
+                - regex: ".*レーベル[:：]"
+                  with: ""
+      Tags:
+        Name:
+          selector: //td[contains(., "カテゴリー")]
+          postProcess:
+            - replace:
+                - regex: ".*カテゴリー[:：]"
+                  with: ""
+          split: " / "
+      Performers:
+        Name:
+          selector: //h3[contains(., "出演モデル")]/following::td[normalize-space()][position() < 20]
+          postProcess:
+            - replace:
+                - regex: "[（(][^）)]*[）)]"
+                  with: ""
+      URLs:
+        - fixed: "{inputURL}"
+        - //a[contains(@href, "hunk-ch.com")]/@href
+      Groups:
+        Name: (//h2)[1]
+  groupScraper:
+    group:
+      Name: (//h2)[1]
+      Date:
+        selector: //td[contains(., "日発売")]
+        postProcess:
+          - replace:
+              - regex: ".*?([0-9]{4})年([0-9]{1,2})月([0-9]{1,2})日.*"
+                with: $1-$2-$3
+          - javascript: |
+              var p = value.split("-");
+              if (p.length === 3) {
+                return p[0] + "-" + ("0" + p[1]).slice(-2) + "-" + ("0" + p[2]).slice(-2);
+              }
+              return value;
+      Duration:
+        selector: //td[contains(., "収録時間")]
+        postProcess:
+          - replace:
+              - regex: ".*収録時間[:：]"
+                with: ""
+              - regex: "分.*"
+                with: ":00"
+      Synopsis:
+        selector: //h3[contains(., "作品詳細")]/following-sibling::*[not(self::h3)][preceding-sibling::h3[1][contains(., "作品詳細")]]
+        concat: "\n"
+      FrontImage:
+        - //img[contains(@src, "/product/l/")]/@src
+        - //img[contains(@src, "/product/")]/@src
+      Studio:
+        Name:
+          selector: //td[contains(., "レーベル")]
+          postProcess:
+            - replace:
+                - regex: ".*レーベル[:：]"
+                  with: ""
+      Tags:
+        Name:
+          selector: //td[contains(., "カテゴリー")]
+          postProcess:
+            - replace:
+                - regex: ".*カテゴリー[:：]"
+                  with: ""
+          split: " / "
+      URLs:
+        - fixed: "{inputURL}"
+        - //a[contains(@href, "hunk-ch.com")]/@href
+# Last Updated August 28, 2026
