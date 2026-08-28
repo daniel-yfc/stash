@@ -1,53 +1,63 @@
-name: Validate
+name: Validate Scrapers
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
     paths:
-      - 'scrapers/*.yml'
       - 'scrapers/**/*.yml'
+      - 'scrapers/*.yml'
       - 'validator/**'
-      - 'skills/stash-scraper-builder/**'
+      - 'skills/stash-scraper-builder/references/scraper.schema.json'
+  pull_request:
+    paths:
+      - 'scrapers/**/*.yml'
+      - 'scrapers/*.yml'
+      - 'validator/**'
+      - 'skills/stash-scraper-builder/references/scraper.schema.json'
 
 jobs:
   validate:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: ['18', '20']
-      fail-fast: false
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-          cache-dependency-path: validator/package-lock.json
+          deno-version: v1.x
 
-      - name: Install validator deps
+      - name: Run Validator
         run: |
-          cd validator
-          npm ci
-
-      - name: Validate all scrapers
-        run: |
-          echo "::group::Running validator"
-          node validator/validate.js scrapers/*.yml 2>&1 || true
-          echo "::endgroup::"
-
-      - name: Check URL sorting
-        run: |
-          echo "::group::Checking URL sorting"
-          node validator/validate.js -s 2>&1 || true
-          echo "::endgroup::"
-
-      - name: Fail on errors only
-        run: |
-          # D6: CI fails on Errors, warns on Warnings
-          # Validator should exit 1 on Errors, 0 on Warnings-only
-          echo "Validator completed. Check logs above for Errors vs Warnings."
+          echo "=== Running Scraper Validator ==="
+          echo ""
+          
+          # Find all scraper YAML files
+          SCRAPERS=$(find scrapers -maxdepth 1 -name '*.yml' -type f | sort)
+          
+          if [ -z "$SCRAPERS" ]; then
+            echo "No scraper files found in scrapers/ directory"
+            exit 0
+          fi
+          
+          echo "Validating scrapers:"
+          echo "$SCRAPERS"
+          echo ""
+          
+          FAILED=0
+          for scraper in $SCRAPERS; do
+            echo "Validating $scraper..."
+            if deno run --allow-read validator/index-zh-TW.mjs "$scraper"; then
+              echo "  ✅ PASS"
+            else
+              echo "  ❌ FAIL"
+              FAILED=1
+            fi
+            echo ""
+          done
+          
+          if [ $FAILED -eq 1 ]; then
+            echo "=== Validation FAILED ==="
+            exit 1
+          else
+            echo "=== All scrapers validated successfully ==="
+          fi
