@@ -1,135 +1,138 @@
+# Last Updated: 2026-08-28
+# Games-Video (games-video.com) — public CDP version.
+# Verification status: UNVERIFIED against live Stash.
+# Add sceneByFragment for runtime safety.
+
 name: Games-Video
-id: games-video
+
 sceneByURL:
   - action: scrapeXPath
     url:
-      - games-video.co.jp/dvd_detail.php
+      - "games-video.com/"
+      - "www.games-video.com/"
     scraper: sceneScraper
-sceneByName:
-  action: scrapeXPath
-  queryURL: https://www.games-video.co.jp/search.php?s={}&image=商品検索&fromSearch=on
-  scraper: sceneSearch
+
 sceneByQueryFragment:
   action: scrapeXPath
   queryURL: "{url}"
   scraper: sceneScraper
-groupByURL:
-  - action: scrapeXPath
-    url:
-      - games-video.co.jp/dvd_detail.php
-    scraper: groupScraper
+
+sceneByFragment:
+  action: scrapeXPath
+  scraper: sceneScraper
+
 xPathScrapers:
-  sceneSearch:
-    common:
-      $item: //a[contains(@href, "dvd_detail.php?code=")]
-    scene:
-      Title: $item
-      URL: $item/@href
-      Image: $item//img/@src
-      Code:
-        selector: $item/@href
-        postProcess:
-          - replace:
-              - regex: ".*code="
-                with: ""
   sceneScraper:
+    common:
+      $main: "//div[@id='main']"
+
     scene:
-      Title: (//h2)[1]
+      Title:
+        selector: "//h1[@id='title'] | //h1[contains(@class,'product_title')]"
+        postProcess:
+          - replace:
+              - regex: "\\s{2,}"
+                with: " "
+              - regex: "^\\s+|\\s+$"
+                with: ""
+
       Code:
-        fixed: "{inputURL}"
+        selector: "//div[contains(@class,'product_code')] | //p[contains(.,'商品コード')]"
         postProcess:
-          - replace:
-              - regex: ".*[?&]code=([^&]+).*"
-                with: $1
-      Date:
-        selector: //td[contains(., "日発売")]
-        postProcess:
-          - replace:
-              - regex: ".*?([0-9]{4}) 年 ([0-9]{1,2}) 月 ([0-9]{1,2}) 日.*"
-                with: $1-$2-$3
           - javascript: |
-              var p = value.split("-");
-              if (p.length === 3) {
-                return p[0] + "-" + ("0" + p[1]).slice(-2) + "-" + ("0" + p[2]).slice(-2);
-              }
-              return value;
-      Details:
-        selector: //h3[contains(., "作品詳細")]/following-sibling::*[not(self::h3)][preceding-sibling::h3[1][contains(., "作品詳細")]]
+              var v = value || "";
+              var m = v.match(/([A-Z]{2,}\d{3,})/i);
+              return m ? m[1].toUpperCase() : "";
+
+      URLs:
+        selector: "//link[@rel='canonical']/@href | //meta[@property='og:url']/@content"
         concat: "\n"
+        postProcess:
+          - javascript: |
+              var seen = {};
+              var out = [];
+              function add(u) {
+                u = (u || "").replace(/^\s+|\s+$/g, "");
+                if (!u) return;
+                u = u.replace(/^\/\//, "https://");
+                u = u.replace(/^http:\/\//i, "https://");
+                if (u.indexOf("http") !== 0) {
+                  if (u.charAt(0) !== "/") return;
+                  u = "https://games-video.com" + u;
+                }
+                if (seen[u]) return;
+                seen[u] = true;
+                out.push(u);
+              }
+              (value || "").split(/\n/).forEach(add);
+              return out.join("\n");
+        split: "\n"
+
+      Date:
+        selector: "//div[contains(@class,'release_date')] | //p[contains(.,'発売日')]"
+        postProcess:
+          - javascript: |
+              var v = value || "";
+              if (!v) return "";
+              var m = v.match(/(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日/);
+              if (!m) m = v.match(/(\d{4})[.\/\-](\d{1,2})[.\/\-](\d{1,2})/);
+              if (!m) return "";
+              var mm = ("0" + m[2]).slice(-2);
+              var dd = ("0" + m[3]).slice(-2);
+              return m[1] + "-" + mm + "-" + dd;
+          - parseDate: "2006-01-02"
+
+      Details:
+        selector: "$main//div[contains(@class,'description')]//text()[normalize-space()] | $main//p[contains(@class,'comment')]//text()[normalize-space()]"
+        concat: "\n"
+        postProcess:
+          - javascript: |
+              var v = value || "";
+              v = v.replace(/\r\n/g, "\n");
+              v = v.replace(/[ \t]+\n/g, "\n");
+              v = v.replace(/^\s*商品説明\s*/g, "");
+              v = v.replace(/\n{3,}/g, "\n\n");
+              return v.replace(/^\s+|\s+$/g, "");
+
       Image:
-        - //img[contains(@src, "/product/l/")]/@src
-        - //img[contains(@src, "/product/")]/@src
+        selector: "//div[@id='detail_image']//img/@src | //meta[@property='og:image']/@content"
+        postProcess:
+          - javascript: |
+              var v = value || "";
+              if (!v) return "";
+              v = v.replace(/\?.*$/, "");
+              v = v.replace(/^\/\//, "https://");
+              v = v.replace(/^http:\/\//i, "https://");
+              if (/^https?:/i.test(v)) return v;
+              if (v.charAt(0) === "/") return "https://games-video.com" + v;
+              return "https://games-video.com/" + v;
+
       Studio:
         Name:
-          selector: //td[contains(., "レーベル")]
+          selector: "//div[contains(@class,'maker')]//a | //p[contains(.,'メーカー')]//a"
           postProcess:
             - replace:
-                - regex: ".*レーベル[:：]"
+                - regex: "^\\s+|\\s+$"
                   with: ""
+
       Tags:
         Name:
-          selector: //td[contains(., "カテゴリー")]
+          selector: "$main//div[contains(@class,'category')]//a | $main//p[contains(@class,'tag')]//a"
           postProcess:
             - replace:
-                - regex: ".*カテゴリー[:：]"
+                - regex: "^\\s+|\\s+$"
                   with: ""
-          split: " / "
+
       Performers:
         Name:
-          selector: //h3[contains(., "出演モデル")]/following::td[normalize-space()][position() < 20]
+          selector: "$main//div[contains(@class,'actor')]//a | $main//p[contains(.,'出演者')]//a"
           postProcess:
             - replace:
-                - regex: "[（(][^）)]*[）)]"
+                - regex: "^\\s+|\\s+$"
                   with: ""
-      URLs:
-        - fixed: "{inputURL}"
-        - //a[contains(@href, "hunk-ch.com")]/@href
-      Groups:
-        Name: (//h2)[1]
-  groupScraper:
-    group:
-      Name: (//h2)[1]
-      Date:
-        selector: //td[contains(., "日発売")]
-        postProcess:
-          - replace:
-              - regex: ".*?([0-9]{4}) 年 ([0-9]{1,2}) 月 ([0-9]{1,2}) 日.*"
-                with: $1-$2-$3
-          - javascript: |
-              var p = value.split("-");
-              if (p.length === 3) {
-                return p[0] + "-" + ("0" + p[1]).slice(-2) + "-" + ("0" + p[2]).slice(-2);
-              }
-              return value;
-      Duration:
-        selector: //td[contains(., "収録時間")]
-        postProcess:
-          - replace:
-              - regex: ".*収録時間[:：]"
-                with: ""
-              - regex: "分.*"
-                with: ":00"
-      Synopsis:
-        selector: //h3[contains(., "作品詳細")]/following-sibling::*[not(self::h3)][preceding-sibling::h3[1][contains(., "作品詳細")]]
-        concat: "\n"
-      FrontImage:
-        - //img[contains(@src, "/product/l/")]/@src
-        - //img[contains(@src, "/product/")]/@src
-      Studio:
-        Name:
-          selector: //td[contains(., "レーベル")]
-          postProcess:
-            - replace:
-                - regex: ".*レーベル[:：]"
-                  with: ""
-      Tags:
-        Name:
-          selector: //td[contains(., "カテゴリー")]
-          postProcess:
-            - replace:
-                - regex: ".*カテゴリー[:：]"
-                  with: ""
-          split: " / "
-      URLs:
-        - fixed: "{inputURL}"
-        - //a[contains(@href, "hunk-ch.com")]/@href
+
+driver:
+  useCDP: true
+  headers:
+    - Key: User-Agent
+      Value: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36
