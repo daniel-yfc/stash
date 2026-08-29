@@ -40,6 +40,51 @@ xPathScrapers:
           // Copy from performer-cleaning.md
 ```
 
+## sceneByFragment template (mandatory queryURL)
+
+**Load when:** the site supports fragment-based scraping with URL rewriting.
+
+> **概要（zh-TW）：** `sceneByFragment` 必須有 `queryURL`。用 `queryURLReplace` 將 `{filename}` 轉成 API URL。不要省略 `queryURL`。
+
+```yaml
+name: FragmentExample
+sceneByURL:
+  - action: scrapeXPath
+    url:
+      - example.com/scene/
+    scraper: xPathScrapers
+
+sceneByFragment:
+  - action: scrapeXPath
+    queryURL: "https://api.example.com/{filename}"
+    scraper: xPathScrapers
+
+xPathScrapers:
+  scene:
+    Title: //h1
+    Date:
+      selector: //span[@class='date']
+      postProcess:
+        - parseDate: 2006-01-02
+```
+
+**With queryURLReplace (Kink pattern):**
+
+```yaml
+sceneByFragment:
+  - action: scrapeXPath
+    queryURL: "https://www.kink.com/shoot/{filename}"
+    queryURLReplace:
+      filename: "(.*)"
+      replace: "https://api.kink.com/scenes/$1"
+    scraper: xPathScrapers
+```
+
+**Important:** 
+- `queryURL` is **mandatory** for `sceneByFragment` and `sceneByQueryFragment` (Stash manual)
+- Exception: `action: script` does not require `queryURL`
+- Use `{filename}` placeholder to insert the scene filename
+
 ## JSON template
 
 **Load when:** the site returns JSON or has a JSON API.
@@ -91,3 +136,4 @@ script:
 - `sceneByQueryFragment.queryURL` is `{url}` (the selected hit). Do **not** reuse the search endpoint with `{title}` — while `{title}` is an official placeholder for `sceneByFragment`, the guidance is to use `{url}` for fragment queries that fetch scene details.
 - Stash YAML does not paginate. Multi-page search belongs in a `script` scraper, not in this template.
 - Always include `name:` at root level (required by official schema).
+- `queryURL` is mandatory for fragment modes (except `action: script`).
