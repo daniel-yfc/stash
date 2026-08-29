@@ -1,98 +1,93 @@
-# Complete-file examples
+# Examples
+
+Complete YAML templates for common scraper patterns.
+
+## XPath template
 
 **Load when:** you need an XPath template. These are **not** live-verified for a real site.
 
-> **概要（zh-TW）：** 只放完整 YAML。禁止 root `name` / `documentHeader` / `$vars`。搜尋用 `{}`，詳情 fragment 用 `{url}`。
+> **概要（zh-TW）：** 只放完整 YAML。禁止 root `documentHeader` / `$vars`（`name` 必填）。搜尋用 `{}`，詳情 fragment 用 `{url}`。`{title}` 是官方支援的 placeholder（限 `sceneByFragment`），但不要把 queryURL 指向搜尋端點。
 
 Copy performer JavaScript from `performer-cleaning.md`. Copy title cleaning from `title-patterns.md`. Mark unverified selectors.
 
-## 1. XPath scene + search (only if a real search exists)
-
 ```yaml
-# Last Updated: YYYY-MM-DD
+name: ExampleScraper
 sceneByURL:
   - action: scrapeXPath
     url:
-      - "examplesite.test/works/"
-    scraper: sceneScraper
-
-sceneByName:
-  action: scrapeXPath
-  queryURL: "https://examplesite.test/search?q={}"
-  scraper: sceneSearch
-
-sceneByQueryFragment:
-  action: scrapeXPath
-  queryURL: "{url}"
-  scraper: sceneScraper
+      - example.com
+    scraper: xPathScrapers
 
 xPathScrapers:
-  sceneScraper:
-    common:
-      $info: "//main[@data-page='work']"
-    scene:
-      Title:
-        selector: "$info//h1 | $info//h1[@itemprop='name']" # UNVERIFIED
-        postProcess:
-          - replace:
-              - regex: "\\s*\\[.*?\\]\\s*$"
-                with: ""
-              - regex: "\\s*【.*?】\\s*$"
-                with: ""
-              - regex: "\\.(mp4|mkv|avi|wmv|flv|ts|mpg|mpeg|rmvb|mov|m4v)\\s*$"
-                with: ""
-              - regex: "\\s{2,}"
-                with: " "
-              - regex: "^\\s+|\\s+$"
-                with: ""
-      Date:
-        selector: "$info//time/@datetime" # UNVERIFIED
-        postProcess:
-          - parseDate: "2006-01-02"
-      Image:
-        selector: "$info//img[@data-role='cover']/@src | //meta[@property='og:image']/@content" # UNVERIFIED
-      Studio:
-        Name:
-          fixed: "ExampleSite"
-      Performers:
-        Name:
-          selector: "$info//a[contains(@href,'/actor/')]" # UNVERIFIED
-  sceneSearch:
-    scene:
-      Title:
-        selector: "//article[@data-result]//a" # UNVERIFIED
-      URL:
-        selector: "//article[@data-result]//a/@href" # UNVERIFIED
+  scene:
+    Title: //h1[@class='title']
+    Date:
+      selector: //span[@class='date']
+      postProcess:
+        - parseDate: 2006-01-02
+    Studio:
+      selector: //a[@class='studio']
+      postProcess:
+        - replace:
+            - from: "Studio Name"
+              to: "Studio Name Fixed"
+    Image: //img[@class='poster']/@src
+    Performers:
+      selector: //a[@class='performer']
+      action:
+        type: javascript
+        code: |
+          // Copy from performer-cleaning.md
 ```
 
-If the site has **no** search, omit `sceneByName` and `sceneByQueryFragment`.
+## JSON template
 
-`sceneByQueryFragment.queryURL` is `{url}` (the selected hit). Do **not** reuse the search endpoint with `{title}` — `{title}` is not an official queryURL placeholder.
+**Load when:** the site returns JSON or has a JSON API.
 
-Stash YAML does not paginate. Multi-page search belongs in a `script` scraper, not in this template.
-
-## 2. Date `&nbsp;` fix (complete file)
+> **概要（zh-TW）：** 用 `scrapeJson` + `jsonScrapers`。`sceneByName.queryURL` = `{}`；`sceneByQueryFragment.queryURL` = `{url}`。
 
 ```yaml
-# Last Updated: YYYY-MM-DD
+name: JsonExample
 sceneByURL:
-  - action: scrapeXPath
+  - action: scrapeJson
     url:
-      - "examplesite.test/works/"
-    scraper: sceneScraper
+      - api.example.com
+    scraper: jsonScrapers
 
-xPathScrapers:
-  sceneScraper:
-    scene:
-      Title:
-        selector: "//h1" # UNVERIFIED
-      Date:
-        selector: "//span[@class='date']" # UNVERIFIED
-        postProcess:
-          - replace:
-              - regex: "[\\xa0\\s]+"
-                with: " "
-          - parseDate: "2 Jan 2006"
+jsonScrapers:
+  scene:
+    Title: $.title
+    Date: $.date
+    Studio:
+      name: $.studio.name
 ```
 
-`replace` must run **before** `parseDate`.
+## Script template
+
+**Load when:** you need Python for authentication, pagination, or complex logic.
+
+> **概要（zh-TW）：** `script` 處理認證、翻頁、複雜邏輯。輸出 `print(json.dumps(result))`。
+
+```yaml
+name: ScriptExample
+sceneByURL:
+  - action: script
+    url:
+      - example.com
+    scraper: script
+
+script:
+  code: |
+    import py_common.log as log
+    import requests
+    
+    result = {}
+    # Your scraping logic here
+    print(json.dumps(result))
+```
+
+## Notes
+
+- `sceneByQueryFragment.queryURL` is `{url}` (the selected hit). Do **not** reuse the search endpoint with `{title}` — while `{title}` is an official placeholder for `sceneByFragment`, the guidance is to use `{url}` for fragment queries that fetch scene details.
+- Stash YAML does not paginate. Multi-page search belongs in a `script` scraper, not in this template.
+- Always include `name:` at root level (required by official schema).
