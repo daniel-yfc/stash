@@ -1,133 +1,94 @@
 # Scraping Failures
 
-> **刮削失敗診斷指南。**
+Debug common scraping issues and failures.
 
-## All Fields Empty
+## All fields empty
 
-**Symptoms:** Every field returns empty string or null.
+**Symptoms:** All scraped fields return empty/null values.
 
 **Causes:**
-1. **Age gate / interstitial blocking** — page requires login or age verification
-2. **Wrong selectors** — XPath/JSON path doesn't match the actual DOM structure
-3. **HTTP vs rendered DOM mismatch** — site uses JavaScript to render content
-4. **CDP not configured** — site requires browser session but scraper uses HTTP
+- Selectors are wrong
+- Age-gate or interstitial blocking access
+- Site requires cookies or CDP that aren't configured
 
-**Diagnosis:**
-- Check HTTP status code (403, 401, 503 indicate blocking)
-- Test selectors with `$x("...")` in browser console
-- Compare raw HTML response with browser DevTools DOM
-- Verify `driver.useCDP` is in top-level `driver` block (not entry points)
+**Debug steps:**
+1. `$x()` your selectors in browser console to verify they match
+2. Check for age-gate or interstitial pages
+3. Verify `useCDP` and cookie configuration
+4. Check HTTP status codes (403 → User-Agent / headers issue)
 
-**Solutions:**
-- Add age-gate handling or CDP session
-- Fix selectors to match actual DOM
-- Enable CDP if site requires JavaScript rendering
-- Check cookie configuration (private scrapers only)
+## Only Date is nil
 
-## Nil Pointer Dereference
+**Symptoms:** All fields scrape correctly except Date returns nil.
+
+**Causes:**
+- Raw date string doesn't match Go layout
+- `replace` not applied before `parseDate`
+
+**Debug steps:**
+1. Check the raw date string format
+2. Verify `parseDate` uses Go layout (`2006-01-02`), not `YYYY-MM-DD`
+3. Apply `replace` before `parseDate` if needed (e.g., remove time, timezone)
+4. Test with compact dates (`20060102`) if site uses that format
+
+## Studio or Details wrong
+
+**Symptoms:** Studio shows manufacturer when it should show label; Details has HTML tags.
+
+**Causes:**
+- Using メーカー (manufacturer) as studio when レーベル (label) is correct
+- Not stripping HTML from Details field
+
+**Debug steps:**
+1. For JP sites: prefer レーベル over メーカー for Studio.Name
+2. Use `concat` or post-process to strip HTML from Details
+3. Check if シリーズ is being confused with Group (only use if user asks)
+
+## Nil pointer dereference
 
 **Symptoms:** Stash runtime crashes with "nil pointer dereference" error when processing scene metadata.
 
-**Cause:** Missing `sceneByFragment` entry point when the site supports fragment-based scraping.
+**Cause:** This is an **upstream Stash bug** (v0.31.1+) that occurs in `mappedScraper.processSceneRelationships` via `jsonFragmentScraper.scrapeSceneByScene`. The panic is triggered when a fragment scraper returns **zero rows** while the scene block defines relationships (Performers/Tags/Studio).
 
-**Background:**
-- Stash processes scene metadata through multiple entry points
-- When a scraper provides `sceneByURL` but not `sceneByFragment`, and the site's data structure expects fragment processing, Stash may encounter nil pointers
-- This is a runtime safety issue, not a schema validation error
+**Important:** This is **not** a scraper-authoring defect. Adding `sceneByFragment` with relationship mappings **creates** the trigger condition rather than preventing it.
 
-**Solution:**
-- Add `sceneByFragment` entry point alongside `sceneByURL`
-- Ensure `sceneByFragment` uses the same scraper definition or a fragment-specific variant
-- Example:
-  ```yaml
-  sceneByURL:
-    - action: scrapeXPath
-      url:
-        - "example.com/video/"
-      scraper: sceneScraper
-  
-  sceneByFragment:
-    action: scrapeXPath
-    scraper: sceneScraper
-  ```
+**Mitigation:**
+- Test fragment modes against non-matching input before deployment
+- Verify fragment scrapers return valid results on test scenes
+- If a site doesn't support fragment scraping, omit `sceneByFragment` rather than adding it as a "preventive measure"
+- Report upstream to Stash issue tracker if encountered
 
-**Prevention:**
-- When building scrapers for sites that support fragment-based metadata, always include `sceneByFragment`
-- Test scraper in Stash with existing scene metadata to verify fragment handling
-- See `SKILL.md` → "Runtime Safety Rules" for mandatory guidance
+**Reference:** Stash issue #6921
 
-## Only Date is Nil
+## 403 / Access denied
 
-**Symptoms:** All fields scrape correctly except Date returns null.
+**Symptoms:** HTTP 403 errors when fetching pages.
 
 **Causes:**
-1. **Wrong Go layout** — using `YYYY-MM-DD` instead of `2006-01-02`
-2. **Raw string format mismatch** — date string doesn't match expected layout
-3. **Missing `replace` preprocessing** — need to clean date string before `parseDate`
+- Missing or incorrect User-Agent
+- Site requires authentication (cookies)
+- AJAX/JavaScript-rendered content
 
-**Solutions:**
-- Use Go reference time: `2006-01-02` for `YYYY-MM-DD`, `01/02/2006` for `MM/DD/YYYY`
-- Add `replace` block before `parseDate` to normalize format
-- Check for relative dates ("3 days ago") — may need JavaScript conversion
+**Debug steps:**
+1. Add custom User-Agent via `driver.headers`
+2. Configure cookies if site requires login
+3. Use CDP for JavaScript-rendered content
+4. Add `sleep` between requests (min 1 second)
 
-## Studio or Details Wrong
+## Turnstile / reCAPTCHA
 
-**Symptoms:** Studio field shows manufacturer instead of label; Details includes HTML or scene list.
+**Symptoms:** Scraper fails on pages with CAPTCHA challenges.
 
 **Causes:**
-1. **Wrong selector** — targeting メーカー (manufacturer) instead of レーベル (label)
-2. **HTML not stripped** — Details field includes markup
-3. **Scene list included** — Details cuts off before numbered scene enumeration
+- Site requires human verification
 
-**Solutions:**
-- Use correct label selector (last `#topicpath` link, not manufacturer block)
-- Add HTML stripping in post-processing
-- Cut Details before numbered scene list (see `title-patterns.md`)
+**Mitigation:**
+- Use CDP with visible browser
+- Solve CAPTCHA manually in browser before scraping
+- Consider whether the site is appropriate for automated scraping
 
-## HTTP Status Failures
+## References
 
-**403 Forbidden:**
-- Site blocking automated requests
-- Try CDP mode with visible Chrome
-- Check User-Agent header
-
-**401 Unauthorized:**
-- Login required
-- Configure CDP session or cookies (private scrapers)
-
-**503 Service Unavailable:**
-- Site temporarily down or rate-limiting
-- Retry with delays or use CDP
-
-## CDP-Specific Issues
-
-**Chrome not connecting:**
-- Verify Chrome launched with `--remote-debugging-port=9222`
-- Check Stash CDP path: `ws://localhost:9222`
-- Ensure Chrome window is visible (not headless)
-
-**Session expires:**
-- CDP sessions persist in browser, not YAML
-- Re-login in Chrome when sessions expire
-- Do not embed session tokens in public scrapers
-
-## Verification Checklist
-
-Before marking scraper as complete:
-
-- [ ] Test on 3+ real URLs per mode
-- [ ] Verify key fields (Title, Date, Studio, Image) match expected values
-- [ ] Check all selectors with `$x()` or JSON path tools
-- [ ] Confirm `driver.useCDP` placement (top-level only, if needed)
-- [ ] Ensure no `driver.cookies` in public scrapers
-- [ ] Add `sceneByFragment` if site supports fragment-based scraping
-- [ ] Run validator to catch schema errors
-- [ ] Mark unverifiable selectors with `# UNVERIFIED`
-
-## Related References
-
-- `SKILL.md` — Always-on rules and workflow
-- `schema-checklist.md` — Validation requirements
-- `cdp-workflow.md` — CDP configuration guide
-- `date-formats.md` — Date parsing patterns
-- `best-practices.md` — Maintainability guidelines
+- Stash issue #6921: https://github.com/stashapp/stash/issues/6921
+- `references/cdp-workflow.md` — CDP configuration
+- `references/script-actions.md` — Script scraper patterns
