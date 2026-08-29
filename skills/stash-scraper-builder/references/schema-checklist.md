@@ -1,69 +1,59 @@
-# Schema checklist
+# Schema Checklist
 
-**Load when:** every final YAML output.
-
-> **概要（zh-TW）：** 最終輸出前依此檢查。CommunityScrapers 官方 schema 與 validator 才是權威；本 repo 的 `references/scraper.schema.json` 只是離線提示，不能當合併依據。
-
-## Authority and validation
-
-Canonical references:
-
-- https://deepwiki.com/stashapp/CommunityScrapers/8-configuration-reference
-- https://deepwiki.com/stashapp/CommunityScrapers/9-validation-system
-- https://deepwiki.com/stashapp/CommunityScrapers/9.3-validator-usage
-
-Use the official CommunityScrapers validator for a merge decision. The local schema stub is deliberately incomplete and must **not** override official schema, validator business rules, or a validated upstream example.
-
-```text
-# Run the validator supplied by CommunityScrapers against the scraper directory.
-# Use its sorting check (-s) before submitting a new or changed scraper.
-```
+Validate scraper YAML against the official CommunityScrapers schema before emitting.
 
 ## Before emit
 
 - [ ] Return the entire YAML; do not return a fragment or diff.
-- [ ] Root has no `name`, `documentHeader`, or `$vars` key.
+- [ ] Root has no `documentHeader` or `$vars` key. **Root `name` is required** and should match the CamelCase filename.
 - [ ] Implement only modes the site really supports.
 - [ ] Stable detail URL → `sceneByURL` entry point has `action`, `url` array, and `scraper`.
 - [ ] The referenced scraper exists in `xPathScrapers` for `scrapeXPath`, or `jsonScrapers` for `scrapeJson`.
-- [ ] `sceneByName` is present only with `sceneByQueryFragment`; if no real search exists, omit both.
-- [ ] `sceneByName.queryURL` uses `{}` only and has no `queryURLReplace`.
-- [ ] `sceneByQueryFragment.queryURL` uses `{url}` (or a `{url}` rewrite). `{title}` is **not** a queryURL placeholder.
-- [ ] `queryURLReplace` keys are custom capture names such as `id` or `slug`, not official placeholders.
-- [ ] Every URL action has `url:` as an array of case-sensitive path fragments.
-- [ ] URL patterns are unique within the same entity type and sorted ascending alphabetically for validator `-s`.
-- [ ] `concat` is an attribute next to `selector`, never an item inside `postProcess`.
-- [ ] Each `postProcess` array item has exactly one operation.
-- [ ] New files use `URLs` and `Groups` / `groupByURL`, not legacy `URL` or `Movies` / `movieByURL`.
-- [ ] Every selector is live-tested or marked `# UNVERIFIED` with an explanation.
 
-## Cookie / CDP coupling
+## Schema conformance
 
-Use `driver.cookies` only when the site actually needs it. Do not invent session credentials.
+- [ ] `name` field present at root level (required by official schema)
+- [ ] `url` is an array (case-sensitive contains-match)
+- [ ] No invented keys (e.g., `documentHeader`, `$vars`)
+- [ ] `additionalProperties: false` — no extra keys at any level
+- [ ] All referenced keys exist (no dangling refs)
 
-| Driver mode | CookieURL | Clicks |
-| --- | --- | --- |
-| `useCDP: false` or omitted | Required for each configured cookie | Not available |
-| `useCDP: true` | Forbidden | Allowed for visible-browser interactions |
+## Mode validation
 
-Rules:
+- [ ] `sceneByURL` — at least one entry with `action`, `url`, `scraper`
+- [ ] `sceneByName` — only if site has search; requires `sceneByQueryFragment`
+- [ ] `sceneByFragment` — only if site supports fragment scraping
+- [ ] No `scene:` at entry point (must be under `xPathScrapers` or `jsonScrapers`)
 
-- `CookieURL` identifies the URL at which Stash sets a configured cookie.
-- A CDP scraper inherits the browser session; do not add `CookieURL` when `useCDP: true`.
-- `driver.clicks` requires `useCDP: true`. Add a suitable `driver.sleep` when the page needs time to render after a click.
-- Keep actual cookie values out of a community scraper. Explain the local setup instead.
+## queryURL rules
 
-## Entity and field reminders
+- [ ] `sceneByName.queryURL` = `{}` (empty object for search endpoint)
+- [ ] `sceneByQueryFragment.queryURL` = `{url}` (selected hit URL)
+- [ ] `{title}` is an official placeholder for `sceneByFragment`; use it only where that mode supports it
+- [ ] `queryURLReplace` keys are custom names (e.g., `id`, `slug`), not used on `sceneByName`
 
-- Scene: no required fields.
-- Performer / Group / Studio / Tag: `Name` only.
-- Gallery: `Title` only. Image: no required fields.
-- Keep `Country`, `Ethnicity`, and `Gender` under `Performers`, never at scene root.
-- `performerByFragment` is script-only for this skill; do not emit XPath or JSON for it.
+## Driver configuration
 
-## Final runtime check
+- [ ] `useCDP: true` only in top-level `driver` (not in `driver.cookies`)
+- [ ] `CookieURL` required when `useCDP: false`; forbidden when `useCDP: true`
+- [ ] `clicks` only with `useCDP: true`
+- [ ] No `driver.cookies` in public scrapers
 
-- [ ] Reload scrapers after YAML changes.
-- [ ] Run `sceneByURL` on real URLs and inspect Stash debug logs.
-- [ ] Check Title, Date, Studio, Image, Details, Performers, and Tags against expected values.
-- [ ] Validator passing does not prove selector correctness; an empty selector is still a failed scraper.
+## Post-processing
+
+- [ ] `parseDate` uses Go layout (`2006-01-02`), not `YYYY-MM-DD`
+- [ ] `concat` at attribute level, not inside `postProcess`
+- [ ] `postProcess[]` operators in correct order (specific → general)
+- [ ] No timezone conversion in YAML (strip `+0900` / `JST` / time; keep site calendar day)
+
+## Final checks
+
+- [ ] `url` arrays sorted A–Z (`validator -s`)
+- [ ] `# Last Updated YYYY-MM-DD` at end of file (optional but recommended)
+- [ ] No translated scraped values
+- [ ] `# UNVERIFIED` on untested selectors
+
+## References
+
+- Official schema: https://github.com/stashapp/CommunityScrapers/blob/master/src/scraper.schema.json
+- Validator: `node validator/validate.js scrapers/Foo.yml`
