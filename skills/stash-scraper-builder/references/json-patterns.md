@@ -1,125 +1,84 @@
-# JSON scraping patterns
+# JSON Patterns
 
-**Load when:** writing or fixing `scrapeJson` (GJSON) selectors.
+Patterns and guidance for JSON-based scrapers.
 
-> **概要（zh-TW）：** 定義必須在 `jsonScrapers`。ByName 用 `{}`，fragment 用 `{url}`。不要寫 GJSON filter 表達式。
+## queryURL rules
 
-Canonical reference: https://deepwiki.com/stashapp/CommunityScrapers/5.1-json-scraper-configuration
-
-## 1. Required shape
-
-```yaml
-sceneByURL:
-  - action: scrapeJson
-    url:
-      - "api.example.com/v1/scene/"
-    scraper: sceneJson
-
-jsonScrapers:
-  sceneJson:
-    scene:
-      Title:
-        selector: "data.title"
-      Date:
-        selector: "data.release_date"
-        postProcess:
-          - parseDate: "2006-01-02"
-      Image:
-        selector: "data.cover_url"
-      Performers:
-        Name:
-          selector: "data.performers.#.name"
-      Studio:
-        Name:
-          selector: "data.studio.name"
-```
-
-`action: scrapeJson` looks up `jsonScrapers.<name>`. Putting the body under `xPathScrapers` fails validation and returns nothing.
-
-## 2. GJSON basics
-
-Always test the path against a real JSON body (`curl` or DevTools → Network).
-
-| Form | Meaning |
-| --- | --- |
-| `data.title` | Nested field |
-| `items.0` / `items[0]` | First element |
-| `items.#.name` / `items[*].name` | All names |
-| `..title` | Recursive search (only if the key is unique) |
-
-Do **not** use JSONPath filters such as `items[?(@.type=='scene')]`. They may look valid and still return null at runtime. Take `items.#.field` and filter in `script` if needed.
-
-Missing keys / `null` become empty. Do not invent paths from docs alone.
-
-`*ByName` must return an array of objects. `*ByURL` / `*ByFragment` return one object.
-
-## 3. Verify a path (5 steps)
-
-1. Open the real API URL (same headers/cookies the site uses).
-2. Copy the JSON body.
-3. Evaluate the GJSON path (tester or `jq` for simple dotted paths).
-4. Confirm a non-null value.
-5. Only then put it in YAML. If unverifiable, mark `# UNVERIFIED`.
-
-## 4. `queryURL` and `queryURLReplace`
-
-| Mode | `queryURL` |
-| --- | --- |
-| `sceneByName` | `{}` only. **No** `queryURLReplace`. |
+| Mode | queryURL value |
+|------|----------------|
+| `sceneByName` | `{}` (empty object for search endpoint) |
 | `sceneByQueryFragment` | `{url}` of the selected hit, optionally rewritten with `queryURLReplace`. |
 | `sceneByURL` / `sceneByFragment` | Optional rewrite of the pasted URL into an API URL. |
 
-Official queryURL placeholders are `{}`, `{url}`, and (fragment) `{filename}` — not `{title}`.
+**Official queryURL placeholders:**
+- `{}` — empty object (used for `sceneByName` search endpoint)
+- `{url}` — the selected hit URL (used for `sceneByQueryFragment`)
+- `{filename}` — the scraper filename (fragment modes)
+- `{title}` — **official for `sceneByFragment`** but use `{url}` for fragment queries that fetch scene details
+
+**Important:** While `{title}` is an official placeholder for `sceneByFragment`, the recommended practice is to use `{url}` for `sceneByQueryFragment` to pass the selected scene URL. Do not construct queryURLs pointing to search endpoints for fragment queries.
+
 `queryURLReplace` keys are **your** names (`id`, `slug`) filled from regex on the input URL.
-
-```yaml
-sceneByURL:
-  - action: scrapeJson
-    url:
-      - example.com/video/
-    queryURL: "https://api.example.com/v1/scene/{id}"
-    queryURLReplace:
-      id:
-        - regex: ".*/video/([^/?#]+).*"
-          with: "$1"
-    scraper: sceneJson
-```
-
-If the regex does not capture, the API request is wrong and every field is empty.
-
-Stash YAML fetches **one** URL per run. Pagination (`hasNextPage`, cursors) is a `script` concern, not a YAML loop.
-
-## 5. Search pair
 
 ```yaml
 sceneByName:
   action: scrapeJson
-  queryURL: "https://api.example.com/search?q={}"
-  scraper: sceneSearch
+  queryURL: {}
+  queryURLReplace:
+    search: "(.*)"
+    replace: "https://api.example.com/search?q=$1"
 
 sceneByQueryFragment:
   action: scrapeJson
   queryURL: "{url}"
-  scraper: sceneJson
 ```
 
-`sceneSearch` must expose `Title` + `URL`. Do **not** set fragment `queryURL` to `.../search?q={title}`.
+## GJSON patterns
 
-## 6. When to prefer `scrapeJson`
+- Use `items.#.field` notation for arrays
+- Filters like `[?(@.type=='scene')]` may return null; prefer direct path or use `script`
+- Test GJSON expressions in validator before deploying
 
-| Situation | Prefer |
-| --- | --- |
-| Site exposes a JSON API | `scrapeJson` |
-| HTML is a thin shell over JSON / `__NEXT_DATA__` / JSON-LD extracted via script | `scrapeJson` or `script` |
-| Multi-site shared logic | `script` |
-| Simple static HTML | `scrapeXPath` |
+## jsonScrapers structure
 
-## 7. Anti-patterns
+```yaml
+jsonScrapers:
+  scene:
+    Title: $.title
+    Date: $.date
+    Studio:
+      name: $.studio.name
+    Image: $.poster_url
+    Performers: $.actors.#.name
+```
 
-| Avoid | Prefer |
-| --- | --- |
-| `scrapeJson` + `xPathScrapers` | `jsonScrapers` |
-| Invented paths | `curl` the real endpoint |
-| `{title}` on queryURL | `{}` / `{url}` |
-| `items[?(@.type=='scene')]` | `items.#.field` or `script` |
-| Root `name` | Filename + `#` comments |
+## Common patterns
+
+### Nested objects
+
+```yaml
+Studio:
+  name: $.studio.name
+  url: $.studio.url
+```
+
+### Arrays
+
+```yaml
+Performers: $.cast.#.name
+Tags: $.tags.#.name
+```
+
+### Conditional fields
+
+```yaml
+Date:
+  selector: $.release_date
+  postProcess:
+    - parseDate: 2006-01-02
+```
+
+## References
+
+- `references/json-examples.md` — Complete JSON scraper templates
+- `references/script-actions.md` — When JSON isn't enough, use `script`
