@@ -1,0 +1,68 @@
+sceneByURL:
+  - action: scrapeXPath
+    url:
+      - jgvdata\.com/[^?#]+/?(?:[?#].*)?$
+    scraper: sceneScraper
+
+sceneByName:
+  action: scrapeXPath
+  queryURL: "https://jgvdata.com/?s={query}"
+  scraper: searchScraper
+
+sceneByFragment:
+  action: scrapeXPath
+  queryURL: "https://jgvdata.com/?s={title}"
+  scraper: searchScraper
+
+sceneByQueryFragment:
+  action: scrapeXPath
+  queryURL: "https://jgvdata.com/?s={title}"
+  scraper: searchScraper
+
+xPathScrapers:
+  searchScraper:
+    common:
+      $results: "//article[contains(concat(' ', normalize-space(@class), ' '), ' mg-posts-sec-post ')][.//a[contains(concat(' ', normalize-space(@class), ' '), ' link-div ')] | //div[contains(concat(' ', normalize-space(@class), ' '), ' mg-blog-post-3 ')][.//a[contains(concat(' ', normalize-space(@class), ' '), ' link-div ')]"
+    scene:
+      Title:
+        selector: "$results//h4[contains(concat(' ', normalize-space(@class), ' '), ' title ')]//a/text()"
+        postProcess:
+          - trim
+      URLs:
+        selector: "$results//a[contains(concat(' ', normalize-space(@class), ' '), ' link-div ')]/@href"
+
+  sceneScraper:
+    common:
+      $main: "(//div[contains(concat(' ', normalize-space(@class), ' '), ' mg-blog-post-box ')])[1]"
+    scene:
+      Title:
+        selector: "$main//h1[contains(concat(' ', normalize-space(@class), ' '), ' title ')]/text()"
+        postProcess:
+          - trim
+      Code:
+        selector: "$main//dt[normalize-space()='GV Code']/following-sibling::dd[1]/text()"
+        postProcess:
+          - trim
+      Date:
+        selector: "$main//dt[normalize-space()='Release Date']/following-sibling::dd[1]/text()"
+        postProcess:
+          - trim
+          - parseDate: "2006-01-02"
+      Details:
+        selector: "$main//dt[normalize-space()='Context:']/following-sibling::dd[1]"
+        postProcess:
+          - trim
+      Image:
+        selector: "$main//img[contains(concat(' ', normalize-space(@class), ' '), ' wp-post-image ')]/@src"
+      Studio:
+        Name:
+          selector: "$main//div[contains(concat(' ', normalize-space(@class), ' '), ' mg-blog-category ')]//a/text()"
+          postProcess:
+            - trim
+      Tags:
+        Name:
+          selector: "$main//dt[normalize-space()='Label']/following-sibling::dd[1]//a/text()"
+          postProcess:
+            - trim
+      URLs:
+        selector: "//link[@rel='canonical']/@href | //meta[@property='og:url']/@content"
