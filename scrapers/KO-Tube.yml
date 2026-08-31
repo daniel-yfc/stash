@@ -1,21 +1,27 @@
+# KO-Tube
+# Last Updated: 2026-08-30
+
 name: KO-Tube
-id: ko-tube
+
 sceneByURL:
   - action: scrapeXPath
     url:
+      - ko-tube.com/package/index/
       - ko-tube.com/product/index/
       - ko-tube.com/product/index2/
-      - ko-tube.com/package/index/
     scraper: sceneScraper
+
 sceneByName:
   action: scrapeXPath
   queryURL: https://www.ko-tube.com/search/index?kw={}&sk=0
   scraper: sceneSearch
+
 groupByURL:
   - action: scrapeXPath
     url:
       - ko-tube.com/package/index/
     scraper: groupScraper
+
 xPathScrapers:
   sceneSearch:
     common:
@@ -24,6 +30,7 @@ xPathScrapers:
       Title: $item
       URL: $item/@href
       Image: $item//img/@src
+
   sceneScraper:
     scene:
       Title: //h1[contains(@class, "title") or contains(text(), "作品詳細") or contains(text(), "パッケージ")]/text()
@@ -43,6 +50,7 @@ xPathScrapers:
                 return p[0] + "-" + ("0" + p[1]).slice(-2) + "-" + (p[2] ? ("0" + p[2]).slice(-2) : "01");
               }
               return value;
+          - parseDate: "2006-01-02"
       Details:
         selector: //div[contains(@class, "description") or contains(@class, "detail")]//text()
         concat: "\n"
@@ -71,6 +79,7 @@ xPathScrapers:
         - //a[contains(@href, "ko-video.com")]/@href
       Groups:
         Name: //h1[contains(@class, "title")]/text()
+
   groupScraper:
     group:
       Name: //h1[contains(@class, "title") or contains(text(), "パッケージ")]/text()
@@ -86,6 +95,7 @@ xPathScrapers:
                 return p[0] + "-" + ("0" + p[1]).slice(-2) + "-" + (p[2] ? ("0" + p[2]).slice(-2) : "01");
               }
               return value;
+          - parseDate: "2006-01-02"
       Synopsis:
         selector: //div[contains(@class, "description") or contains(@class, "detail")]//text()
         concat: "\n"
@@ -115,3 +125,9 @@ xPathScrapers:
       Scenes:
         Title: //a[contains(@href, "/product/index2/")]/text()
         URL: //a[contains(@href, "/product/index2/")]/@href
+
+driver:
+  useCDP: true
+  headers:
+    - Key: User-Agent
+      Value: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36
