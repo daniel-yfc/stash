@@ -6,15 +6,22 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: link-check-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   link-check:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
       - name: Check links in Markdown files
-        uses: lycheeverse/lychee-action@v1
+        uses: lycheeverse/lychee-action@v2
         with:
           args: '--verbose --no-progress skills/stash-scraper-builder/**/*.md README.md'
           fail: false
@@ -24,4 +31,5 @@ jobs:
         if: always()
         with:
           name: lychee-results
-          path: ${{ github.workspace }}/lychee/out.md
+          path: lychee/out.md
+          if-no-files-found: ignore
