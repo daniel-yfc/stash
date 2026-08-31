@@ -4,25 +4,32 @@ on:
   push:
     paths:
       - 'scrapers/**/*.yml'
-      - 'scrapers/*.yml'
       - 'validator/**'
       - 'skills/stash-scraper-builder/references/scraper.schema.json'
   pull_request:
     paths:
       - 'scrapers/**/*.yml'
-      - 'scrapers/*.yml'
       - 'validator/**'
       - 'skills/stash-scraper-builder/references/scraper.schema.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Deno
-        uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@v2
         with:
           deno-version: v1.x
 
@@ -30,19 +37,8 @@ jobs:
         run: |
           echo "=== Running Scraper Validator ==="
           echo ""
-          
-          # Find all scraper YAML files
-          SCRAPERS=$(find scrapers -maxdepth 1 -name '*.yml' -type f | sort)
-          
-          if [ -z "$SCRAPERS" ]; then
-            echo "No scraper files found in scrapers/ directory"
-            exit 0
-          fi
-          
-          echo "Validating scrapers:"
-          echo "$SCRAPERS"
-          echo ""
-          
+
+          SCRAPERS=$(find scrapers -name "*.yml" -type f | sort)
           FAILED=0
           for scraper in $SCRAPERS; do
             echo "Validating $scraper..."
@@ -52,12 +48,9 @@ jobs:
               echo "  ❌ FAIL"
               FAILED=1
             fi
-            echo ""
           done
-          
-          if [ $FAILED -eq 1 ]; then
-            echo "=== Validation FAILED ==="
+
+          if [ $FAILED -ne 0 ]; then
+            echo "::error::Validation failed for one or more scrapers"
             exit 1
-          else
-            echo "=== All scrapers validated successfully ==="
           fi
