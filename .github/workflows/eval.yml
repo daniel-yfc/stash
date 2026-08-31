@@ -8,9 +8,13 @@ on:
         required: false
         default: '1,2,3,4,5'
 
+permissions:
+  contents: read
+
 jobs:
   eval:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
@@ -19,7 +23,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
       - name: Display task info
         run: |
@@ -27,15 +30,12 @@ jobs:
           echo "Running tasks: ${{ github.event.inputs.tasks || '1,2,3,4,5' }}"
           echo ""
           echo "Task 1: New XPath site (public HTML)"
-          echo "Task 2: New scrapeJson site (real JSON API)"
-          echo "Task 3: Script + dependency"
-          echo "Task 4: Date &nbsp; fix (complete file)"
-          echo "Task 5: Login-gated site"
-          echo ""
-          echo "Target: 5/5 pass before calling skill 'done'"
+          echo "Task 2: Site variant (subdomain / locale mirror)"
+          echo "Task 3: Login-gated site (cookie session)"
+          echo "Task 4: JSON API / embedded JSON-LD site"
+          echo "Task 5: Anti-bot / CDP-required site"
           echo "::endgroup::"
 
       - name: Note
         run: |
           echo "::notice::Eval pack is P4 (workstream H). Failures are expected until H2 (#40) is complete."
-          echo "This workflow is manual-only to avoid blocking skill doc PRs (see #4: H5 docs CI optional)."
