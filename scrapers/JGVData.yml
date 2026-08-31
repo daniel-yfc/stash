@@ -1,3 +1,8 @@
+# JGVData
+# Last Updated: 2026-08-30
+
+name: JGVData
+
 sceneByURL:
   - action: scrapeXPath
     url:
@@ -16,13 +21,13 @@ sceneByFragment:
 
 sceneByQueryFragment:
   action: scrapeXPath
-  queryURL: "https://jgvdata.com/?s={title}"
-  scraper: searchScraper
+  queryURL: "{url}"
+  scraper: sceneScraper
 
 xPathScrapers:
   searchScraper:
     common:
-      $results: "//article[contains(concat(' ', normalize-space(@class), ' '), ' mg-posts-sec-post ')][.//a[contains(concat(' ', normalize-space(@class), ' '), ' link-div ')] | //div[contains(concat(' ', normalize-space(@class), ' '), ' mg-blog-post-3 ')][.//a[contains(concat(' ', normalize-space(@class), ' '), ' link-div ')]"
+      $results: "//article[contains(concat(' ', normalize-space(@class), ' '), ' mg-posts-sec-post ')]"
     scene:
       Title:
         selector: "$results//h4[contains(concat(' ', normalize-space(@class), ' '), ' title ')]//a/text()"
