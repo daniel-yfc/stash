@@ -1,12 +1,15 @@
 name: Eval Pack
 
+# Manual evaluation runner for the pytest suite in tests/.
+# Status: P4 (workstream H) — evaluation coverage is expected to expand
+# as workstream H2 progresses.
+
 on:
   workflow_dispatch:
     inputs:
-      tasks:
-        description: 'Tasks to run (1-5, comma-separated). Default: all'
+      test_file:
+        description: 'Test file to run (e.g., test_scrapers.py). Leave empty to run the full suite.'
         required: false
-        default: '1,2,3,4,5'
 
 permissions:
   contents: read
@@ -17,25 +20,24 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          node-version: '20'
+          python-version: '3.11'
 
-      - name: Display task info
+      - name: Install test dependencies
+        run: python -m pip install --upgrade pip pytest
+
+      - name: Run evaluation tests
         run: |
-          echo "::group::Eval Pack Info"
-          echo "Running tasks: ${{ github.event.inputs.tasks || '1,2,3,4,5' }}"
-          echo ""
-          echo "Task 1: New XPath site (public HTML)"
-          echo "Task 2: Site variant (subdomain / locale mirror)"
-          echo "Task 3: Login-gated site (cookie session)"
-          echo "Task 4: JSON API / embedded JSON-LD site"
-          echo "Task 5: Anti-bot / CDP-required site"
+          TARGET="tests/"
+          if [ -n "${{ github.event.inputs.test_file }}" ]; then
+            TARGET="tests/${{ github.event.inputs.test_file }}"
+          fi
+          echo "::group::Evaluation run"
+          echo "Target: ${TARGET}"
+          python -m pytest "${TARGET}" -v
           echo "::endgroup::"
-
-      - name: Note
-        run: |
-          echo "::notice::Eval pack is P4 (workstream H). Failures are expected until H2 (#40) is complete."
