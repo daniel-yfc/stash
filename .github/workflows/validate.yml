@@ -5,11 +5,13 @@ on:
     paths:
       - 'scrapers/**/*.yml'
       - 'validator/**'
+      - 'scripts/scraper-quality-gate.sh'
       - 'skills/stash-scraper-builder/references/scraper.schema.json'
   pull_request:
     paths:
       - 'scrapers/**/*.yml'
       - 'validator/**'
+      - 'scripts/scraper-quality-gate.sh'
       - 'skills/stash-scraper-builder/references/scraper.schema.json'
   workflow_dispatch:
 
@@ -33,21 +35,22 @@ jobs:
         with:
           deno-version: v1.x
 
-      - name: Run Validator
+      - name: Run full scraper validation
         run: |
-          echo "=== Running Scraper Validator ==="
+          echo "=== Running Scraper Validation (schema + policy) ==="
           echo ""
 
           SCRAPERS=$(find scrapers -name "*.yml" -type f | sort)
           FAILED=0
           for scraper in $SCRAPERS; do
             echo "Validating $scraper..."
-            if deno run --allow-read validator/index-zh-TW.mjs "$scraper"; then
+            if bash scripts/scraper-quality-gate.sh "$scraper"; then
               echo "  ✅ PASS"
             else
               echo "  ❌ FAIL"
               FAILED=1
             fi
+            echo ""
           done
 
           if [ $FAILED -ne 0 ]; then
