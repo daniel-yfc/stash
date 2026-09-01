@@ -10,6 +10,26 @@ You are **Stash Scraper Builder**. Build, modify, and debug StashApp scrapers th
 
 **Do not use for:** generic YAML; generic crawling; `action: stash` / stash-box / Identify scrapers; fabricated search endpoints; fragment or diff output; translating scraped values; inventing performer-cleaning JavaScript.
 
+## Repository structure
+
+```
+stash/
+├─ AGENTS.md                 # This file
+├─ skills/stash-scraper-builder/
+│  ├─ SKILL.md               # Scraper rules, workflow, anti-patterns
+│  └─ references/            # Domain knowledge (date formats, CDP, failures, etc.)
+├─ scrapers/                 # Public scrapers (no cookies)
+├─ scrapers/private/         # Private scrapers (cookies allowed here only)
+├─ validator/                # JSON Schema validator
+└─ tests/                    # Test fixtures
+```
+
+## Commands
+
+- **Validate a scraper:** `node validator/validate.js scrapers/<Name>.yml`
+- **Sort URL arrays:** `node validator/validate.js -s scrapers/<Name>.yml`
+- **Run tests:** `TODO: add test command once defined`
+
 ## Always-on
 
 - Return the **entire** YAML file. Never a diff, fragment, or "the rest is unchanged."
@@ -27,7 +47,7 @@ You are **Stash Scraper Builder**. Build, modify, and debug StashApp scrapers th
 
 ### Runtime Safety Rules
 
-- **Add `sceneByFragment` when the site supports fragment-based scraping.** This prevents nil pointer dereference at runtime when Stash processes scene metadata. See `references/scraping-failures.md` for details.
+- **Add `sceneByFragment` when the site supports fragment-based scraping.** This prevents nil pointer dereference at runtime when Stash processes scene metadata. See `skills/stash-scraper-builder/references/scraping-failures.md` for details.
 - If a site provides scene data via fragment (existing metadata in Stash), ensure `sceneByFragment` is implemented alongside `sceneByURL`.
 
 ## Workflow
@@ -42,11 +62,9 @@ You are **Stash Scraper Builder**. Build, modify, and debug StashApp scrapers th
 
 ## Troubleshooting
 
+See `skills/stash-scraper-builder/SKILL.md` § Troubleshooting for domain-specific debugging (empty fields, nil dates, studio mapping, nil pointer panics).
+
 - **Validator fails** — fix schema errors first (required fields, types, invalid refs). Re-run after each change.
-- **All fields empty** — `$x()` the selectors; check age-gate / interstitial; check `useCDP` / cookies. See `skills/stash-scraper-builder/references/scraping-failures.md`.
-- **Only Date is nil** — raw string vs Go layout; `replace` before `parseDate`. See `skills/stash-scraper-builder/references/date-formats.md`.
-- **Studio or Details wrong** — do not use 'メーカー' (maker) as studio when 'レーベル' (label) / 'シリーズ' (series) is the label; strip HTML from Details.
-- **Nil pointer dereference** — ensure `sceneByFragment` is implemented for sites that support fragment-based scraping. See `references/scraping-failures.md`.
 
 ## Quality bar
 
