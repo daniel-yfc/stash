@@ -1,8 +1,15 @@
+---
+name: stash-scraper-builder
+description: Generate, modify, and debug StashApp scraper YAML files (XPath, JSON, script, and CDP driver modes) conforming to scraper.schema.json. Use when building a scraper for a new site, fixing empty fields or nil dates, or validating scraper YAML. Not for CommunityScrapers PR submission, non-Stash YAML, stash-box/Identify scrapers, or generic crawling.
+metadata:
+  version: "2026-08-30"
+---
+
 # Skill: stash-scraper-builder
 
 **Version**: 2026-08-30
 **Scope**: Generate Stash scraper YAML files that load and scrape correctly.
-**Canonical runtime**: https://deepwiki.com/stashapp/CommunityScrapers/
+**Canonical source**: https://github.com/stashapp/CommunityScrapers (schema: `src/scraper.schema.json`). Docs mirror: https://deepwiki.com/stashapp/CommunityScrapers/
 
 ---
 
