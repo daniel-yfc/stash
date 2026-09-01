@@ -1,16 +1,15 @@
 name: Link Check
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly, Sunday 00:00 UTC
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: link-check-${{ github.ref }}
+  group: link-check
   cancel-in-progress: true
 
 jobs:
