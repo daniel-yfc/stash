@@ -28,7 +28,7 @@ stash/
 
 - **Validate a scraper:** `node validator/validate.js scrapers/<Name>.yml`
 - **Sort URL arrays:** `node validator/validate.js -s scrapers/<Name>.yml`
-- **Run tests:** `TODO: add test command once defined`
+- **Run tests:** `python -m pytest tests/`
 
 ## Always-on
 
