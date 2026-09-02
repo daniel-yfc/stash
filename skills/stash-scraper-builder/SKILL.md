@@ -16,6 +16,7 @@ metadata:
 **Version**: 2026-09-03
 **Scope**: Generate Stash scraper YAML files that load and scrape correctly.
 **Canonical runtime**: Official CommunityScrapers validator and schema.
+**Source policy:** Normative schema/runtime claims require a source citation. Experience-based recommendations are labeled `Heuristic` and require live verification.
 
 ---
 
@@ -38,12 +39,14 @@ xPathScrapers:
     # ... scraper definition
 ```
 
+**Source:** Official CommunityScrapers schema — root `name` is required and unknown root keys are rejected (`additionalProperties: false`).
+
 ### Prohibited patterns
 
-- Do **not** emit root keys `documentHeader` or `$vars`. Root `name` is required by the official schema; conventionally match the CamelCase filename.
-- URL actions: `url` is an array (case-sensitive contains-match).
-- Do not invent search modes (`sceneByName` / `sceneByQueryFragment`) unless the site actually has search.
-- For XPath/JSON fragment entry points, provide the action-required `queryURL`; script actions may use their script contract instead.
+- Do **not** emit root keys `documentHeader` or `$vars`. Root `name` is required by the official schema; conventionally match the CamelCase filename. **Source:** official schema (`required: [name]`, `additionalProperties: false`).
+- URL actions: `url` is an array (case-sensitive contains-match). **Source:** official schema, `definitions.anyByURL.url`.
+- Do not invent search modes (`sceneByName` / `sceneByQueryFragment`) unless the site actually has search. **Heuristic:** verify the real endpoint before adding these modes.
+- For `scrapeXPath`/`scrapeJson` fragment entry points, provide the action-required `queryURL`. URL entry points may optionally use `queryURL`/`queryURLReplace` when translating a page URL to a data endpoint. Script actions follow their script contract. **Source:** official schema `definitions.anyByURL` and `definitions.anyByFragment`.
 
 ---
 
@@ -55,12 +58,16 @@ xPathScrapers:
 - Check if the site returns HTML or JSON.
 - Note any restrictions (age-gate, cookie requirement, CDP needed).
 
+**Heuristic:** Site capability must be established from a live page/response or an authoritative site source; do not infer it from the domain name.
+
 ### Step 2: Choose the mode
 
 - **HTML site** → `scrapeXPath` with `xPathScrapers`
 - **JSON API** → `scrapeJson` with `jsonScrapers`
 - **Requires Python** → `script` scraper (see `references/script-actions.md`)
 - **Requires visible browser** → `driver` with `useCDP: true` (see `references/cdp-workflow.md`)
+
+**Source:** Official schema action enums plus Stash scraper-development documentation; see `references/UPSTREAM_SOURCES.md`.
 
 ### Step 3: Build the YAML
 
@@ -71,29 +78,31 @@ xPathScrapers:
 
 ### Step 4: Validate
 
-- Run `node validator/validate.js scrapers/Foo.yml` locally if possible.
-- Prefer the official CommunityScrapers validator and schema over the bundled local stub.
+- Run `node validator/index.mjs scrapers` locally if possible.
+- Run `node validator/index.mjs -s scrapers` for URL ordering.
+- Run `python tools/check_scraper_docs.py` after changing reference documentation or embedded examples.
 - Check that all referenced keys exist (no dangling refs).
-- Ensure `url` arrays are sorted A–Z (`validator -s`).
+
+**Source:** Repository validator workflow and official schema. The documentation checker is a repository safeguard; it is not an upstream Stash feature.
 
 ---
 
 ## Data model reminders
 
-- **Title**: Clean per `references/title-patterns.md`. Do not translate.
-- **Date**: Use Go layout (`2006-01-02`), not `YYYY-MM-DD`. See `references/date-formats.md`.
-- **Studio**: Prefer `Studio.Name.fixed` for single-brand sites. Map JP terms (メーカー/レーベル/シリーズ) per `references/best-practices.md`.
-- **Image**: Use `|` fallbacks; upgrade `/thumb/` → `/poster/`; prefix `^//` with `https:`.
-- **Performers**: Clean per `references/performer-cleaning.md`. Do not write `Gender` by default.
+- **Title**: Clean per `references/title-patterns.md`. Do not translate. **Heuristic:** cleaning is site-dependent; verify against expected pages.
+- **Date**: Use Go layout (`2006-01-02`), not `YYYY-MM-DD`. **Source:** Stash scraper-development behavior; see `references/date-formats.md`.
+- **Studio**: Prefer `Studio.Name.fixed` for single-brand sites. Map JP terms (メーカー/レーベル/シリーズ) per `references/best-practices.md`. **Heuristic:** field semantics must be confirmed from the site's labels/context.
+- **Image**: Use `|` fallbacks; upgrade `/thumb/` → `/poster/`; prefix `^//` with `https:`. **Heuristic:** fallback and quality choices are authoring guidance; verify the resulting URL.
+- **Performers**: Clean per `references/performer-cleaning.md`. Do not write `Gender` by default. **Heuristic:** normalization is only safe when the source naming pattern is verified.
 
 ---
 
 ## Troubleshooting
 
-- **All fields empty** — `$x()` the selectors; check age-gate / interstitial; check `useCDP` / cookies. See `references/scraping-failures.md`.
-- **Only Date is nil** — raw string vs Go layout; `replace` before `parseDate`. See `references/date-formats.md` and `references/post-processing.md`.
-- **Studio or Details wrong** — do not use メーカー as studio when レーベル / シリーズ is the label; strip HTML from Details.
-- **Nil pointer dereference** — This may be an upstream Stash bug when a fragment scraper returns zero rows while the scene block defines relationships (Performers/Tags/Studio). Test non-matching fragment input before deployment and report upstream failures; do not add `sceneByFragment` as a workaround. See `references/scraping-failures.md`.
+- **All fields empty** — `$x()` the selectors; check age-gate / interstitial; check `useCDP` / cookies. See `references/scraping-failures.md`. **Source:** troubleshooting guidance; live-test the selector.
+- **Only Date is nil** — raw string vs Go layout; `replace` before `parseDate`. See `references/date-formats.md` and `references/post-processing.md`. **Source:** official post-processing order and Go layouts.
+- **Studio or Details wrong** — do not use メーカー as studio when レーベル / シリーズ is the label; strip HTML from Details. **Heuristic:** confirm the site's labels before mapping.
+- **Nil pointer dereference** — This is an upstream Stash bug reported in issue #6921. It can occur when a fragment scraper returns zero rows while the scene block defines relationships (Performers/Tags/Studio). Test non-matching fragment input before deployment; do not add `sceneByFragment` as a workaround. See `references/scraping-failures.md`. **Source:** Stash issue #6921.
 
 ---
 
@@ -119,6 +128,8 @@ Load these files as needed for specific guidance:
 | `validator-errors-zh-TW.md` | Validator error messages (Chinese) |
 | `xpath-patterns.md` | XPath selector patterns, verification steps |
 
+**Source registry:** `references/UPSTREAM_SOURCES.md` records the authoritative source for each normative area.
+
 ---
 
 ## Output rules
@@ -127,21 +138,23 @@ Load these files as needed for specific guidance:
 - Emit the entire YAML; min change. Mark untested selectors with `# UNVERIFIED`.
 - New files: `URLs` + `Groups` / `groupByURL`. Do not add new `Movies` / `movieByURL`.
 
+**Heuristic:** Field-quality and selector choices are recommendations, not schema guarantees; live verification is required before marking them verified.
+
 ---
 
 ## Definition of Done
 
-- [ ] YAML validates with the official validator or the local stub with limitations documented
-- [ ] Root `name` is present and conventionally matches the CamelCase filename
+- [ ] YAML validates with `node validator/index.mjs`
 - [ ] `sceneByURL` has at least one entry with `action`, `url` array, and `scraper`
 - [ ] No invented search modes
-- [ ] No root `documentHeader` or `$vars
-- [ ] Fragment XPath/JSON modes include the required `queryURL`; script exceptions follow the script contract
+- [ ] No root `documentHeader` or `$vars`
 - [ ] `url` arrays sorted A–Z
 - [ ] Key fields (Title, Date, Studio, Image) match expected values on tested pages
 - [ ] Driver configuration follows rules: `useCDP` only in top-level `driver`, no `driver.cookies` in public scrapers
 - [ ] Scraped values not translated
-- [ ] `# Last Updated YYYY-MM-DD` at end of file (optional but recommended)
+- [ ] `python tools/check_scraper_docs.py` passes when documentation/examples changed
+
+**Source:** Official schema/validator for structure; live-page verification for extracted values; repository checker for documentation regression.
 
 ---
 
@@ -156,9 +169,12 @@ Load these files as needed for specific guidance:
 - ❌ Treating `sceneByFragment` as a nil-pointer workaround
 - ❌ Pointing `sceneByQueryFragment.queryURL` at a search endpoint (use `{url}` for the selected hit)
 
+**Source:** Structural and date rules are official-schema or Stash-development-backed; site capability, selector stability, studio semantics, and quality rules are `Heuristic` guidance and require live verification. Runtime panic guidance cites Stash issue #6921 in `scraping-failures.md`.
+
 ---
 
 ## Notes
 
 - The official CommunityScrapers schema and validator take precedence over local stubs and prose.
 - This skill is for generating scrapers that load in Stash. CommunityScrapers PR submission is a separate process.
+- Before changing a normative rule, verify it against `references/UPSTREAM_SOURCES.md` and add a nearby `Source:` or `Heuristic:` label.
