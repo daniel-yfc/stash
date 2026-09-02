@@ -6,7 +6,9 @@ on:
       - 'scrapers/**/*.yml'
       - 'validator/**'
       - 'scripts/scraper-quality-gate.sh'
-      - 'skills/stash-scraper-builder/references/scraper.schema.json'
+      - 'skills/stash-scraper-builder/**'
+      - 'tools/**'
+      - 'requirements.txt'
 
 permissions:
   contents: read
@@ -25,6 +27,19 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install documentation-check dependencies
+        run: python -m pip install pyyaml jsonschema
+
+      - name: Check documentation examples and contradictions
+        run: python tools/check_scraper_docs.py
 
       - name: Setup Deno
         uses: denoland/setup-deno@v2

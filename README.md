@@ -16,6 +16,7 @@ Agent rules for AI assistants are in [`AGENTS.md`](AGENTS.md).
 - `scrapers/private/` — Private scrapers (session cookies allowed here only)
 - `skills/stash-scraper-builder/` — Skill definition and reference documentation
 - `validator/` — JSON Schema validator
+- `tools/` — Documentation and contradiction checks
 - `tests/` — Test fixtures
 
 ## Usage
@@ -46,7 +47,7 @@ Install dependencies:
 # Node.js (validator)
 npm install
 
-# Python (tests)
+# Python (tests and documentation checker)
 pip install -r requirements.txt
 ```
 
@@ -58,6 +59,9 @@ npm run validate
 
 # Check URL array sorting
 npm run validate-sort
+
+# Check documentation examples and stale contradictions
+python tools/check_scraper_docs.py
 
 # Or directly
 node validator/index.mjs scrapers
