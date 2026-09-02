@@ -45,10 +45,7 @@ Studio:
 ## Minimal Nubiles-style template (G1)
 
 ```yaml
-# @meta
-# Last Updated: 2026-08-26
-# requires: py_common (if using script)
-
+name: Nubiles
 sceneByURL:
   - action: scrapeXPath
     url:

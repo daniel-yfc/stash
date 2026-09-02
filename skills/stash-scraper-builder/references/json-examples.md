@@ -2,12 +2,13 @@
 
 **Load when:** you need a complete-file `scrapeJson` template.
 
-> **概要（zh-TW）：** `scrapeJson` 定義只能放 `jsonScrapers`。禁止 root `name`。先用真實 API 回應驗證路徑。
+> **概要（zh-TW）：** `scrapeJson` 定義只能放 `jsonScrapers`。root `name:` 為必填，通常與 CamelCase 檔名一致。先用真實 API 回應驗證路徑。
 
 ## 1. Scene + search (real JSON API)
 
 ```yaml
 # Last Updated: YYYY-MM-DD
+name: ExampleJson
 sceneByURL:
   - action: scrapeJson
     url:
@@ -64,6 +65,7 @@ Use when the user pastes an HTML page URL but metadata lives on a JSON endpoint.
 
 ```yaml
 # Last Updated: YYYY-MM-DD
+name: ExampleJsonPage
 sceneByURL:
   - action: scrapeJson
     url:

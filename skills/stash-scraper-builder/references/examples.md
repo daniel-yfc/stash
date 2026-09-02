@@ -1,19 +1,22 @@
 # Examples
 
-## Minimal performer entry point
+## Minimal XPath performer entry point
 
 ```yaml
-performerByFragment:
-  action: scrapeXPath
-  queryURL: https://example.test/performers?q={url}
-  queryURLReplace:
-    title: ""
-  xPathScrapers:
+name: ExamplePerformer
+performerByURL:
+  - action: scrapeXPath
+    url:
+      - example.test/performers/
+    scraper: performerScraper
+
+xPathScrapers:
+  performerScraper:
     performer:
       Name: //h1[@class="performer-name"]/text()
 ```
 
-Use this as a starting template for performer scrapers. The same pattern applies for `performerByURL` and `performerByName`.
+Use `performerByURL` with `scrapeXPath` when the performer page itself contains the metadata. `performerByFragment` is reserved for `script` or `stash` workflows under the official schema; do not use `scrapeXPath` or `scrapeJson` there.
 
 ## parseDate — broken vs. fixed
 

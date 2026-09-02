@@ -2,12 +2,13 @@
 
 **Load when:** `action: script` (including dependency packages).
 
-> **概要（zh-TW）：** `*ByName` 回傳陣列、其餘回傳物件。`# requires:` 為檔案第一行註解；不設 root `name:`（刮削器名稱取自檔名）。每次輸出都要寫安裝前置。`performerByFragment` 僅限 script（有時 stash）；無 Python 套件就省略該模式。
+> **概要（zh-TW）：** `*ByName` 回傳陣列、其餘回傳物件。`# requires:` 為檔案第一行註解；root `name:` 為必填且通常與 CamelCase 檔名一致。每次輸出都要寫安裝前置。`performerByFragment` 僅限 script（有時 stash）；無 Python 套件就省略該模式。
 
 ## YAML shape
 
 ```yaml
 # requires: DependencyName
+name: ExampleScript
 sceneByURL:
   - action: script
     url:
@@ -19,7 +20,8 @@ sceneByURL:
       - scene-by-url
 ```
 
-- `# requires:` as a first-line comment. No root `name:` — the scraper name comes from the filename.
+- `# requires:` as a first-line comment.
+- Root `name:` is required by the official schema; use a CamelCase value matching the filename.
 - Relative path `../DependencyName/script.py`.
 - Typical extras: site id, then operation (`scene-by-url`). Keep that order on every action, including `groupByURL`.
 
@@ -28,9 +30,10 @@ Dependency-only package:
 ```yaml
 # script used as a dependency only
 # requires: py_common
+name: PyCommon
 ```
 
-No `*ByURL` / `*ByFragment` / `*ByName` on a pure package. No root `name:` there either.
+A dependency-only package has no `*ByURL` / `*ByFragment` / `*ByName` entry points, but it still requires the root `name:` field when represented as a scraper YAML file.
 
 ## Mode coverage (E1)
 
@@ -64,9 +67,9 @@ A YAML scraper fetches exactly one URL; `hasNextPage` / cursor pagination belong
 ```python
 results, cursor = [], None
 while True:
-    page = fetch_search(query, cursor)          # site client call
+    page = fetch_search(query, cursor)
     results.extend(page["items"])
-    cursor = page.get("nextCursor")             # or page["hasNextPage"] and next page index
+    cursor = page.get("nextCursor")
     if not cursor:
         break
 print(json.dumps(results))                      # ByName: always a list
@@ -112,6 +115,7 @@ Use only modes the site supports. `sceneByName` always pairs with `sceneByQueryF
 
 ```yaml
 # requires: SomeDependency
+name: ExampleScript
 sceneByURL:
   - action: script
     url:
@@ -155,7 +159,7 @@ performerByFragment:
   action: script
   script:
     - python
-      - ../SomeDependency/script.py
+    - ../SomeDependency/script.py
     - example
     - performer-by-fragment
 ```
