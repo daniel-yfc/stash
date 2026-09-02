@@ -28,8 +28,13 @@ def main():
     if not SCHEMA.exists():
         print(f"missing schema: {SCHEMA}", file=sys.stderr)
         return 2
-    schema = yaml.safe_load(SCHEMA.read_text(encoding="utf-8"))
-    validator = Draft7Validator(schema)
+    try:
+        schema = yaml.safe_load(SCHEMA.read_text(encoding="utf-8"))
+        validator = Draft7Validator(schema)
+    except (OSError, yaml.YAMLError, TypeError) as exc:
+        print(f"unable to load schema: {exc}", file=sys.stderr)
+        return 2
+
     failures = []
     checked = 0
 
