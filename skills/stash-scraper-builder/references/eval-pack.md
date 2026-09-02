@@ -51,7 +51,7 @@ A scraper that returns the wrong studio is a fail, even if the YAML is valid.
 - Performers with canonical JS from `performer-cleaning.md`; `Gender` omitted unless explicit.
 - Studio `Name` only (or `fixed` for single-brand).
 
-**Expected output:** one complete YAML; every emitted entry point is supported by the site, and all selectors are verified or marked `# UNVERIFIED`.
+**Expected output:** one complete YAML, all selectors verified or marked `# UNVERIFIED`.
 
 **Failure modes to catch:**
 - Fragment-only output.

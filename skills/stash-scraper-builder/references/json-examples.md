@@ -2,13 +2,13 @@
 
 **Load when:** you need a complete-file `scrapeJson` template.
 
-> **概要（zh-TW）：** `scrapeJson` 定義只能放 `jsonScrapers`。root `name:` 為必填，通常與 CamelCase 檔名一致。先用真實 API 回應驗證路徑。
+> **概要（zh-TW）：** `scrapeJson` 定義只能放 `jsonScrapers`。root `name:` 為官方 schema 必填，通常與 CamelCase 檔名一致。先用真實 API 回應驗證路徑。
 
 ## 1. Scene + search (real JSON API)
 
 ```yaml
-# Last Updated: YYYY-MM-DD
 name: ExampleJson
+# Last Updated: YYYY-MM-DD
 sceneByURL:
   - action: scrapeJson
     url:
@@ -64,8 +64,8 @@ If search hits omit a detail API URL, rewrite `{url}` with `queryURL` + `queryUR
 Use when the user pastes an HTML page URL but metadata lives on a JSON endpoint.
 
 ```yaml
+name: ExampleJson
 # Last Updated: YYYY-MM-DD
-name: ExampleJsonPage
 sceneByURL:
   - action: scrapeJson
     url:
@@ -93,6 +93,6 @@ jsonScrapers:
           fixed: "ExampleSite"
 ```
 
-Test the regex against a real page URL before output. `sceneByName` cannot use `queryURLReplace`. `queryURLReplace` keys are your capture names (`id`, `slug`), not official placeholders.
+Test the regex against a real page URL before output. `sceneByName` cannot use `queryURLReplace`. `queryURLReplace` keys are your capture names (`id`, `slug`) only where permitted by the schema; they are not official placeholders.
 
 An API `error` field does not crash YAML `scrapeJson`; selectors just come back empty. Checking `error` and returning `{}` belongs in a `script` scraper (`script-actions.md`).

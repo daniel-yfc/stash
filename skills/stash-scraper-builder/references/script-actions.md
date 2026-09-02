@@ -2,13 +2,13 @@
 
 **Load when:** `action: script` (including dependency packages).
 
-> **概要（zh-TW）：** `*ByName` 回傳陣列、其餘回傳物件。`# requires:` 為檔案第一行註解；root `name:` 為必填且通常與 CamelCase 檔名一致。每次輸出都要寫安裝前置。`performerByFragment` 僅限 script（有時 stash）；無 Python 套件就省略該模式。
+> **概要（zh-TW）：** `*ByName` 回傳陣列、其餘回傳物件。`# requires:` 為檔案第一行註解；root `name:` 為官方 schema 必填（通常與 CamelCase 檔名一致）。每次輸出都要寫安裝前置。`performerByFragment` 僅限 script（有時 stash）；無 Python 套件就省略該模式。
 
 ## YAML shape
 
 ```yaml
-# requires: DependencyName
 name: ExampleScript
+# requires: DependencyName
 sceneByURL:
   - action: script
     url:
@@ -20,20 +20,19 @@ sceneByURL:
       - scene-by-url
 ```
 
-- `# requires:` as a first-line comment.
-- Root `name:` is required by the official schema; use a CamelCase value matching the filename.
+- `# requires:` as a first-line comment after the optional YAML document comment/header. Root `name:` is required by the official schema and conventionally matches the CamelCase filename.
 - Relative path `../DependencyName/script.py`.
 - Typical extras: site id, then operation (`scene-by-url`). Keep that order on every action, including `groupByURL`.
 
 Dependency-only package:
 
 ```yaml
+name: PyCommon
 # script used as a dependency only
 # requires: py_common
-name: PyCommon
 ```
 
-A dependency-only package has no `*ByURL` / `*ByFragment` / `*ByName` entry points, but it still requires the root `name:` field when represented as a scraper YAML file.
+A dependency-only package has no `*ByURL` / `*ByFragment` / `*ByName` entry points, but still uses the required root `name:` field.
 
 ## Mode coverage (E1)
 
@@ -72,7 +71,7 @@ while True:
     cursor = page.get("nextCursor")
     if not cursor:
         break
-print(json.dumps(results))                      # ByName: always a list
+print(json.dumps(results))
 ```
 
 ## API error field (B4)
@@ -114,8 +113,8 @@ scrapers/
 Use only modes the site supports. `sceneByName` always pairs with `sceneByQueryFragment`. Prefer `group-by-url` for `groupByURL` (legacy scripts may still listen for `movie-by-url`).
 
 ```yaml
-# requires: SomeDependency
 name: ExampleScript
+# requires: SomeDependency
 sceneByURL:
   - action: script
     url:

@@ -1,6 +1,8 @@
 # Examples
 
-## Minimal XPath performer entry point
+## Minimal performer entry point
+
+For an XPath performer scraper, use `performerByURL`; the official schema reserves `performerByFragment` for `script` or `stash` actions.
 
 ```yaml
 name: ExamplePerformer
@@ -13,10 +15,11 @@ performerByURL:
 xPathScrapers:
   performerScraper:
     performer:
-      Name: //h1[@class="performer-name"]/text()
+      Name:
+        selector: "//h1[@class='performer-name']/text()"
 ```
 
-Use `performerByURL` with `scrapeXPath` when the performer page itself contains the metadata. `performerByFragment` is reserved for `script` or `stash` workflows under the official schema; do not use `scrapeXPath` or `scrapeJson` there.
+Use `performerByFragment` only with `action: script` or `action: stash`, when that mode is actually supported. Entry-point mappings reference root-level scraper definitions; they do not contain an inline `xPathScrapers` block.
 
 ## parseDate — broken vs. fixed
 
