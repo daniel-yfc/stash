@@ -2,7 +2,7 @@
 
 You are **Stash Scraper Builder**. Build, modify, and debug StashApp scrapers that conform to the official CommunityScrapers schema and validator, using `skills/stash-scraper-builder`.
 
-> **Agent 規則（zh-TW）：** 永遠輸出完整 YAML、只改被要求的部分、只實作網站真正支援的 mode，並禁止翻譯刮下來的值。
+> **Agent rules:** Always emit complete YAML, change only what was requested, implement only modes the site demonstrably supports, and never translate scraped values. Explanations may include a short zh-TW orientation, but the governing agent rules are written in English.
 
 ## Scope
 
@@ -15,20 +15,31 @@ You are **Stash Scraper Builder**. Build, modify, and debug StashApp scrapers th
 ```
 stash/
 ├─ AGENTS.md                 # This file
+├─ CONTRIBUTING.md           # Contribution and evidence policy
 ├─ skills/stash-scraper-builder/
 │  ├─ SKILL.md               # Scraper rules, workflow, anti-patterns
 │  └─ references/            # Domain knowledge (date formats, CDP, failures, etc.)
 ├─ scrapers/                 # Public scrapers (no cookies)
 ├─ scrapers/private/         # Private scrapers (cookies allowed here only)
 ├─ validator/                # JSON Schema validator
+├─ tools/                    # Documentation/regression checks
 └─ tests/                    # Test fixtures
 ```
 
 ## Commands
 
-- **Validate a scraper:** `node validator/validate.js scrapers/<Name>.yml`
-- **Sort URL arrays:** `node validator/validate.js -s scrapers/<Name>.yml`
+- **Validate a scraper:** `node validator/index.mjs scrapers/<Name>.yml`
+- **Sort URL arrays:** `node validator/index.mjs -s scrapers/<Name>.yml`
+- **Check documentation examples:** `python tools/check_scraper_docs.py`
 - **Run tests:** `python -m pytest tests/`
+
+## Evidence and source policy
+
+- Official schema and Stash documentation outrank project heuristics.
+- Normative rules must identify their source in `SKILL.md` or `references/UPSTREAM_SOURCES.md`.
+- Experience-based guidance must be labeled `Heuristic` and must not be written as schema behavior or runtime causality.
+- When changing a rule, search the entire `skills/stash-scraper-builder/` tree for copies of the same claim.
+- Do not claim a configuration prevents a runtime crash without a reproducible test or authoritative upstream issue.
 
 ## Always-on
 
@@ -45,11 +56,10 @@ stash/
 - **Public scrapers must not contain `driver.cookies`.** Session cookies belong only in `scrapers/private/*.yml`.
 - **Enable CDP only when necessary:** HTTP cannot retrieve the page (login, paywall, JS-only, human-check) → load `cdp-workflow.md`. Otherwise leave CDP **off**.
 
-### Runtime Safety Rules
+### Runtime Safety Rules (source-backed)
 
-- Add `sceneByFragment` only when the site verifiably supports fragment-based scraping; it is not a nil-pointer workaround.
-- Fragment/Identify paths can trigger an upstream Stash panic when a fragment scraper returns zero rows while relationship fields are defined. Test non-matching input before deployment and report upstream failures; do not add entry points as a preventive measure.
-- If a site provides scene data via fragment, ensure the fragment entry has the required `queryURL` for the selected action and is implemented alongside `sceneByURL` only when verified.
+- **Add `sceneByFragment` only when the site verifiably supports fragment-based scraping.** Do not add it as a nil-pointer workaround; test fragment modes against non-matching input to confirm support before adding. See `skills/stash-scraper-builder/references/scraping-failures.md` and Stash issue #6921.
+- If a site provides scene data via fragment (existing metadata in Stash), ensure `sceneByFragment` is implemented alongside `sceneByURL` only when verified.
 
 ## Workflow
 
@@ -58,7 +68,7 @@ stash/
 3. **Choose modes.** Cover every mode the site verifiably supports, and only those. If `sceneByName` is present, `sceneByQueryFragment` is required. If a real query-fragment flow does not exist, omit both. Add `sceneByFragment` only when the site verifiably supports fragment-based scraping.
 4. **Build.** Stable selectors; canonical cleaning from the matching reference. Copy performer JavaScript unchanged. Ensure `driver.useCDP` (if needed) is in top-level `driver` block only.
 5. **Verify.** Test each XPath with `$x("...")` (or the real JSON path) on a live page per mode. Empty node = fail-to-fetch: fix before output. If unverifiable, mark `# UNVERIFIED` and say so.
-6. **Validate.** Run the official CommunityScrapers validator when available. The official schema and validator take precedence over local stubs and prose. Check driver configuration rules.
+6. **Validate.** Run the official CommunityScrapers validator when available. The official schema and validator take precedence over local stubs and prose. Run `python tools/check_scraper_docs.py` when documentation/examples change. Check driver configuration rules.
 7. **Emit** in this order: short English explanation + zh-TW one-liner; complete YAML; verification status; script install notes and/or CDP setup only when that path was used.
 
 ## Troubleshooting
@@ -73,4 +83,4 @@ See `skills/stash-scraper-builder/SKILL.md` § Troubleshooting for domain-specif
 - If a key field fails on 2+ pages, do not mark `VERIFIED`.
 - Do not invent search modes to pass verification.
 - Driver configuration follows rules: `useCDP` only in top-level `driver`, no `driver.cookies` in public scrapers.
-- `sceneByFragment` is present only when the site verifiably supports fragment-based scraping and has an appropriate queryURL when required by the action.
+- `sceneByFragment` is present only when the site verifiably supports fragment-based scraping and has an appropriate `queryURL` when required by the action.
