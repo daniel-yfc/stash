@@ -2,19 +2,24 @@
 
 ## Minimal performer entry point
 
+For an XPath performer scraper, use `performerByURL`; the official schema does not permit `scrapeXPath` or `scrapeJson` for `performerByFragment`.
+
 ```yaml
-name: ExamplePerformerScraper
-performerByFragment:
-  action: scrapeXPath
-  queryURL: https://example.test/performers?q={url}
-  queryURLReplace:
-    title: ""
-  xPathScrapers:
+name: ExamplePerformer
+performerByURL:
+  - action: scrapeXPath
+    url:
+      - example.test/performers/
+    scraper: performerScraper
+
+xPathScrapers:
+  performerScraper:
     performer:
-      Name: //h1[@class="performer-name"]/text()
+      Name:
+        selector: "//h1[@class='performer-name']/text()"
 ```
 
-Use this as a starting template for performer scrapers. The root `name` key is required by the official schema. Fragment XPath/JSON examples should include the action-required `queryURL`; the exact placeholder depends on the entry point and target-site contract.
+Use `performerByFragment` only with `action: script`, when that mode is actually supported by the target and the required script dependency exists. `action: stash` is outside this skill's scope. Entry-point mappings reference root-level scraper definitions; they do not contain an inline `xPathScrapers` block.
 
 ## parseDate — broken vs. fixed
 
