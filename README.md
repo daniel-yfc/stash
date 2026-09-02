@@ -16,6 +16,7 @@ Agent rules for AI assistants are in [`AGENTS.md`](AGENTS.md).
 - `scrapers/private/` — Private scrapers (session cookies allowed here only)
 - `skills/stash-scraper-builder/` — Skill definition and reference documentation
 - `validator/` — JSON Schema validator
+- `tools/` — Documentation and contradiction checks
 - `tests/` — Test fixtures
 
 ## Usage
@@ -23,13 +24,19 @@ Agent rules for AI assistants are in [`AGENTS.md`](AGENTS.md).
 Validate a scraper:
 
 ```bash
-node validator/validate.js scrapers/<Name>.yml
+node validator/index.mjs scrapers/<Name>.yml
 ```
 
 Sort URL arrays:
 
 ```bash
-node validator/validate.js -s scrapers/<Name>.yml
+node validator/index.mjs -s scrapers/<Name>.yml
+```
+
+Check documentation examples and stale contradictions:
+
+```bash
+python tools/check_scraper_docs.py
 ```
 
 Run tests:
@@ -46,35 +53,24 @@ Install dependencies:
 # Node.js (validator)
 npm install
 
-# Python (tests)
+# Python (tests and documentation checker)
 pip install -r requirements.txt
 ```
 
 Run validation locally:
 
 ```bash
-# Validate all scrapers
 npm run validate
-
-# Check URL array sorting
 npm run validate-sort
-
-# Or directly
-node validator/index.mjs scrapers
-node validator/index.mjs -s scrapers
-```
-
-Run tests:
-
-```bash
+python tools/check_scraper_docs.py
 pytest
 ```
 
-CI will automatically run these checks on every push and PR.
+CI runs these checks on every push and PR.
 
 ## Contributing
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full contributor guide.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the source hierarchy, evidence and validation policy, documentation rules, and required checks.
 
 ## License
 

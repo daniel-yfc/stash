@@ -1,58 +1,31 @@
 # Contributing
 
-Thanks for contributing to Stash Scraper Builder!
+## Source hierarchy
 
-## Quick Start
+Use this order when authoring or changing scraper guidance:
 
-1. Fork and clone the repository
-2. Install dependencies:
-   ```bash
-   # Node.js (validator)
-   npm install
+1. Official CommunityScrapers schema and validator.
+2. Official Stash scraper-development documentation.
+3. Upstream Stash issues or source for runtime behavior.
+4. Project references and examples.
+5. Heuristics, clearly labeled as `Heuristic`.
 
-   # Python (tests)
-   pip install -r requirements.txt
-   ```
-3. Create a branch: `git checkout -b feat/my-scraper`
+If project guidance conflicts with an authoritative source, stop and correct the project guidance before adding new examples.
 
-## Making Changes
+## Documentation changes
 
-### Adding a Scraper
+- Every normative schema rule must include a nearby source citation or point to the relevant entry in `references/UPSTREAM_SOURCES.md`.
+- Label experience-based advice as `Heuristic`; do not present it as schema behavior or runtime causality.
+- Search all files under `skills/stash-scraper-builder/` for duplicated wording before editing a rule.
+- Keep complete YAML examples copy-paste-valid and include root `name:`.
+- Run `python tools/check_scraper_docs.py` after changing documentation examples or rules.
+- Run `npm run validate` and `npm run validate-sort` after scraper changes.
+- Run `pytest` before opening a pull request.
 
-1. Create `scrapers/MyScraper.yml`
-2. Validate locally: `npm run validate`
-3. Check URL sorting: `npm run validate-sort`
-4. Test on live pages
+## Runtime claims
 
-### Modifying the Skill
+Do not claim a configuration prevents a runtime crash without a reproducible test or authoritative upstream evidence. For upstream bugs, cite the issue and document the triggering condition and mitigation separately.
 
-1. Edit files in `skills/stash-scraper-builder/`
-2. Ensure all references remain valid
-3. Update `AGENTS.md` if rules change
+## Pull requests
 
-## Before You Push
-
-- [ ] Run `npm run validate` — no schema errors
-- [ ] Run `npm run validate-sort` — URLs sorted A–Z
-- [ ] Run `pytest` — all tests pass
-- [ ] Check links in Markdown: `lychee .` (optional)
-
-## Pull Requests
-
-- PRs to `scrapers/`, `skills/`, or `validator/` require maintainer review (see `.github/CODEOWNERS`)
-- CI runs automatically:
-  - `validate.yml` — schema + URL sorting
-  - `test-eval.yml` — Python tests
-  - `link-check.yml` — Markdown links
-  - `pr-check.yml` — combined status check
-- All CI checks must pass before merge
-
-## Code Style
-
-- YAML: 2-space indentation, sorted URL arrays
-- Python: follow `pytest` conventions in `tests/`
-- Markdown: links checked by CI, use relative paths for internal links
-
-## Questions?
-
-Open an issue or reach out to `@daniel-yfc`.
+Describe the authoritative source for behavior changes, list validation commands run, and note any remaining unverified live-page selectors.
