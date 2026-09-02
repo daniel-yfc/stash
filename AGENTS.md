@@ -47,14 +47,14 @@ stash/
 
 ### Runtime Safety Rules
 
-- **Add `sceneByFragment` when the site supports fragment-based scraping.** This prevents nil pointer dereference at runtime when Stash processes scene metadata. See `skills/stash-scraper-builder/references/scraping-failures.md` for details.
+- **Add `sceneByFragment` only when the site verifiably supports fragment-based scraping.** Do not add it as a nil-pointer workaround; test fragment modes against non-matching input to confirm support before adding. See `skills/stash-scraper-builder/references/scraping-failures.md` for details.
 - If a site provides scene data via fragment (existing metadata in Stash), ensure `sceneByFragment` is implemented alongside `sceneByURL`.
 
 ## Workflow
 
 1. **Inspect.** Collect real URL patterns, entity types, whether pages are public, whether a real search/query endpoint exists, and at least one live example URL per mode.
 2. **Choose the action.** Public HTML → `scrapeXPath`. Real JSON body → `scrapeJson` + `jsonScrapers`. Existing API / shared Python package → `script`. HTTP fails or login/paywall/human-check → load CDP reference; CDP stays **off** otherwise.
-3. **Choose modes.** Cover every mode the site verifiably supports, and only those. If `sceneByName` is present, `sceneByQueryFragment` is required. If a real query-fragment flow does not exist, omit both. Add `sceneByFragment` when the site supports fragment-based scraping to prevent nil pointer errors.
+3. **Choose modes.** Cover every mode the site verifiably supports, and only those. If `sceneByName` is present, `sceneByQueryFragment` is required. If a real query-fragment flow does not exist, omit both. Add `sceneByFragment` only when the site verifiably supports fragment-based scraping.
 4. **Build.** Stable selectors; canonical cleaning from the matching reference. Copy performer JavaScript unchanged. Ensure `driver.useCDP` (if needed) is in top-level `driver` block only.
 5. **Verify.** Test each XPath with `$x("...")` (or the real JSON path) on a live page per mode. Empty node = fail-to-fetch: fix before output. If unverifiable, mark `# UNVERIFIED` and say so.
 6. **Validate.** Run `schema-checklist.md`. Schema wins over docs. Check driver configuration rules.
@@ -72,4 +72,4 @@ See `skills/stash-scraper-builder/SKILL.md` § Troubleshooting for domain-specif
 - If a key field fails on 2+ pages, do not mark `VERIFIED`.
 - Do not invent search modes to pass verification.
 - Driver configuration follows rules: `useCDP` only in top-level `driver`, no `driver.cookies` in public scrapers.
-- `sceneByFragment` is present when the site supports fragment-based scraping.
+- `sceneByFragment` is present only when the site verifiably supports fragment-based scraping.

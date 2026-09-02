@@ -1,17 +1,19 @@
 ---
 name: stash-scraper-builder
-description: >
-  Generate, modify, and debug StashApp scraper YAML files (XPath, JSON,
-  script, and CDP driver modes) conforming to scraper.schema.json.
-  Use when building a scraper for a new site, fixing empty fields or
-  nil dates, or validating scraper YAML. Not for CommunityScrapers PR
-  submission or non-Stash web scraping.
+description: >-
+  Build, modify, validate, and debug StashApp scraper YAML files using XPath,
+  JSON, script, and CDP modes. Use when creating a scraper for a supported
+  site, fixing empty fields, nil dates, or nil pointer errors, validating
+  scraper YAML, or mapping studio, performer, or group extraction.
+  Do not use for generic web scraping, generic YAML, Identify or stash-box
+  scrapers, fabricated search endpoints, or CommunityScrapers PR submission.
 metadata:
-  version: "2026-08-30"
+  version: "2026-09-02"
+  canonical-schema: "https://github.com/stashapp/CommunityScrapers/blob/master/src/scraper.schema.json"
 ---
 # Skill: stash-scraper-builder
 
-**Version**: 2026-08-30
+**Version**: 2026-09-02
 **Scope**: Generate Stash scraper YAML files that load and scrape correctly.
 **Canonical runtime**: https://github.com/stashapp/CommunityScrapers/tree/master/src
 
@@ -146,7 +148,7 @@ Load these files as needed for specific guidance:
 - ❌ Writing `Gender` by default (omit unless site is single-gender with stated reason)
 - ❌ Using `YYYY-MM-DD` for `parseDate` (use Go layout: `2006-01-02`)
 - ❌ Putting `concat` inside `postProcess` (use attribute-level `concat`)
-- ❌ Adding `sceneByFragment` as a preventive measure for nil pointer panics (this is an upstream Stash bug; test fragment modes against non-matching input instead)
+- ❌ Adding `sceneByFragment` when the site does not verifiably support fragment-based scraping — add it only when confirmed, not as a nil-pointer workaround
 - ❌ Pointing `sceneByQueryFragment.queryURL` at a search endpoint (use `{url}` for the selected hit)
 
 ---
