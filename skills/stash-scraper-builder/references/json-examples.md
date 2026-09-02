@@ -93,6 +93,6 @@ jsonScrapers:
           fixed: "ExampleSite"
 ```
 
-Test the regex against a real page URL before output. `sceneByName` cannot use `queryURLReplace`. For a `sceneByURL` entry, the official schema permits only the `url` replacement key; fragment modes permit `checksum`, `filename`, `oshash`, `title`, or `url`. Custom names such as `id` and `slug` are not valid replacement keys.
+Test the regex against a real page URL before output. `sceneByName` cannot use `queryURLReplace`. For a `sceneByURL` entry, the official schema permits only the `url` replacement key; fragment modes permit `checksum`, `filename`, `oshash`, `phash`, `title`, or `url`. Custom names such as `id` and `slug` are not valid replacement keys.
 
 An API `error` field does not crash YAML `scrapeJson`; selectors just come back empty. Checking `error` and returning `{}` belongs in a `script` scraper (`script-actions.md`).
