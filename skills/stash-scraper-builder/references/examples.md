@@ -3,6 +3,7 @@
 ## Minimal performer entry point
 
 ```yaml
+name: ExamplePerformerScraper
 performerByFragment:
   action: scrapeXPath
   queryURL: https://example.test/performers?q={url}
@@ -13,7 +14,7 @@ performerByFragment:
       Name: //h1[@class="performer-name"]/text()
 ```
 
-Use this as a starting template for performer scrapers. The same pattern applies for `performerByURL` and `performerByName`.
+Use this as a starting template for performer scrapers. The root `name` key is required by the official schema. Fragment XPath/JSON examples should include the action-required `queryURL`; the exact placeholder depends on the entry point and target-site contract.
 
 ## parseDate — broken vs. fixed
 

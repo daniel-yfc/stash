@@ -48,14 +48,14 @@ Debug common scraping issues and failures.
 
 **Symptoms:** Stash runtime crashes with "nil pointer dereference" error when processing scene metadata.
 
-**Cause:** This is an **upstream Stash bug** (v0.31.1+) that occurs in `mappedScraper.processSceneRelationships` via `jsonFragmentScraper.scrapeSceneByScene`. The panic is triggered when a fragment scraper returns **zero rows** while the scene block defines relationships (Performers/Tags/Studio).
+**Cause:** This may be an **upstream Stash bug** when `mappedScraper.processSceneRelationships` processes a fragment result with zero rows while the scene block defines relationships (Performers/Tags/Studio).
 
-**Important:** This is **not** a scraper-authoring defect. Adding `sceneByFragment` with relationship mappings **creates** the trigger condition rather than preventing it.
+**Important:** This is not a scraper-authoring workaround. Adding `sceneByFragment` with relationship mappings can create the trigger condition rather than preventing it.
 
 **Mitigation:**
 - Test fragment modes against non-matching input before deployment
 - Verify fragment scrapers return valid results on test scenes
-- If a site doesn't support fragment scraping, omit `sceneByFragment` rather than adding it as a "preventive measure"
+- If a site doesn't support fragment scraping, omit `sceneByFragment`
 - Report upstream to Stash issue tracker if encountered
 
 **Reference:** Stash issue #6921
@@ -77,15 +77,16 @@ Debug common scraping issues and failures.
 
 ## Turnstile / reCAPTCHA
 
-**Symptoms:** Scraper fails on pages with CAPTCHA challenges.
-
-**Causes:**
-- Site requires human verification
+**Symptoms:** Site requires human verification
 
 **Mitigation:**
 - Use CDP with visible browser
-- Solve CAPTCHA manually in browser before scraping
-- Consider whether the site is appropriate for automated scraping
+- Solve CAPTCHA manually in browser
+- Consider whether site is appropriate for automation
+
+## Fragment queryURL note
+
+For XPath/JSON fragment actions, include the required `queryURL` for the entry point and target site. Script actions follow their script contract. Do not add fragment entry points merely to address a runtime panic.
 
 ## References
 

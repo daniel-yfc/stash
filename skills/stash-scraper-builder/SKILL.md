@@ -8,14 +8,14 @@ description: >-
   Do not use for generic web scraping, generic YAML, Identify or stash-box
   scrapers, fabricated search endpoints, or CommunityScrapers PR submission.
 metadata:
-  version: "2026-09-02"
+  version: "2026-09-03"
   canonical-schema: "https://github.com/stashapp/CommunityScrapers/blob/master/src/scraper.schema.json"
 ---
 # Skill: stash-scraper-builder
 
-**Version**: 2026-09-02
+**Version**: 2026-09-03
 **Scope**: Generate Stash scraper YAML files that load and scrape correctly.
-**Canonical runtime**: https://github.com/stashapp/CommunityScrapers/tree/master/src
+**Canonical runtime**: Official CommunityScrapers validator and schema.
 
 ---
 
@@ -40,9 +40,10 @@ xPathScrapers:
 
 ### Prohibited patterns
 
-- Do **not** emit root keys `documentHeader` or `$vars`. The filename is the scraper name. `#` comments are allowed.
+- Do **not** emit root keys `documentHeader` or `$vars`. Root `name` is required by the official schema; conventionally match the CamelCase filename.
 - URL actions: `url` is an array (case-sensitive contains-match).
 - Do not invent search modes (`sceneByName` / `sceneByQueryFragment`) unless the site actually has search.
+- For XPath/JSON fragment entry points, provide the action-required `queryURL`; script actions may use their script contract instead.
 
 ---
 
@@ -71,6 +72,7 @@ xPathScrapers:
 ### Step 4: Validate
 
 - Run `node validator/validate.js scrapers/Foo.yml` locally if possible.
+- Prefer the official CommunityScrapers validator and schema over the bundled local stub.
 - Check that all referenced keys exist (no dangling refs).
 - Ensure `url` arrays are sorted A–Z (`validator -s`).
 
@@ -91,7 +93,7 @@ xPathScrapers:
 - **All fields empty** — `$x()` the selectors; check age-gate / interstitial; check `useCDP` / cookies. See `references/scraping-failures.md`.
 - **Only Date is nil** — raw string vs Go layout; `replace` before `parseDate`. See `references/date-formats.md` and `references/post-processing.md`.
 - **Studio or Details wrong** — do not use メーカー as studio when レーベル / シリーズ is the label; strip HTML from Details.
-- **Nil pointer dereference** — This is an upstream Stash bug (v0.31.1+) that occurs when a fragment scraper returns zero rows while the scene block defines relationships (Performers/Tags/Studio). Mitigate by testing fragment modes against non-matching input before deployment. See `references/scraping-failures.md`.
+- **Nil pointer dereference** — This may be an upstream Stash bug when a fragment scraper returns zero rows while the scene block defines relationships (Performers/Tags/Studio). Test non-matching fragment input before deployment and report upstream failures; do not add `sceneByFragment` as a workaround. See `references/scraping-failures.md`.
 
 ---
 
@@ -129,10 +131,12 @@ Load these files as needed for specific guidance:
 
 ## Definition of Done
 
-- [ ] YAML validates with `node validator/validate.js`
+- [ ] YAML validates with the official validator or the local stub with limitations documented
+- [ ] Root `name` is present and conventionally matches the CamelCase filename
 - [ ] `sceneByURL` has at least one entry with `action`, `url` array, and `scraper`
 - [ ] No invented search modes
-- [ ] No root `documentHeader` or `$vars`
+- [ ] No root `documentHeader` or `$vars
+- [ ] Fragment XPath/JSON modes include the required `queryURL`; script exceptions follow the script contract
 - [ ] `url` arrays sorted A–Z
 - [ ] Key fields (Title, Date, Studio, Image) match expected values on tested pages
 - [ ] Driver configuration follows rules: `useCDP` only in top-level `driver`, no `driver.cookies` in public scrapers
@@ -148,12 +152,13 @@ Load these files as needed for specific guidance:
 - ❌ Writing `Gender` by default (omit unless site is single-gender with stated reason)
 - ❌ Using `YYYY-MM-DD` for `parseDate` (use Go layout: `2006-01-02`)
 - ❌ Putting `concat` inside `postProcess` (use attribute-level `concat`)
-- ❌ Adding `sceneByFragment` when the site does not verifiably support fragment-based scraping — add it only when confirmed, not as a nil-pointer workaround
+- ❌ Adding `sceneByFragment` without verified fragment support or required queryURL
+- ❌ Treating `sceneByFragment` as a nil-pointer workaround
 - ❌ Pointing `sceneByQueryFragment.queryURL` at a search endpoint (use `{url}` for the selected hit)
 
 ---
 
 ## Notes
 
-- Official schema wins over local stub. If in doubt, check https://github.com/stashapp/CommunityScrapers/blob/master/src/scraper.schema.json
+- The official CommunityScrapers schema and validator take precedence over local stubs and prose.
 - This skill is for generating scrapers that load in Stash. CommunityScrapers PR submission is a separate process.

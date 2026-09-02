@@ -2,11 +2,12 @@
 
 **Load when:** `action: script` (including dependency packages).
 
-> **概要（zh-TW）：** `*ByName` 回傳陣列、其餘回傳物件。`# requires:` 為檔案第一行註解；不設 root `name:`（刮削器名稱取自檔名）。每次輸出都要寫安裝前置。`performerByFragment` 僅限 script（有時 stash）；無 Python 套件就省略該模式。
+> **概要（zh-TW）：** `*ByName` 回傳陣列、其餘回傳物件。`# requires:` 為檔案第一行註解；根層 `name:` 仍是 scraper schema 必填欄位。每次輸出都要寫安裝前置。`performerByFragment` 僅限 script（有時 stash）；無 Python 套件就省略該模式。
 
 ## YAML shape
 
 ```yaml
+name: ExampleScriptScraper
 # requires: DependencyName
 sceneByURL:
   - action: script
@@ -19,7 +20,7 @@ sceneByURL:
       - scene-by-url
 ```
 
-- `# requires:` as a first-line comment. No root `name:` — the scraper name comes from the filename.
+- Root `name` is required by the official schema. The first-line `# requires:` comment remains useful for dependency discovery.
 - Relative path `../DependencyName/script.py`.
 - Typical extras: site id, then operation (`scene-by-url`). Keep that order on every action, including `groupByURL`.
 
@@ -30,7 +31,7 @@ Dependency-only package:
 # requires: py_common
 ```
 
-No `*ByURL` / `*ByFragment` / `*ByName` on a pure package. No root `name:` there either.
+A pure dependency package is not itself a scraper file and therefore has no scraper entry points. If represented as a scraper YAML, include the required root `name` and validate it.
 
 ## Mode coverage (E1)
 
@@ -111,6 +112,7 @@ scrapers/
 Use only modes the site supports. `sceneByName` always pairs with `sceneByQueryFragment`. Prefer `group-by-url` for `groupByURL` (legacy scripts may still listen for `movie-by-url`).
 
 ```yaml
+name: SomeDependencyScraper
 # requires: SomeDependency
 sceneByURL:
   - action: script
@@ -155,7 +157,7 @@ performerByFragment:
   action: script
   script:
     - python
-      - ../SomeDependency/script.py
+    - ../SomeDependency/script.py
     - example
     - performer-by-fragment
 ```

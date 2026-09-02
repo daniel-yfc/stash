@@ -1,14 +1,21 @@
 # Schema Validation Checklist
 
-Use this checklist before emitting a scraper YAML file. Run `node validator/validate.js` after each change.
+Use this checklist before emitting a scraper YAML file. Run the official CommunityScrapers validator after each change when available.
 
 ## Required Structure
 
 - [ ] `name` key present and matches CamelCase filename
 - [ ] At least one entry point (`sceneByURL`, `sceneByName`, etc.)
-- [ ] Each entry has `action`, `url` (array), and `scraper` reference
+- [ ] Each entry has the fields required by its action and entry-point schema
+- [ ] Fragment XPath/JSON entry points include the required `queryURL`; script actions follow their own script contract
 - [ ] No root keys `documentHeader` or `$vars`
 - [ ] `url` arrays are sorted A–Z (`validator -s`)
+
+## Authority
+
+- [ ] Official CommunityScrapers schema and validator are authoritative
+- [ ] Local `references/scraper.schema.json` is an offline stub only and must not override the official validator
+- [ ] Any local-vs-official discrepancy is documented before relying on the local stub
 
 ## Scraper Definition
 
@@ -33,7 +40,7 @@ Use this checklist before emitting a scraper YAML file. Run `node validator/vali
 
 ## Output
 
-- [ ] Key fields (Title, Date, Studio, Image) match expected values on tested pages
+- [ ] Key fields (Title, Date, Studio, Image) match expected values on tested URLs
 - [ ] Untested selectors marked `# UNVERIFIED`
 - [ ] `# Last Updated YYYY-MM-DD` at end of file (optional but recommended)
 - [ ] Explanations in English + short zh-TW orientation; scraped values in source language

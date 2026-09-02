@@ -8,19 +8,20 @@ Patterns and guidance for JSON-based scrapers.
 |------|----------------|
 | `sceneByName` | `{}` (empty object for search endpoint) |
 | `sceneByQueryFragment` | `{url}` of the selected hit, optionally rewritten with `queryURLReplace`. |
-| `sceneByURL` / `sceneByFragment` | Optional rewrite of the pasted URL into an API URL. |
+| `sceneByURL` / `sceneByFragment` | Use a direct API URL or an action-supported rewrite of the pasted URL. For XPath/JSON fragment actions, provide the required `queryURL`; do not assume it is optional. |
 
 **Official queryURL placeholders:**
 - `{}` — empty object (used for `sceneByName` search endpoint)
 - `{url}` — the selected hit URL (used for `sceneByQueryFragment`)
 - `{filename}` — the scraper filename (fragment modes)
-- `{title}` — **official for `sceneByFragment`** but use `{url}` for fragment queries that fetch scene details
+- `{title}` — official for `sceneByFragment`; use it only where that entry point and the target site’s URL contract support it
 
-**Important:** While `{title}` is an official placeholder for `sceneByFragment`, the recommended practice is to use `{url}` for `sceneByQueryFragment` to pass the selected scene URL. Do not construct queryURLs pointing to search endpoints for fragment queries.
+**Important:** For `sceneByQueryFragment`, use `{url}` to pass the selected scene URL. Do not construct queryURLs pointing to search endpoints for fragment queries. A fragment action that requires a queryURL must include one; script actions follow their script contract.
 
-`queryURLReplace` keys are **your** names (`id`, `slug`) filled from regex on the input URL.
+`queryURLReplace` syntax and key names must be checked against the official validator and the target entry point. Do not describe all keys as custom capture names or all keys as official placeholders without verification.
 
 ```yaml
+name: ExampleJsonScraper
 sceneByName:
   action: scrapeJson
   queryURL: {}
