@@ -70,11 +70,11 @@ sceneByURL:
   - action: scrapeJson
     url:
       - "examplesite.test/works/"
-    queryURL: "https://api.examplesite.test/v1/scene/{id}"
+    queryURL: "{url}"
     queryURLReplace:
-      id:
+      url:
         - regex: ".*/works/([^/?#]+).*"
-          with: "$1"
+          with: "https://api.examplesite.test/v1/scene/$1"
     scraper: sceneJson
 
 jsonScrapers:
@@ -93,6 +93,6 @@ jsonScrapers:
           fixed: "ExampleSite"
 ```
 
-Test the regex against a real page URL before output. `sceneByName` cannot use `queryURLReplace`. `queryURLReplace` keys are your capture names (`id`, `slug`) only where permitted by the schema; they are not official placeholders.
+Test the regex against a real page URL before output. `sceneByName` cannot use `queryURLReplace`. For a `sceneByURL` entry, the official schema permits only the `url` replacement key; fragment modes permit `checksum`, `filename`, `oshash`, `title`, or `url`. Custom names such as `id` and `slug` are not valid replacement keys.
 
 An API `error` field does not crash YAML `scrapeJson`; selectors just come back empty. Checking `error` and returning `{}` belongs in a `script` scraper (`script-actions.md`).

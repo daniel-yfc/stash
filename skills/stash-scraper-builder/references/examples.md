@@ -19,7 +19,7 @@ xPathScrapers:
         selector: "//h1[@class='performer-name']/text()"
 ```
 
-Use `performerByFragment` only with `action: script` or `action: stash`, when that mode is actually supported. Entry-point mappings reference root-level scraper definitions; they do not contain an inline `xPathScrapers` block.
+Use `performerByFragment` only with `action: script`, when that mode is actually supported by the target and the required script dependency exists. `action: stash` is outside this skill's scope. Entry-point mappings reference root-level scraper definitions; they do not contain an inline `xPathScrapers` block.
 
 ## parseDate — broken vs. fixed
 
