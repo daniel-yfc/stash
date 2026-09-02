@@ -37,3 +37,14 @@ Use this checklist before emitting a scraper YAML file. Run `node validator/vali
 - [ ] Untested selectors marked `# UNVERIFIED`
 - [ ] `# Last Updated YYYY-MM-DD` at end of file (optional but recommended)
 - [ ] Explanations in English + short zh-TW orientation; scraped values in source language
+
+## CI/CD Checks
+
+On every push and PR, GitHub Actions runs:
+
+- **Schema validation** — `validate.yml` runs `node validator/index.mjs scrapers`
+- **URL sorting** — `validate.yml` runs `node validator/index.mjs -s scrapers`
+- **Python tests** — `test-eval.yml` runs `pytest`
+- **Link check** — `link-check.yml` runs `lychee` on all Markdown files
+
+Ensure all checks pass locally before pushing to avoid CI failures.

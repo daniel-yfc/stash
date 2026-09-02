@@ -38,12 +38,43 @@ Run tests:
 python -m pytest tests/
 ```
 
+## Development
+
+Install dependencies:
+
+```bash
+# Node.js (validator)
+npm install
+
+# Python (tests)
+pip install -r requirements.txt
+```
+
+Run validation locally:
+
+```bash
+# Validate all scrapers
+npm run validate
+
+# Check URL array sorting
+npm run validate-sort
+
+# Or directly
+node validator/index.mjs scrapers
+node validator/index.mjs -s scrapers
+```
+
+Run tests:
+
+```bash
+pytest
+```
+
+CI will automatically run these checks on every push and PR.
+
 ## Contributing
 
-1. Create or modify a scraper in `scrapers/`
-2. Validate with `node validator/validate.js`
-3. Ensure all fields are verified on live pages
-4. Submit a pull request
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full contributor guide.
 
 ## License
 
