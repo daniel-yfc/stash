@@ -2,58 +2,34 @@ name: Validate Scrapers
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'scrapers/**/*.yml'
       - 'validator/**'
-      - 'scripts/scraper-quality-gate.sh'
-      - 'skills/stash-scraper-builder/references/scraper.schema.json'
   pull_request:
+    branches:
+      - main
     paths:
       - 'scrapers/**/*.yml'
       - 'validator/**'
-      - 'scripts/scraper-quality-gate.sh'
-      - 'skills/stash-scraper-builder/references/scraper.schema.json'
-  workflow_dispatch:
-
-permissions:
-  contents: read
-
-concurrency:
-  group: validate-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Deno
-        uses: denoland/setup-deno@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          deno-version: v1.x
+          node-version: '20'
 
-      - name: Run full scraper validation
-        run: |
-          echo "=== Running Scraper Validation (schema + policy) ==="
-          echo ""
+      - name: Install dependencies
+        run: npm ci || npm install
 
-          SCRAPERS=$(find scrapers -name "*.yml" -type f | sort)
-          FAILED=0
-          for scraper in $SCRAPERS; do
-            echo "Validating $scraper..."
-            if bash scripts/scraper-quality-gate.sh "$scraper"; then
-              echo "  ✅ PASS"
-            else
-              echo "  ❌ FAIL"
-              FAILED=1
-            fi
-            echo ""
-          done
+      - name: Validate scraper schemas
+        run: node validator/index.mjs scrapers
 
-          if [ $FAILED -ne 0 ]; then
-            echo "::error::Validation failed for one or more scrapers"
-            exit 1
-          fi
+      - name: Check URL array sorting
+        run: node validator/index.mjs -s scrapers
