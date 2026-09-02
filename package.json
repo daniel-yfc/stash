@@ -1,0 +1,10 @@
+{
+  "name": "stash-scraper-builder",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "validate": "node validator/index.mjs scrapers",
+    "validate-sort": "node validator/index.mjs -s scrapers",
+    "test": "echo \"No JS tests\" && exit 0"
+  }
+}
