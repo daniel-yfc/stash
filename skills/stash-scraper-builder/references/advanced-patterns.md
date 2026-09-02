@@ -1,39 +1,41 @@
 # Advanced Patterns
 
-**Load when:** subScraper, YAML anchors, multi-site networks, or studio-name normalization. Optional; not required for a valid scraper.
+## Anchors
 
-> **概要（zh-TW）：** 僅在情況出現時使用。每個 subScraper 都是一次額外請求。
+Use YAML anchors to share selector blocks across entry points without duplication.
 
-## subScraper (G6)
+```yaml
+sceneByURL:
+  - action: scrapeXPath
+    url:
+      - https://example.test
+    xPathScrapers:
+      scene: &scene_selectors
+        Title: //h1/text()
+        Date: //span[@class="date"]/text()
 
-Use when a field needs a second fetch (performer detail URL, full-size image page). Verify the sub-page selector on the real sub-page. Weigh rate-limit cost.
+sceneByFragment:
+  action: scrapeXPath
+  queryURL: https://example.test/search?q={url}
+  xPathScrapers:
+    scene: *scene_selectors
+```
 
-**Default rule:** Forbid `subScraper` by default. Allow only when the value exists **solely on another page** (not just hidden behind JS).
+## Studio map
 
-**Performance targets:**
-- XPath subScrapers: 1–3 seconds per field.
-- CDP subScrapers: 5–10 seconds per field.
-- Rate-limit risk → batch in `script` instead.
+Use `map` under a studio field to normalise site names to canonical studio names.
 
-## YAML anchors (G2)
+```yaml
+Studio:
+  Name:
+    fixed: "Studio Name"
+  map:
+    "Old Name": "Canonical Name"
+    "Alternate Name": "Canonical Name"
+```
 
-Use only for a block referenced **three or more times** (shared Performers/Studio across scene + gallery + image). Two uses: duplicate for readability.
+## subScraper
 
-**Important:** Anchors (`&` / `*`) work **only within a single YAML file**. Cross-file sharing must use a Python dependency package or copy the block.
+`subScraper` is a legacy pattern that chains a second scraper call to enrich initial results. It is no longer recommended for new scrapers because it adds maintenance complexity.
 
-## Multi-site / network (G7)
-
-Same operator, identical templates:
-- XPath/JSON: one YAML, multiple entries in `url:`
-- Script: per-site YAML sharing one dependency package (see `script-actions.md`)
-
-Merge only when templates match; use domain map + per-domain overrides when DOM / image host diverges.
-
-## Studio normalization (G3)
-
-When the scraped studio is a domain or marketing variant:
-- `map` for known variants (misses fail **silently** — cover every real variant)
-- `replace` TLD-strip when domain ≈ brand
-- `fixed` for a single-site brand
-
-Verify after mapping.
+If you encounter an existing scraper that uses `subScraper`, prefer rewriting it as a script action or a single consolidated XPath/JSON scraper unless the chained lookup is genuinely unavoidable.

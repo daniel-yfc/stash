@@ -1,139 +1,38 @@
 # Examples
 
-Complete YAML templates for common scraper patterns.
-
-## XPath template
-
-**Load when:** you need an XPath template. These are **not** live-verified for a real site.
-
-> **概要（zh-TW）：** 只放完整 YAML。禁止 root `documentHeader` / `$vars`（`name` 必填）。搜尋用 `{}`，詳情 fragment 用 `{url}`。`{title}` 是官方支援的 placeholder（限 `sceneByFragment`），但不要把 queryURL 指向搜尋端點。
-
-Copy performer JavaScript from `performer-cleaning.md`. Copy title cleaning from `title-patterns.md`. Mark unverified selectors.
+## Minimal performer entry point
 
 ```yaml
-name: ExampleScraper
-sceneByURL:
-  - action: scrapeXPath
-    url:
-      - example.com
-    scraper: xPathScrapers
-
-xPathScrapers:
-  scene:
-    Title: //h1[@class='title']
-    Date:
-      selector: //span[@class='date']
-      postProcess:
-        - parseDate: 2006-01-02
-    Studio:
-      selector: //a[@class='studio']
-      postProcess:
-        - replace:
-            - from: "Studio Name"
-              to: "Studio Name Fixed"
-    Image: //img[@class='poster']/@src
-    Performers:
-      selector: //a[@class='performer']
-      action:
-        type: javascript
-        code: |
-          // Copy from performer-cleaning.md
+performerByFragment:
+  action: scrapeXPath
+  queryURL: https://example.test/performers?q={url}
+  queryURLReplace:
+    title: ""
+  xPathScrapers:
+    performer:
+      Name: //h1[@class="performer-name"]/text()
 ```
 
-## sceneByFragment template (mandatory queryURL)
+Use this as a starting template for performer scrapers. The same pattern applies for `performerByURL` and `performerByName`.
 
-**Load when:** the site supports fragment-based scraping with URL rewriting.
-
-> **概要（zh-TW）：** `sceneByFragment` 必須有 `queryURL`。用 `queryURLReplace` 將 `{filename}` 轉成 API URL。不要省略 `queryURL`。
+## parseDate — broken vs. fixed
 
 ```yaml
-name: FragmentExample
-sceneByURL:
-  - action: scrapeXPath
-    url:
-      - example.com/scene/
-    scraper: xPathScrapers
+# Broken — not a Go layout, will silently fail or produce wrong dates
+parseDate: "YYYY-MM-DD"
 
-sceneByFragment:
-  - action: scrapeXPath
-    queryURL: "https://api.example.com/{filename}"
-    scraper: xPathScrapers
-
-xPathScrapers:
-  scene:
-    Title: //h1
-    Date:
-      selector: //span[@class='date']
-      postProcess:
-        - parseDate: 2006-01-02
+# Fixed — use Go-style reference time: Mon Jan 2 15:04:05 MST 2006
+parseDate: "2006-01-02"
 ```
 
-**With queryURLReplace (Kink pattern):**
+Common Go layout tokens: `2006` = year, `01` = month, `02` = day, `15` = 24h hour, `04` = minute, `05` = second.
 
-```yaml
-sceneByFragment:
-  - action: scrapeXPath
-    queryURL: "https://www.kink.com/shoot/{filename}"
-    queryURLReplace:
-      filename: "(.*)"
-      replace: "https://api.kink.com/scenes/$1"
-    scraper: xPathScrapers
-```
+## CJK / performer separator fixtures
 
-**Important:** 
-- `queryURL` is **mandatory** for `sceneByFragment` and `sceneByQueryFragment` (Stash manual)
-- Exception: `action: script` does not require `queryURL`
-- Use `{filename}` placeholder to insert the scene filename
+When testing scrapers against Japanese or Chinese sites, include at least one fixture with:
 
-## JSON template
+- A CJK title (e.g., `魔法少女ほむら`)
+- A bracketed title variant (e.g., `[ABC-123] タイトル`)
+- A performer separator (e.g., `・` between co-performers)
 
-**Load when:** the site returns JSON or has a JSON API.
-
-> **概要（zh-TW）：** 用 `scrapeJson` + `jsonScrapers`。`sceneByName.queryURL` = `{}`；`sceneByQueryFragment.queryURL` = `{url}`。
-
-```yaml
-name: JsonExample
-sceneByURL:
-  - action: scrapeJson
-    url:
-      - api.example.com
-    scraper: jsonScrapers
-
-jsonScrapers:
-  scene:
-    Title: $.title
-    Date: $.date
-    Studio:
-      name: $.studio.name
-```
-
-## Script template
-
-**Load when:** you need Python for authentication, pagination, or complex logic.
-
-> **概要（zh-TW）：** `script` 處理認證、翻頁、複雜邏輯。輸出 `print(json.dumps(result))`。
-
-```yaml
-name: ScriptExample
-sceneByURL:
-  - action: script
-    url:
-      - example.com
-    scraper: script
-
-script:
-  code: |
-    import py_common.log as log
-    import requests
-    
-    result = {}
-    # Your scraping logic here
-    print(json.dumps(result))
-```
-
-## Notes
-
-- `sceneByQueryFragment.queryURL` is `{url}` (the selected hit). Do **not** reuse the search endpoint with `{title}` — while `{title}` is an official placeholder for `sceneByFragment`, the guidance is to use `{url}` for fragment queries that fetch scene details.
-- Stash YAML does not paginate. Multi-page search belongs in a `script` scraper, not in this template.
-- Always include `name:` at root level (required by official schema).
-- `queryURL` is mandatory for fragment modes (except `action: script`).
+These catch normalisation bugs in `replace`, `concat`, and post-processing rules early.
