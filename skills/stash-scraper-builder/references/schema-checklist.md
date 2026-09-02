@@ -1,59 +1,39 @@
-# Schema Checklist
+# Schema Validation Checklist
 
-Validate scraper YAML against the official CommunityScrapers schema before emitting.
+Use this checklist before emitting a scraper YAML file. Run `node validator/validate.js` after each change.
 
-## Before emit
+## Required Structure
 
-- [ ] Return the entire YAML; do not return a fragment or diff.
-- [ ] Root has no `documentHeader` or `$vars` key. **Root `name` is required** and should match the CamelCase filename.
-- [ ] Implement only modes the site really supports.
-- [ ] Stable detail URL → `sceneByURL` entry point has `action`, `url` array, and `scraper`.
-- [ ] The referenced scraper exists in `xPathScrapers` for `scrapeXPath`, or `jsonScrapers` for `scrapeJson`.
+- [ ] `name` key present and matches CamelCase filename
+- [ ] At least one entry point (`sceneByURL`, `sceneByName`, etc.)
+- [ ] Each entry has `action`, `url` (array), and `scraper` reference
+- [ ] No root keys `documentHeader` or `$vars`
+- [ ] `url` arrays are sorted A–Z (`validator -s`)
 
-## Schema conformance
+## Scraper Definition
 
-- [ ] `name` field present at root level (required by official schema)
-- [ ] `url` is an array (case-sensitive contains-match)
-- [ ] No invented keys (e.g., `documentHeader`, `$vars`)
-- [ ] `additionalProperties: false` — no extra keys at any level
 - [ ] All referenced keys exist (no dangling refs)
+- [ ] XPath selectors tested with `$x("...")` on live pages
+- [ ] JSON paths tested on real API responses
+- [ ] No invented search modes (`sceneByName` / `sceneByQueryFragment` without real search)
 
-## Mode validation
+## Data Model
 
-- [ ] `sceneByURL` — at least one entry with `action`, `url`, `scraper`
-- [ ] `sceneByName` — only if site has search; requires `sceneByQueryFragment`
-- [ ] `sceneByFragment` — only if site supports fragment scraping
-- [ ] No `scene:` at entry point (must be under `xPathScrapers` or `jsonScrapers`)
+- [ ] Title cleaned per `title-patterns.md`
+- [ ] Date uses Go layout (`2006-01-02`), not `YYYY-MM-DD`
+- [ ] Studio mapping correct (メーカー ≠ レーベル / シリーズ)
+- [ ] Image uses `|` fallbacks, upgrades `/thumb/` → `/poster/`, prefixes `^//` with `https:`
+- [ ] Performers cleaned per `performer-cleaning.md`, no default `Gender`
 
-## queryURL rules
+## Driver Configuration Rules
 
-- [ ] `sceneByName.queryURL` = `{}` (empty object for search endpoint)
-- [ ] `sceneByQueryFragment.queryURL` = `{url}` (selected hit URL)
-- [ ] `{title}` is an official placeholder for `sceneByFragment`; use it only where that mode supports it
-- [ ] `queryURLReplace` keys are custom names (e.g., `id`, `slug`), not used on `sceneByName`
+- [ ] `driver.useCDP` (if present) is in the top-level `driver` block only, not inside any entry point
+- [ ] Public scrapers (`scrapers/*.yml`) do not contain `driver.cookies`
+- [ ] Session cookies appear only in `scrapers/private/*.yml`
 
-## Driver configuration
+## Output
 
-- [ ] `useCDP: true` only in top-level `driver` (not in `driver.cookies`)
-- [ ] `CookieURL` required when `useCDP: false`; forbidden when `useCDP: true`
-- [ ] `clicks` only with `useCDP: true`
-- [ ] No `driver.cookies` in public scrapers
-
-## Post-processing
-
-- [ ] `parseDate` uses Go layout (`2006-01-02`), not `YYYY-MM-DD`
-- [ ] `concat` at attribute level, not inside `postProcess`
-- [ ] `postProcess[]` operators in correct order (specific → general)
-- [ ] No timezone conversion in YAML (strip `+0900` / `JST` / time; keep site calendar day)
-
-## Final checks
-
-- [ ] `url` arrays sorted A–Z (`validator -s`)
+- [ ] Key fields (Title, Date, Studio, Image) match expected values on tested pages
+- [ ] Untested selectors marked `# UNVERIFIED`
 - [ ] `# Last Updated YYYY-MM-DD` at end of file (optional but recommended)
-- [ ] No translated scraped values
-- [ ] `# UNVERIFIED` on untested selectors
-
-## References
-
-- Official schema: https://github.com/stashapp/CommunityScrapers/blob/master/src/scraper.schema.json
-- Validator: `node validator/validate.js scrapers/Foo.yml`
+- [ ] Explanations in English + short zh-TW orientation; scraped values in source language
