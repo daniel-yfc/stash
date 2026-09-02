@@ -1,12 +1,12 @@
 # Template — Scraper Scaffolding Templates
 
-> **概要（zh-TW）：** 本目錄收錄六種 Stash 物件的刮削器範本（Scene、WordPress Scene、Performer、Group、Gallery、Image），複製自 stashapp/CommunityScrapers 範本集，用於快速起稿。複製範本、改檔名、填入 `name` 與選擇器後，務必先跑驗證器與品質閘門再提交。
+> **概要（zh-TW）：** 本目錄收錄 Stash scraper 的起始範本，包括宣告式 YAML 範本與 script-based 範本。YAML 範本負責 Stash entry-point 設定；script 範本由 YAML wrapper 加上 Python implementation 組成。複製範本、改檔名、填入 `name` 與選擇器或 script 參數後，務必先跑官方驗證器與品質閘門再提交。
 
-Scaffolding templates copied from the [stashapp/CommunityScrapers](https://github.com/stashapp/CommunityScrapers) template set to speed up scraper build-up. Filenames were normalized (attachment numbering suffixes removed); file content is preserved as-is from upstream.
+This directory contains scaffolding templates for Stash scrapers. Declarative templates are YAML-only; script-based scrapers use a YAML entry-point wrapper plus a Python implementation scaffold. Templates are starting points, not working scrapers.
 
 ## Files
 
-| File | Object | Entry point |
+| File | Object / role | Entry point or interface |
 | --- | --- | --- |
 | `SceneScraperTemplate.yml` | Scene | `sceneByURL` |
 | `WordpressSceneScraper.yml` | Scene (WordPress `og:` meta) | `sceneByURL` |
@@ -14,21 +14,57 @@ Scaffolding templates copied from the [stashapp/CommunityScrapers](https://githu
 | `GroupScraperTemplate.yml` | Group | `groupByURL` |
 | `GalleryScraperTemplate.yml` | Gallery | `galleryByURL` |
 | `ImageScraperTemplate.yml` | Image | `imageByURL` |
+| `ScriptScraperTemplate.yml` | Script-based multi-object wrapper | Stash `*ByURL`, `*ByName`, and fragment entry points |
+| `ScriptScraperTemplate.py` | Python implementation scaffold | Operation argument received from the YAML wrapper |
+
+## Script template relationship
+
+`ScriptScraperTemplate.yml` is the Stash-facing configuration. Each entry point selects `action: script` and invokes `ScriptScraperTemplate.py` with an operation such as `scene-by-url`, `scene-by-name`, or `performer-by-fragment`.
+
+`ScriptScraperTemplate.py` is the implementation scaffold. It reads the operation and JSON input, returns a Stash-compatible JSON object or list, and writes diagnostics to stderr. Replace its example functions and operation coverage with the target site's real implementation; do not treat placeholder URLs, names, images, or metadata as verified data.
+
+The two files are intentionally edited together:
+
+1. Copy and rename the YAML wrapper into `scrapers/`.
+2. Copy the Python scaffold into the matching dependency or scraper directory under `scrapers/`.
+3. Keep operation names and relative paths synchronized.
+4. Add the required root `name` to the YAML and remove unsupported modes.
+5. Verify stdin/stdout behavior, dependencies, and error handling before validation.
 
 ## How to use
 
-1. Copy the matching template into `scrapers/` and rename it to the site's CamelCase name (for example `ExampleSite.yml`).
-2. Root `name:` is **required** by the official schema — keep it and make it match the filename.
-3. Replace the `example.com` placeholder in the `url:` array with the site's real detail-page domain(s).
-4. Fill in selectors under the object block; keep the Go `parseDate` layouts.
-5. Replace the `# Last Updated February XX, 2025` placeholder with `# Last Updated: YYYY-MM-DD` (repo convention, ISO-8601).
-6. Validate before committing — run the repository validator (`validator/index-zh-TW.mjs`, see `scripts/eval-run.sh`) and the quality gate (`scripts/scraper-quality-gate.sh`).
+1. Choose the closest YAML template and copy it into `scrapers/` using a CamelCase filename.
+2. For a script scraper, copy both `ScriptScraperTemplate.yml` and `ScriptScraperTemplate.py`; keep them as a matched pair.
+3. Keep root `name:` in the YAML and make it conventionally match the filename.
+4. Replace placeholder domains, selectors, operation names, and example metadata with site-specific values.
+5. Include only entry points that the target site actually supports. `sceneByName` requires a real search flow and should be paired with `sceneByQueryFragment` when used.
+6. For XPath/JSON fragment entry points, provide the required `queryURL`; script actions follow their script contract.
+7. Validate with the official CommunityScrapers validator, then run the repository tests and quality gate.
 
-These templates are scaffolds, not working scrapers: they contain no real selectors and will not extract data until you fill them in.
+Suggested checks:
+
+```bash
+npm run validate
+npm run validate-sort
+python -m pytest tests/
+```
+
+These templates contain placeholders and may not extract data until implementation details are filled in and tested.
+
+## Documentation map
+
+| Need | Read |
+| --- | --- |
+| Repository-wide agent rules | [`AGENTS.md`](../AGENTS.md) |
+| Skill contract and workflow | [`skills/stash-scraper-builder/SKILL.md`](../skills/stash-scraper-builder/SKILL.md) |
+| Script YAML and Python I/O contract | [`references/script-actions.md`](../skills/stash-scraper-builder/references/script-actions.md) |
+| Schema and entry-point checklist | [`references/schema-checklist.md`](../skills/stash-scraper-builder/references/schema-checklist.md) |
+| Five-task regression pack | [`references/eval-pack.md`](../skills/stash-scraper-builder/references/eval-pack.md) |
+| End-to-end template workflow | [`docs/template-workflow.md`](../docs/template-workflow.md) |
+| Skill-local template checklist | [`references/template-workflow.md`](../skills/stash-scraper-builder/references/template-workflow.md) |
 
 ## Provenance
 
-- **Source:** stashapp/CommunityScrapers — upstream template set
-- **Retrieved:** 2026-08-30
-- **Local changes:** filenames normalized only; no content edits
-- **Workflow:** see `skills/stash-scraper-builder/SKILL.md`; pre-emit checklist: `skills/stash-scraper-builder/references/schema-checklist.md`
+- **Source:** stashapp/CommunityScrapers template set plus repository-local script scaffolding.
+- **Retrieved:** 2026-08-30; script-template relationship documented 2026-09-03.
+- **Local changes:** documentation and cross-reference updates only; template implementation files are unchanged.
