@@ -2,12 +2,12 @@
 
 **Load when:** `action: script` (including dependency packages).
 
-> **概要（zh-TW）：** `*ByName` 回傳陣列、其餘回傳物件。`# requires:` 為檔案第一行註解；根層 `name:` 仍是 scraper schema 必填欄位。每次輸出都要寫安裝前置。`performerByFragment` 僅限 script（有時 stash）；無 Python 套件就省略該模式。
+> **概要（zh-TW）：** `*ByName` 回傳陣列、其餘回傳物件。`# requires:` 為檔案第一行註解；root `name:` 為官方 schema 必填（通常與 CamelCase 檔名一致）。每次輸出都要寫安裝前置。`performerByFragment` 僅限 script（有時 stash）；無 Python 套件就省略該模式。
 
 ## YAML shape
 
 ```yaml
-name: ExampleScriptScraper
+name: ExampleScript
 # requires: DependencyName
 sceneByURL:
   - action: script
@@ -20,18 +20,19 @@ sceneByURL:
       - scene-by-url
 ```
 
-- Root `name` is required by the official schema. The first-line `# requires:` comment remains useful for dependency discovery.
+- `# requires:` as a first-line comment after the optional YAML document comment/header. Root `name:` is required by the official schema and conventionally matches the CamelCase filename.
 - Relative path `../DependencyName/script.py`.
 - Typical extras: site id, then operation (`scene-by-url`). Keep that order on every action, including `groupByURL`.
 
 Dependency-only package:
 
 ```yaml
+name: PyCommon
 # script used as a dependency only
 # requires: py_common
 ```
 
-A pure dependency package is not itself a scraper file and therefore has no scraper entry points. If represented as a scraper YAML, include the required root `name` and validate it.
+A dependency-only package has no `*ByURL` / `*ByFragment` / `*ByName` entry points, but still uses the required root `name:` field.
 
 ## Mode coverage (E1)
 
@@ -65,12 +66,12 @@ A YAML scraper fetches exactly one URL; `hasNextPage` / cursor pagination belong
 ```python
 results, cursor = [], None
 while True:
-    page = fetch_search(query, cursor)          # site client call
+    page = fetch_search(query, cursor)
     results.extend(page["items"])
-    cursor = page.get("nextCursor")             # or page["hasNextPage"] and next page index
+    cursor = page.get("nextCursor")
     if not cursor:
         break
-print(json.dumps(results))                      # ByName: always a list
+print(json.dumps(results))
 ```
 
 ## API error field (B4)
@@ -112,7 +113,7 @@ scrapers/
 Use only modes the site supports. `sceneByName` always pairs with `sceneByQueryFragment`. Prefer `group-by-url` for `groupByURL` (legacy scripts may still listen for `movie-by-url`).
 
 ```yaml
-name: SomeDependencyScraper
+name: ExampleScript
 # requires: SomeDependency
 sceneByURL:
   - action: script
