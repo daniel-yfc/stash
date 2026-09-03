@@ -14,8 +14,8 @@ Use this checklist before emitting a scraper YAML file. Run the official Communi
 ## Authority
 
 - [ ] Official CommunityScrapers schema and validator are authoritative
-- [ ] Local `references/scraper.schema.json` is an offline stub only and must not override the official validator
-- [ ] Any local-vs-official discrepancy is documented before relying on the local stub
+- [ ] Local `references/scraper.schema.json` is an offline mirror of official CommunityScrapers schema 
+
 
 ## Scraper Definition
 

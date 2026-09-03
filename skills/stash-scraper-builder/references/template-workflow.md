@@ -1,6 +1,6 @@
 # Template Workflow Checklist
 
-Use this checklist when starting from a file in `Template/`.
+Use this checklist when starting from a file in `templates/`.
 
 ## Select
 
