@@ -1,24 +1,37 @@
 # Skill Read Order
 
-Read references in this order before creating or revising a scraper.
+Read repository-level guidance before skill-level guidance.
 
-## Always read first
+## Repository first
 
-1. `out-of-scope.md` — confirm the task belongs to this skill
-2. `source-selection.md` — choose XPath, JSON, script, or CDP
-3. `phase0-secrets-policy.md` — if the task touches login state, cookies, or private files
+1. `README.md` — project purpose, canonical commands, and directory map
+2. `AGENTS.md` — repository-wide agent and safety rules
+3. `docs/repository-documentation-architecture.md` — ownership, naming, and cross-level linking
+4. `Template/README.md` — when starting from a template
+5. `CONTRIBUTING.md` — before committing or modifying shared repository files
 
-## Then read by path
+## Skill second
 
-| Task type | Read next |
+6. `SKILL.md` — skill contract and authoring workflow
+7. `references/out-of-scope.md` — confirm the task belongs to the skill
+8. `references/source-selection.md` — select XPath, JSON, script, or CDP
+9. `references/phase0-secrets-policy.md` — when authentication or private paths are involved
+
+## Specialized references
+
+| Task | Read |
 |---|---|
 | New XPath scraper | `xpath-patterns.md` → `schema-checklist.md` → `post-processing.md` |
 | New JSON scraper | `json-patterns.md` → `schema-checklist.md` → `post-processing.md` |
-| Script scraper | `script-actions.md` → `schema-checklist.md` |
-| CDP / login scraper | `cdp-workflow.md` → `phase0-secrets-policy.md` → `schema-checklist.md` |
-| Dates / post-processing | `date-formats.md` → `post-processing.md` |
-| Advanced patterns | `advanced-patterns.md` (anchors, studio map, subScraper) |
+| Script scraper | `script-actions.md` → `template-workflow.md` → `schema-checklist.md` |
+| CDP/login scraper | `cdp-workflow.md` → `phase0-secrets-policy.md` → `schema-checklist.md` |
+| Dates/post-processing | `date-formats.md` → `post-processing.md` |
+| Advanced patterns | `advanced-patterns.md` |
+| Regression/evaluation | `eval-pack.md` → repository `tests/` and `scripts/`
 
-## Before editing any reference doc
+## Before editing
 
-Read `UPSTREAM_SOURCES.md` and verify the claim against the pinned upstream source before changing it.
+- Check `UPSTREAM_SOURCES.md` for the owning source.
+- Confirm every referenced path exists.
+- Use the canonical repository commands from `docs/repository-documentation-architecture.md`.
+- Keep repository governance in repository-level docs and scraper semantics in skill-level docs.

@@ -47,6 +47,7 @@ Suggested checks:
 npm run validate
 npm run validate-sort
 python -m pytest tests/
+python tools/check_scraper_docs.py
 ```
 
 These templates contain placeholders and may not extract data until implementation details are filled in and tested.
@@ -56,12 +57,19 @@ These templates contain placeholders and may not extract data until implementati
 | Need | Read |
 | --- | --- |
 | Repository-wide agent rules | [`AGENTS.md`](../AGENTS.md) |
+| Repository workflow and ownership | [`docs/repository-documentation-architecture.md`](../docs/repository-documentation-architecture.md) |
 | Skill contract and workflow | [`skills/stash-scraper-builder/SKILL.md`](../skills/stash-scraper-builder/SKILL.md) |
 | Script YAML and Python I/O contract | [`references/script-actions.md`](../skills/stash-scraper-builder/references/script-actions.md) |
 | Schema and entry-point checklist | [`references/schema-checklist.md`](../skills/stash-scraper-builder/references/schema-checklist.md) |
 | Five-task regression pack | [`references/eval-pack.md`](../skills/stash-scraper-builder/references/eval-pack.md) |
-| End-to-end template workflow | [`docs/template-workflow.md`](../docs/template-workflow.md) |
 | Skill-local template checklist | [`references/template-workflow.md`](../skills/stash-scraper-builder/references/template-workflow.md) |
+
+## Naming and format rules
+
+- New Markdown files use lowercase kebab-case; existing numbered documentation files remain stable.
+- Scraper/template YAML files use CamelCase site/object names and `.yml`.
+- Paired Python implementation files use the same CamelCase base name and `.py`.
+- Use ISO dates (`YYYY-MM-DD`) in metadata and `# Last Updated` comments.
 
 ## Provenance
 
