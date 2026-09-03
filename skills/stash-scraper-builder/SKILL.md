@@ -69,16 +69,20 @@ xPathScrapers:
 | Need | Reference |
 |---|---|
 | Read order and ownership | `references/skill-read-order.md` |
+| Source selection & scope | `references/source-selection.md`, `references/out-of-scope.md` |
+| Security & secrets policy | `references/phase0-secrets-policy.md` |
 | Template workflow | `references/template-workflow.md` |
-| XPath | `references/xpath-patterns.md` |
-| JSON | `references/json-patterns.md` and `references/json-examples.md` |
-| Scripts | `references/script-actions.md` |
-| CDP | `references/cdp-workflow.md` |
-| Dates | `references/date-formats.md` |
+| XPath extraction | `references/xpath-patterns.md` |
+| JSON extraction | `references/json-patterns.md` and `references/json-examples.md` |
+| Script actions | `references/script-actions.md` |
+| CDP / Headless workflow | `references/cdp-workflow.md` |
+| Dates & formatting | `references/date-formats.md` |
 | Post-processing | `references/post-processing.md` |
 | Field quality | `references/title-patterns.md`, `references/performer-cleaning.md` |
-| Failures | `references/scraping-failures.md` |
-| Validation | `references/schema-checklist.md` and `references/eval-pack.md` |
+| Best practices & patterns | `references/best-practices.md`, `references/advanced-patterns.md`, `references/multi-site-network-scrapers.md` |
+| Failures & incident reviews | `references/scraping-failures.md`, `references/incident-reviews.md` |
+| Examples & validation | `references/examples.md`, `references/schema-checklist.md`, `references/eval-pack.md` |
+| Upstream sources | `references/UPSTREAM_SOURCES.md` |
 
 ## Output contract
 

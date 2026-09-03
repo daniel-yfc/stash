@@ -1,12 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import Ajv from "npm:ajv@8"
+import Ajv from "ajv";
 
-import betterAjvErrors from 'npm:better-ajv-errors@2';
-import chalk from 'npm:chalk@5';
-import { parse } from 'npm:yaml@2';
-import addFormats from "npm:ajv-formats@3"
+import betterAjvErrors from 'better-ajv-errors';
+import chalk from 'chalk';
+import { parse } from 'yaml';
+import addFormats from "ajv-formats";
 
 // https://www.peterbe.com/plog/nodejs-fs-walk
 function walk(directory, ext, filepaths = []) {

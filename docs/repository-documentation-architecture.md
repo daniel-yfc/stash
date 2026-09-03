@@ -12,7 +12,7 @@ This document defines the boundary between repository-level documentation and th
 | `AGENTS.md` | Repository-wide agent constraints, safety, handoff rules | Repeated domain-specific implementation guidance |
 | `CLAUDE.md` | Claude-specific behavior that differs from repository-wide rules | A second copy of `AGENTS.md` or skill references |
 | `CONTRIBUTING.md` | Human contribution and review workflow | Runtime implementation details |
-| `Template/README.md` | Template inventory, pairing, provenance, naming, copy workflow | Full scraper authoring manual |
+| `templates/README.md` | Template inventory, pairing, provenance, naming, copy workflow | Full scraper authoring manual |
 | `docs/` | Repository architecture, CI, testing, production gates, maintenance | Per-field scraper rules |
 | `skills/stash-scraper-builder/SKILL.md` | Skill purpose, trigger conditions, output contract, authoring workflow | Repository administration and CI policy |
 | `skills/.../references/` | Specialized XPath, JSON, script, CDP, date, failure, and validation guidance | Project-wide contribution policy |

@@ -2,145 +2,87 @@
 
 ## Overview
 
-This guide covers all testing aspects for the scraper quality gate system.
+This guide covers local testing, schema validation, CI/CD checks, and Python regression tests for the Stash Scraper Quality Gate system.
 
 ## Test Types
 
-### 1. Local Testing
+### 1. Local Quality Gate Testing
 
-#### Quality Gate Script
+Run the quality gate script against individual scraper files to test repository policy rules:
+
 ```bash
-# Test single scraper
+# Test a single scraper
 bash scripts/scraper-quality-gate.sh scrapers/ACCEED.yml
 
-# Test all scrapers
+# Test all public scrapers
 for file in scrapers/*.yml; do
   bash scripts/scraper-quality-gate.sh "$file"
 done
 ```
 
-#### Validator
-```bash
-cd validator
-deno run --allow-read --allow-write index-zh-TW.mjs ../scrapers/ACCEED.yml
-```
+### 2. Schema and URL Validation
 
-### 2. CI/CD Testing
-
-#### GitHub Actions Workflows
-- **quality-gate.yml**: Tests changed scrapers on every PR
-- **validate.yml**: Batch validates all scrapers
-- **link-check.yml**: Validates Markdown links
-- **eval.yml**: Optional evaluation tests
-
-#### Manual Trigger
-```bash
-# Go to: https://github.com/daniel-yfc/stash/actions
-# Select "Test Eval Workflow"
-# Click "Run workflow"
-# Choose scraper file (default: ACCEED.yml)
-```
-
-### 3. Python Tests
+Validate scraper files against `validator/scraper.schema.json` using the canonical validator runner:
 
 ```bash
-cd tests
-python -m pytest . -v
+# Validate all scrapers
+node validator/index.mjs scrapers
+
+# Check URL alphabetical sorting
+node validator/index.mjs -s scrapers
 ```
 
-## Test Coverage
+### 3. Python Test Suite
 
-### Scraper Updates
-- ✅ ACCEED.yml
-- ✅ Bravo-Japan.yml
-- ✅ Justice01.yml
-- ✅ Games-Video.yml
-- ⏳ Remaining 7 scrapers (pending)
+Run the Python test suite to check script executability, directory structures, and skill reference integrity:
 
-### Rules Coverage
-- ✅ Rule 1: name matches filename (100%)
-- ✅ Rule 2: useCDP position (100%)
-- ✅ Rule 3: no driver.cookies (100%)
-- ✅ Rule 4: sceneByFragment (100%)
-- ✅ Rule 5: Last Updated (100%)
+```bash
+python -m pytest tests/
+```
 
-### Schema Validation
-- ✅ Validator (Deno compatible)
-- ✅ quality-gate.yml
-- ✅ validate.yml
+### 4. Documentation Verification
+
+Validate Markdown documentation structure and references:
+
+```bash
+python tools/check_scraper_docs.py
+```
+
+## CI/CD Testing Pipeline
+
+GitHub Actions automatically run tests on pushes and pull requests:
+
+- **`validate.yml`**: Blocking gate for schema validation and quality gate policy rules across all scraper files.
+- **`pr-check.yml`**: Validates modified scraper files in pull requests and posts inline status feedback.
+- **`link-check.yml`**: Periodically checks Markdown documentation link validity.
+- **`eval.yml`**: Evaluates scraper quality against standard evaluation pack scenarios.
+
+## Standard Verification Checklist
+
+Before submitting a scraper change, confirm:
+
+- [ ] `node validator/index.mjs scrapers` passes without schema errors.
+- [ ] `node validator/index.mjs -s scrapers` confirms URL ordering.
+- [ ] `bash scripts/scraper-quality-gate.sh <scraper.yml>` passes all policy checks.
+- [ ] `python -m pytest tests/` passes all unit tests.
+- [ ] `python tools/check_scraper_docs.py` reports no documentation errors.
 
 ## Troubleshooting
 
 ### Common Issues
 
-#### eval-run.sh Fails
-**Causes**:
-- Script not implemented
-- Missing dependencies
-- Path issues
+#### Quality Gate Failure (`scraper-quality-gate.sh`)
+- **Missing root name**: Ensure `name:` is declared at column 0 in XPath scrapers.
+- **`driver.cookies` in public directory**: Move session-dependent scrapers to `scrapers/private/`.
+- **Invalid parseDate layout**: Use Go reference time formats (e.g., `2006-01-02`), not Moment/strftime tokens (`YYYY`, `%Y`).
 
-**Solution**:
-```bash
-# Check script content
-cat scripts/eval-run.sh
+#### Python Test Failures
+- **Executable bit missing**: Run `chmod +x scripts/*.sh Build/Scripts/*.sh`.
+- **Missing dependencies**: Install requirements with `pip install -r requirements.txt`.
 
-# Test locally
-bash scripts/eval-run.sh
-```
+## Related Documents
 
-#### Python Tests Fail
-**Causes**:
-- Missing test data
-- Assertion errors
-
-**Solution**:
-```bash
-# Run with verbose output
-python -m pytest tests/ -v
-
-# Check test files
-ls -la tests/
-```
-
-#### Validator Fails
-**Causes**:
-- Schema errors
-- File not found
-
-**Solution**:
-```bash
-# Test validator directly
-cd validator
-deno run --allow-read --allow-write index-zh-TW.mjs ../scrapers/ACCEED.yml
-```
-
-## Performance Metrics
-
-### CI Execution Times
-- quality-gate.yml: ~30 seconds
-- validate.yml: ~2-3 minutes
-- link-check.yml: ~1 minute
-- eval.yml: ~5 minutes
-
-### Coverage
-- Scraper updates: 5/11 (45%)
-- Rules coverage: 5/5 (100%)
-- Schema validation: 100%
-
-## Next Steps
-
-1. Test remaining 7 scrapers
-2. Run eval.yml manually
-3. Monitor CI performance
-4. Add more test cases
-
-## Related Files
-
-- [03_Quality_Gate_Rules.md](03_Quality_Gate_Rules.md) - 5 rules details
-- [05_CI_Workflows.md](05_CI_Workflows.md) - CI/CD workflows
-- [01_System_Architecture.md](01_System_Architecture.md) - System design
-
----
-
-**Last Updated**: 2026-08-28
-**Status**: ✅ Active
+- [01_System_Architecture.md](01_System_Architecture.md) — System design and component map
+- [03_Quality_Gate_Rules.md](03_Quality_Gate_Rules.md) — Detailed 5 quality rules
+- [04_Production_Gate.md](04_Production_Gate.md) — Business readiness checklist
+- [05_CI_Workflows.md](05_CI_Workflows.md) — CI/CD workflow details

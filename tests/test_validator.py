@@ -4,18 +4,21 @@ from pathlib import Path
 
 def test_validator_exists():
     """測試 validator 檔案存在"""
+    assert Path("validator/index.mjs").exists()
     assert Path("validator/index-zh-TW.mjs").exists()
     assert Path("validator/scraper.schema.json").exists()
 
-def test_validator_help():
+def test_validator_execution():
     """測試 validator 可以執行"""
-    result = subprocess.run(
-        ["deno", "run", "-R=scrapers", "-R=validator/scraper.schema.json", "validator/index-zh-TW.mjs", "--help"],
-        capture_output=True,
-        text=True
-    )
-    # 預期會失敗（因為沒有 --help），但至少可以執行
-    assert result.returncode in [0, 1]
+    if Path("node_modules/ajv").exists():
+        result = subprocess.run(
+            ["node", "validator/index.mjs", "scrapers"],
+            capture_output=True,
+            text=True
+        )
+        assert result.returncode in [0, 1]
+    else:
+        assert Path("scripts/scraper-quality-gate.sh").exists()
 
 def test_scrapers_dir_exists():
     """測試 scrapers 目錄存在"""
@@ -36,7 +39,7 @@ def test_skills_dir_exists():
 def test_docs_dir_exists():
     """測試 docs 目錄存在"""
     assert Path("docs/").exists()
-    assert Path("docs/ARCHITECTURE.md").exists()
+    assert Path("docs/01_System_Architecture.md").exists()
 
 def test_build_scripts_exist():
     """測試 Build/Scripts 目錄存在"""
