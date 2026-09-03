@@ -37,6 +37,6 @@
 
 ## 相依性
 
-- Deno
-- Python
+- Node.js (npm)
+- Python 3
 - pytest

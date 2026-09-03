@@ -7,7 +7,7 @@ Read repository-level guidance before skill-level guidance.
 1. `README.md` — project purpose, canonical commands, and directory map
 2. `AGENTS.md` — repository-wide agent and safety rules
 3. `docs/repository-documentation-architecture.md` — ownership, naming, and cross-level linking
-4. `Template/README.md` — when starting from a template
+4. `templates/README.md` — when starting from a template
 5. `CONTRIBUTING.md` — before committing or modifying shared repository files
 
 ## Skill second
@@ -26,8 +26,9 @@ Read repository-level guidance before skill-level guidance.
 | Script scraper | `script-actions.md` → `template-workflow.md` → `schema-checklist.md` |
 | CDP/login scraper | `cdp-workflow.md` → `phase0-secrets-policy.md` → `schema-checklist.md` |
 | Dates/post-processing | `date-formats.md` → `post-processing.md` |
-| Advanced patterns | `advanced-patterns.md` |
-| Regression/evaluation | `eval-pack.md` → repository `tests/` and `scripts/`
+| Advanced patterns | `advanced-patterns.md` → `multi-site-network-scrapers.md` → `best-practices.md` |
+| Failures & incident reviews | `scraping-failures.md` → `incident-reviews.md` |
+| Regression/evaluation | `eval-pack.md` → `schema-checklist.md` → `examples.md` → repository `tests/` and `scripts/` |
 
 ## Before editing
 
