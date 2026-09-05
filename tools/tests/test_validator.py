@@ -1,6 +1,5 @@
 """Validator and repository layout checks."""
 
-import shutil
 import subprocess
 from pathlib import Path
 
@@ -13,15 +12,16 @@ def test_validator_exists():
 
 
 def test_validator_execution():
-    """Node 可用時，validator 可以執行"""
-    if shutil.which("node"):
+    """依賴已安裝時，validator 可以執行"""
+    if Path("node_modules/ajv").exists():
         result = subprocess.run(
-            ["node", "validator/index.mjs", "scrapers"],
+            ["node", "validator/index.mjs", "-a", "--ci"],
             capture_output=True,
             text=True,
         )
-        assert result.returncode == 0, f"驗證失敗：{result.stderr}"
+        assert result.returncode == 0, f"驗證失敗：{result.stderr}\n{result.stdout}"
     else:
+        # node_modules 未安裝時（如 eval.yml），至少確認品質閘門存在
         assert Path("tools/scraper-quality-gate.sh").exists()
 
 

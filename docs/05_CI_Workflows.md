@@ -6,7 +6,7 @@ This repository uses four GitHub Actions workflows: one blocking scraper validat
 
 | Workflow | Trigger | Scope | Purpose |
 | --- | --- | --- | --- |
-| `validate.yml` | Push, pull request | Scraper and validator changes | Blocking full-set schema validation + URL ordering via `validator/index.mjs` |
+| `validate.yml` | Push, pull request, manual | Scraper and validator changes | Blocking validation of `scrapers/` against the upstream CommunityScrapers validator + schema, fetched at run time |
 | `pr-check.yml` | Pull request | Changed scraper files, docs tooling | Changed-file policy checks with an updating results comment on the PR |
 | `link-check.yml` | Weekly schedule, manual | Documentation | Reports broken links in the README and scraper-builder docs |
 | `eval.yml` / `test-eval.yml` | Manual only | Eval tooling | Evaluation support; not merge gates |
@@ -18,12 +18,19 @@ This is the blocking gate for scraper work. It runs when a change affects:
 - `scrapers/**/*.yml`
 - `validator/**`
 
-It runs `node validator/index.mjs scrapers` (schema validation) and `node validator/index.mjs -s scrapers` (URL array ordering). Any failure fails the workflow.
+Per repository policy the upstream `stashapp/CommunityScrapers` validator and schema are authoritative, so the workflow downloads `validator/index.mjs` and `scraper.schema.json` from upstream `master` at run time and validates every scraper (including `scrapers/private/`) against them. It auto-detects the runtime from the upstream imports: Deno for `npm:`/`https:` specifiers (the current upstream style), Node for bare npm imports. URL-array sorting runs in advisory mode (`continue-on-error`) until any sorting backlog is cleared.
 
 Repository policy checks run per changed scraper in `pr-check.yml`, and locally over the full set:
 
 ```bash
 bash tools/validate-all.sh
+```
+
+Local validation with the repository's own copy (uses the local stub schema; the CI/upstream result is authoritative):
+
+```bash
+npm install
+node validator/index.mjs -a --ci
 ```
 
 ## Shared Policy Checker: `tools/scraper-quality-gate.sh`
@@ -74,6 +81,7 @@ Third-party action policy:
 
 - `tj-actions/changed-files@v46` — releases through `v45.0.7` were affected by CVE-2025-30066, a supply-chain compromise that exposed secrets through Actions logs. **Do not downgrade** below v46; prefer commit-SHA pinning when a dependency-management process is available.
 - `lycheeverse/lychee-action@v2`
+- `denoland/setup-deno@v2` — used by `validate.yml` to run the upstream validator
 - `actions/github-script@v7` (first-party)
 
 Session cookies, tokens, passwords, and API keys must never appear in public scraper files — the quality-gate script enforces this mechanically for `scrapers/*.yml`.

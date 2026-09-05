@@ -55,11 +55,13 @@ jobs:
         run: npm install --no-save ajv@8 ajv-formats@3 better-ajv-errors@2 chalk@5 yaml@2
 
       # No positional arg: the validator walks <script>/../scrapers by default,
-      # which resolves to this repo's scrapers/ directory.
+      # which resolves to this repo's scrapers/ directory. Upstream currently
+      # uses npm: specifiers, so the Deno branch runs with -A (trusted upstream
+      # code in CI; avoids per-flag permission breakage across Deno versions).
       - name: Validate scrapers against the upstream schema
         run: |
-          if grep -qE "from ['\"](npm:|https://)" .upstream-validator/index.mjs; then
-            deno run --allow-read .upstream-validator/index.mjs -a --ci
+          if grep -qE "from ['\"](npm:|https:)" .upstream-validator/index.mjs; then
+            deno run -A .upstream-validator/index.mjs -a --ci
           else
             node .upstream-validator/index.mjs -a --ci
           fi
@@ -68,8 +70,8 @@ jobs:
       - name: Check URL array sorting (upstream)
         continue-on-error: true
         run: |
-          if grep -qE "from ['\"](npm:|https://)" .upstream-validator/index.mjs; then
-            deno run --allow-read .upstream-validator/index.mjs -a -s --ci
+          if grep -qE "from ['\"](npm:|https:)" .upstream-validator/index.mjs; then
+            deno run -A .upstream-validator/index.mjs -a -s --ci
           else
             node .upstream-validator/index.mjs -a -s --ci
           fi
