@@ -1,4 +1,4 @@
-# Last Updated: 2026-08-28
+# Last Updated: 2026-09-05
 # ACCEED (acceed.jp) — public CDP version.
 # Verification status: UNVERIFIED against live Stash.
 # Test URLs from ACCEED-2.md:
@@ -7,7 +7,6 @@
 #   - https://acceed.jp/detail.OCON059.html
 # Search URL: https://acceed.jp/search.php?s={keyword}
 # Expected fields: Title, Date, Image, Code, URL, Tags, Details, Studio, Performer
-# Add sceneByFragment for runtime safety.
 
 name: ACCEED
 
@@ -30,6 +29,7 @@ sceneByQueryFragment:
 
 sceneByFragment:
   action: scrapeXPath
+  queryURL: "{url}"
   scraper: sceneScraper
 
 xPathScrapers:

@@ -1,7 +1,6 @@
-# Last Updated: 2026-08-28
+# Last Updated: 2026-09-05
 # Justice01 (justice01.jp) — public CDP version.
 # Verification status: UNVERIFIED against live Stash.
-# Add sceneByFragment for runtime safety.
 
 name: Justice01
 
@@ -19,6 +18,7 @@ sceneByQueryFragment:
 
 sceneByFragment:
   action: scrapeXPath
+  queryURL: "{url}"
   scraper: sceneScraper
 
 xPathScrapers:

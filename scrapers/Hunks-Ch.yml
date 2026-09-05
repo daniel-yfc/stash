@@ -4,7 +4,10 @@
 # cards in #newmovie tables (GV-OND28001, TR-CS007, KPP-1122).
 # Detail: guest HTML has ブランド/発売日/ストーリー; cover/title h2 need login+CDP.
 # common keys are independent XPath (no $data: $product//...).
-# Last Updated: 2026-08-28
+# Last Updated: 2026-09-06
+# Validator fix: Code no longer combines `fixed` with `postProcess` (schema
+# fixed-value nodeSelector allows only 'fixed'). Uses canonical/og:url selector,
+# same pattern as the existing Aliases field.
 
 name: Hunk's Channel
 
@@ -164,7 +167,7 @@ xPathScrapers:
               - regex: "^\\s+|\\s+$"
                 with: ""
       Code:
-        fixed: "{inputURL}"
+        selector: "//link[@rel='canonical']/@href | //meta[@property='og:url']/@content"
         postProcess:
           - replace:
               - regex: "^.*?[?&]code=([^&]+).*$"
