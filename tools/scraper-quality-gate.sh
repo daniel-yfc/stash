@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Scraper Quality Gate
-# Usage: bash scripts/scraper-quality-gate.sh <scraper.yml>
+# Usage: bash tools/scraper-quality-gate.sh <scraper.yml>
 #
 # Schema validation uses the official stashapp/CommunityScrapers validator.
 # Set CS_VALIDATOR_DIR to a prepared upstream checkout (containing validate.js
@@ -21,7 +21,7 @@ fail() {
 }
 
 if [[ -z "${SCRAPER_FILE}" ]]; then
-  echo "Usage: bash scripts/scraper-quality-gate.sh <scraper.yml>" >&2
+  echo "Usage: bash tools/scraper-quality-gate.sh <scraper.yml>" >&2
   exit 2
 fi
 

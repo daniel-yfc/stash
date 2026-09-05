@@ -1,6 +1,6 @@
 name: Eval Pack
 
-# Manual evaluation runner for the pytest suite in tests/.
+# Manual evaluation runner for the pytest suite in tools/tests/.
 # Status: P4 (workstream H) — evaluation coverage is expected to expand
 # as workstream H2 progresses.
 
@@ -33,9 +33,9 @@ jobs:
 
       - name: Run evaluation tests
         run: |
-          TARGET="tests/"
+          TARGET="tools/tests/"
           if [ -n "${{ github.event.inputs.test_file }}" ]; then
-            TARGET="tests/${{ github.event.inputs.test_file }}"
+            TARGET="tools/tests/${{ github.event.inputs.test_file }}"
           fi
           echo "::group::Evaluation run"
           echo "Target: ${TARGET}"

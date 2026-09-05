@@ -2,45 +2,56 @@
 
 ## Overview
 
-This repository uses four GitHub Actions workflows: one authoritative scraper gate, one PR feedback workflow, one scheduled documentation check, and manual evaluation tooling.
+This repository uses four GitHub Actions workflows: one blocking scraper validation workflow, one PR feedback workflow, one scheduled documentation check, and manual evaluation tooling.
 
 | Workflow | Trigger | Scope | Purpose |
 | --- | --- | --- | --- |
-| `validate.yml` | Push, pull request, manual | Scraper, validator, gate-script, and schema changes | Blocking full-set validation: schema + repository policy checks |
-| `pr-check.yml` | Pull request | Changed scraper files | Changed-file validation with an updating results comment on the PR |
+| `validate.yml` | Push, pull request, manual | Scraper and validator changes | Blocking validation of `scrapers/` against the upstream CommunityScrapers validator + schema, fetched at run time |
+| `pr-check.yml` | Pull request | Changed scraper files, docs tooling | Changed-file policy checks with an updating results comment on the PR |
 | `link-check.yml` | Weekly schedule, manual | Documentation | Reports broken links in the README and scraper-builder docs |
-| `eval.yml` / `test-eval.yml` | Manual only | Eval tooling | Evaluation-pack support; not merge gates |
+| `eval.yml` / `test-eval.yml` | Manual only | Eval tooling | Evaluation support; not merge gates |
 
-## Authoritative Gate: `validate.yml`
+## Blocking Validation: `validate.yml`
 
-This is the single blocking gate for scraper work. It runs when a change affects:
+This is the blocking gate for scraper work. It runs when a change affects:
 
 - `scrapers/**/*.yml`
 - `validator/**`
-- `scripts/scraper-quality-gate.sh`
-- `skills/stash-scraper-builder/references/scraper.schema.json`
 
-It discovers every `*.yml` file under `scrapers/` (including `scrapers/private/`), sorts them deterministically, and runs `scripts/scraper-quality-gate.sh` against each one. Any failure fails the workflow.
+Per repository policy the upstream `stashapp/CommunityScrapers` validator and schema are authoritative, so the workflow downloads `validator/index.mjs` and `scraper.schema.json` from upstream `master` at run time and validates every scraper (including `scrapers/private/`) against them. It auto-detects the runtime from the upstream imports: Deno for `npm:`/`https:` specifiers (the current upstream style), Node for bare npm imports. URL-array sorting runs in advisory mode (`continue-on-error`) until any sorting backlog is cleared.
 
-### What the shared checker enforces
+Repository policy checks run per changed scraper in `pr-check.yml`, and locally over the full set:
 
-`scripts/scraper-quality-gate.sh` performs the following per file:
+```bash
+bash tools/validate-all.sh
+```
 
-1. **Schema validation** — the existing Deno validator (`validator/index-zh-TW.mjs`, `--allow-read`) for YAML parsing and schema conformance.
+Local validation with the repository's own copy (uses the local stub schema; the CI/upstream result is authoritative):
+
+```bash
+npm install
+node validator/index.mjs -a --ci
+```
+
+## Shared Policy Checker: `tools/scraper-quality-gate.sh`
+
+`tools/scraper-quality-gate.sh` performs the following per file:
+
+1. **Schema validation (optional)** — the official stashapp/CommunityScrapers validator, enabled by setting `CS_VALIDATOR_DIR` to a prepared upstream checkout. Without it, only the repository policy checks below run. The legacy Deno validator (`validator/index-zh-TW.mjs`) is retained for reference only and is intentionally not used here.
 2. **Root `name:` required** — XPath scrapers (files containing `xPathScrapers:`) must declare a non-empty root `name:` field; without it, Stash will not load the scraper.
 3. **`sceneByQueryFragment.queryURL` must be `"{url}"`** — when the feature is declared, it must preserve the incoming URL rather than routing it through a search endpoint.
-4. **No `driver.cookies` in public scrapers** — files directly under `scrapers/*.yml` must not contain a `cookies:` block. Session-dependent scrapers belong in `scrapers/private/`, which is exempt from this specific check but still receives schema validation.
+4. **No `driver.cookies` in public scrapers** — files directly under `scrapers/*.yml` must not contain a `cookies:` block. Session-dependent scrapers belong in `scrapers/private/`, which is exempt from this specific check.
 5. **Go `parseDate` layouts** — rejects common non-Go date tokens (`YYYY`, `YY`, `DD`, and `%`-style strftime directives). Valid Go layouts such as `2006-01-02` are accepted.
 
 The same script can be run locally before pushing:
 
 ```bash
-bash scripts/scraper-quality-gate.sh scrapers/SomeScraper.yml
+bash tools/scraper-quality-gate.sh scrapers/SomeScraper.yml
 ```
 
 ## PR Feedback: `pr-check.yml`
 
-Runs only on pull requests touching scraper-related paths. It detects changed scraper files with `tj-actions/changed-files@v46` (see Security Controls), validates each with the same shared checker, and posts a single results-table comment on the PR that is updated in place on subsequent pushes (identified by an HTML marker comment).
+Runs only on pull requests touching scraper-related paths. It detects changed scraper files with `tj-actions/changed-files@v46` (see Security Controls), validates each with the shared checker, and posts a single results-table comment on the PR that is updated in place on subsequent pushes (identified by an HTML marker comment). It also runs `tools/check_scraper_docs.py` to check documentation examples and contradictions.
 
 The workflow uses the standard `pull_request` event — never `pull_request_target` — because scraper YAML is contributor-controlled input. For fork-based PRs where the token is read-only, the comment step is `continue-on-error: true`: validation still runs and the job status reflects the result, with details available in the workflow log.
 
@@ -52,8 +63,8 @@ It no longer runs on push/PR; documentation-heavy changes can be checked on dema
 
 ## Manual Evaluation Workflows
 
-- **`eval.yml`** — accepts a comma-separated `tasks` input (default `1,2,3,4,5`) and displays the selected evaluation-pack tasks. Supporting infrastructure for the P4 eval workstream.
-- **`test-eval.yml`** — accepts an optional `scraper_file` input (default `ACCEED.yml`) and runs the validator against that file as a smoke test. Its validator step uses `continue-on-error: true`; inspect the logs rather than treating a green run as conclusive.
+- **`eval.yml`** — accepts an optional `test_file` input (e.g., `test_scrapers.py`) and runs the pytest suite in `tools/tests/` (full suite when the input is empty).
+- **`test-eval.yml`** — accepts an optional `scraper_file` input (default `ACCEED.yml`) and runs `tools/scraper-quality-gate.sh` against that file as a conclusive smoke test.
 
 ## Security Controls
 
@@ -70,7 +81,7 @@ Third-party action policy:
 
 - `tj-actions/changed-files@v46` — releases through `v45.0.7` were affected by CVE-2025-30066, a supply-chain compromise that exposed secrets through Actions logs. **Do not downgrade** below v46; prefer commit-SHA pinning when a dependency-management process is available.
 - `lycheeverse/lychee-action@v2`
-- `denoland/setup-deno@v2`
+- `denoland/setup-deno@v2` — used by `validate.yml` to run the upstream validator
 - `actions/github-script@v7` (first-party)
 
 Session cookies, tokens, passwords, and API keys must never appear in public scraper files — the quality-gate script enforces this mechanically for `scrapers/*.yml`.

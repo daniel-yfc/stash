@@ -75,7 +75,10 @@ name: ACCEED
 
 ```bash
 # Test single scraper
-bash scripts/scraper-quality-gate.sh scrapers/ACCEED.yml
+bash tools/scraper-quality-gate.sh scrapers/ACCEED.yml
+
+# Test all scrapers
+bash tools/validate-all.sh
 ```
 
 ---
@@ -90,5 +93,5 @@ bash scripts/scraper-quality-gate.sh scrapers/ACCEED.yml
 
 ---
 
-**Last Updated**: 2026-08-28
+**Last Updated**: 2026-09-06
 **Status**: ✅ Active
