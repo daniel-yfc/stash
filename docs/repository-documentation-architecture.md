@@ -17,8 +17,7 @@ This document defines the boundary between repository-level documentation and th
 | `skills/stash-scraper-builder/SKILL.md` | Skill purpose, trigger conditions, output contract, authoring workflow | Repository administration and CI policy |
 | `skills/.../references/` | Specialized XPath, JSON, script, CDP, date, failure, and validation guidance | Project-wide contribution policy |
 | `validator/` | Executable validation behavior and schema | Prose-only source of truth |
-| `tools/` | Inspection and lint utilities | Scraper runtime behavior unless explicitly implemented |
-| `scripts/` | Repeatable workflows | Canonical schema definitions |
+| `tools/` | Quality gate, inspection and lint utilities, local build/test helpers, and the Python test suite (`tools/tests/`) | Scraper runtime behavior unless explicitly implemented |
 
 ## Naming and format rules
 
@@ -33,9 +32,9 @@ This document defines the boundary between repository-level documentation and th
 
 - `node validator/index.mjs scrapers` — validate all scrapers.
 - `node validator/index.mjs -s scrapers` — check URL ordering.
-- `python -m pytest tests/` — run Python tests.
-- `bash scripts/scraper-quality-gate.sh` — run the quality gate.
-- `bash scripts/eval-run.sh` — run the evaluation workflow.
+- `python -m pytest tools/tests/` — run Python tests.
+- `bash tools/scraper-quality-gate.sh <scraper.yml>` — run the quality gate on one scraper.
+- `bash tools/validate-all.sh` — run the quality gate over all scrapers.
 - `python tools/check_scraper_docs.py` — run documentation checks.
 
 If a command differs between local tooling and documentation, inspect the executable file first and update the documentation rather than inventing an alias.
