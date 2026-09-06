@@ -23,7 +23,7 @@ macOS:    /Applications/Google Chrome.app/Contents/MacOS/Google Chrome --remote-
 Linux:    google-chrome --remote-debugging-port=9222
 ```
 
-3. In Stash, set the Chrome CDP path using the settings location shown by the running build. The current upstream baseline is `http://localhost:9222/json/version`. If a specific build accepts `ws://localhost:9222`, record the Stash version and test evidence before documenting it as an alternative.
+3. In Stash (verified against v0.31.1), the Chrome CDP path is at **Settings → Metadata Providers → Scraping** ("Chrome CDP Path"). The current upstream baseline is `http://localhost:9222/json/version`. If a specific build accepts `ws://localhost:9222`, record the Stash version and test evidence before documenting it as an alternative.
 4. In that visible Chrome, open the site and complete login / human check until the target content is visible. Cloudflare Turnstile / reCAPTCHA must be solved in this visible browser first — Stash cannot solve them for you.
 5. Paste the item URL in Stash and scrape.
 
@@ -38,7 +38,7 @@ Full table in `schema-checklist.md`.
 
 ## `clicks` need `sleep`
 
-Click items use `xpath` (optional `sleep` / `waitTillPresent` on the same object). Any `driver.clicks` entry that triggers navigation or AJAX must set `sleep` (seconds) so the DOM settles before extraction. A click without `sleep` may scrape the pre-click page; verify this behavior against the running validator/build.
+Click items use `xpath` with an optional `sleep` (seconds). **`waitTillPresent` does not exist** — no Stash source (verified against v0.31.1) and no upstream schema (click items allow only `xpath` + `sleep`) support it; do not emit it. Any `driver.clicks` entry that triggers navigation or AJAX must set `sleep` (seconds) so the DOM settles before extraction. A click without `sleep` may scrape the pre-click page.
 
 ```yaml
 driver:

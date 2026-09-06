@@ -18,16 +18,14 @@ Patterns and guidance for JSON-based scrapers.
 
 **Important:** For `sceneByQueryFragment`, use `{url}` to pass the selected scene URL. Do not construct queryURLs pointing to search endpoints for fragment queries. A fragment action that requires a queryURL must include one; script actions follow their script contract.
 
-`queryURLReplace` syntax and key names must be checked against the official validator and the target entry point. Do not describe all keys as custom capture names or all keys as official placeholders without verification.
+`queryURLReplace` keys are **official placeholder names only** (verified against the v0.31.1 runtime and the upstream schema): `url` for all ByURL entry points; `checksum`, `filename`, `oshash`, `phash`, `title`, `url` for fragment modes. Each key's value is an array of `{regex, with}` replacements. Custom capture names such as `id` or `slug` are silently ignored by the runtime (`applyReplacements` looks up only the built-in parameter map) and rejected by the schema.
 
 ```yaml
 name: ExampleJsonScraper
 sceneByName:
   action: scrapeJson
-  queryURL: {}
-  queryURLReplace:
-    search: "(.*)"
-    replace: "https://api.example.com/search?q=$1"
+  queryURL: "https://api.example.com/search?q={}"
+  scraper: searchJson
 
 sceneByQueryFragment:
   action: scrapeJson
