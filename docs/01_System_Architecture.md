@@ -2,71 +2,74 @@
 
 ## Overview
 
-This document describes the system architecture of the Stash Scraper Builder repository, including scraper definitions, canonical schema validation, policy checking, and CI/CD automation pipelines.
+This document describes the architecture of the scraper validation and policy-checking system.
 
 ## Components
 
 ### 1. Scraper Definitions
 
-Locations:
-- `scrapers/*.yml` — Public scrapers (credential-free)
-- `scrapers/private/*.yml` — Private scrapers (session cookies restricted to private deployments)
+Location: `scrapers/**/*.yml` (including `scrapers/private/` for restricted scrapers).
 
-Key properties:
-- `name`: Root scraper name (required; must match filename)
-- `sceneByURL` / `performerByURL` / etc.: URL-based scraping entry points
-- `sceneByFragment`: Fragment-based scraping entry points
-- `driver`: Browser CDP and HTTP configuration
+Each scraper is defined in YAML format with supported mappings such as:
 
-### 2. Validator
+- `name`: Scraper name.
+- `sceneByURL`: URL-based scraping.
+- `sceneByFragment`: Fragment-based scraping.
+- `driver`: Optional CDP/browser configuration.
 
-Location: `validator/index.mjs`
+### 2. Validators
 
-- **Technology**: Node.js + Ajv + YAML
-- **Purpose**: Schema validation against official `validator/scraper.schema.json` and URL array sorting checks (`-s`)
-- **Input**: Scraper YAML files (`scrapers/`)
-- **Output**: Validation status with detailed schema error formatting
-- **Localized Wrapper**: `validator/index-zh-TW.mjs` (Deno runtime wrapper for zh-TW output when explicitly needed)
+The authoritative validator and schema are maintained by [stashapp/CommunityScrapers](https://github.com/stashapp/CommunityScrapers):
 
-### 3. Quality Gate Script
+- CI fetches `validator/index.mjs` and `validator/scraper.schema.json` from upstream `master` at run time.
+- The upstream validator runs against every scraper and returns a blocking pass/fail result.
+- The repository's `validator/index.mjs` and `validator/scraper.schema.json` remain useful local copies, but upstream takes precedence when they differ.
+- `validator/index-zh-TW.mjs` is retained for localized output only.
 
-Location: `scripts/scraper-quality-gate.sh`
+### 3. Local Policy Tools
 
-- **Purpose**: Enforces repository policy rules (root `name:` check, `driver.cookies` privacy rules, Go date format checks, `sceneByQueryFragment` preservation)
-- **Execution**: Local execution and CI/CD workflow blocking gate
-- **Output**: File-level pass/fail status and error annotations
+Location: `tools/`.
 
-### 4. CI/CD Workflows
+- `tools/scraper-quality-gate.sh`: per-scraper policy checks; optionally invokes a prepared upstream validator through `CS_VALIDATOR_DIR`.
+- `tools/validate-all.sh`: runs the policy gate over every `scrapers/**/*.yml` file.
+- `tools/check_scraper_docs.py`: checks documentation examples and contradictions.
+- `tools/tests/`: Python regression and smoke tests.
 
-Location: `.github/workflows/`
+### 4. CI Workflows
 
-- **`validate.yml`**: Blocking full-set validation pipeline (schema + repository policy checks)
-- **`pr-check.yml`**: Changed-file PR validation with inline results comment
-- **`link-check.yml`**: Scheduled documentation link validity check
-- **`eval.yml` / `test-eval.yml`**: Evaluation pack workflows and smoke tests
+Location: `.github/workflows/`.
+
+- `validate.yml`: blocking upstream-schema validation and URL-order check.
+- `pr-check.yml`: changed-scraper policy checks plus documentation checks and PR feedback.
+- `link-check.yml`: scheduled Markdown-link reporting.
+- `eval.yml`: manual pytest evaluation.
+- `test-eval.yml`: manual single-scraper policy-gate smoke test.
 
 ## Architecture Diagram
 
 ```
-Developer → Scraper YAML → Quality Gate Script → Canonical Node Validator → Pass/Fail
+Developer → Scraper YAML → Local Policy Gate → Upstream Validator → Pass/Fail
                               ↓
-                         CI/CD (GitHub Actions)
+                         GitHub Actions CI
                               ↓
                          Merge to main
 ```
 
 ## Data Flow
 
-1. Developer creates or updates scraper YAML using scaffolding templates in `templates/`.
-2. Developer runs local validation (`node validator/index.mjs scrapers`) and quality gate (`bash scripts/scraper-quality-gate.sh <file>`).
-3. Push to GitHub or PR creation triggers CI/CD workflows (`validate.yml` / `pr-check.yml`).
-4. Workflows execute schema and policy checks.
-5. All checks must pass before merging to main.
+1. Developer creates or updates scraper YAML.
+2. Local tools run policy checks, tests, and documentation checks.
+3. A push or pull request triggers the applicable GitHub Actions workflow.
+4. `validate.yml` fetches the upstream validator/schema and validates the complete scraper set.
+5. Required checks pass before merge.
 
 ## Related Files
 
-- [02_Quality_Gate_Overview.md](02_Quality_Gate_Overview.md) — Quality gate pipeline overview
-- [03_Quality_Gate_Rules.md](03_Quality_Gate_Rules.md) — 5 core technical rules details
-- [04_Production_Gate.md](04_Production_Gate.md) — Business readiness checklist (A-H workstream)
-- [05_CI_Workflows.md](05_CI_Workflows.md) — CI/CD workflow details
-- [06_Testing_Guide.md](06_Testing_Guide.md) — Local and CI testing guide
+- [03_Quality_Gate_Rules.md](03_Quality_Gate_Rules.md) - policy rules.
+- [05_CI_Workflows.md](05_CI_Workflows.md) - CI workflows.
+- [06_Testing_Guide.md](06_Testing_Guide.md) - testing guide.
+
+---
+
+**Last Updated**: 2026-09-06
+**Status**: ✅ Active

@@ -10,7 +10,6 @@ A collection of StashApp scrapers with a focus on correctness, maintainability, 
 - [`templates/README.md`](templates/README.md) — copyable scraper scaffolds and template relationships.
 - [`skills/stash-scraper-builder/SKILL.md`](skills/stash-scraper-builder/SKILL.md) — scraper-builder skill contract.
 - [`skills/stash-scraper-builder/references/`](skills/stash-scraper-builder/references/) — specialized scraper authoring references.
-- [`tools/SRB-2.0-documentation.md`](tools/SRB-2.0-documentation.md) — Scraper Request Builder form tool manual.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — contribution and review workflow.
 
 ## Repository structure
@@ -21,42 +20,39 @@ A collection of StashApp scrapers with a focus on correctness, maintainability, 
 - `skills/stash-scraper-builder/` — skill definition and specialized references.
 - `docs/` — repository-level workflow and architecture documentation.
 - `validator/` — executable Node validator and validator schema.
-- `tools/` — repository inspection, Scraper Request Builder (`SRB-2.0-documentation.md`), and documentation utilities.
-- `scripts/` — repeatable build, evaluation, and quality-gate workflows.
-- `tests/` — Python tests and regression checks.
+- `tools/` — quality gates, documentation utilities, local build/test helpers, standalone utilities, and `tools/tests/`.
 
 ## Quick start
 
 Install dependencies:
 
 ```bash
-npm install
-python -m pip install -r requirements.txt
+bash tools/install.sh
 ```
 
-Validate all scrapers with the canonical validator:
+Validate all scrapers with the canonical local validator:
 
 ```bash
-node validator/index.mjs scrapers
+node validator/index.mjs -a --ci
 ```
 
-Check URL ordering:
+The blocking CI workflow fetches and runs the authoritative upstream CommunityScrapers validator and schema. Check URL ordering locally with:
 
 ```bash
-node validator/index.mjs -s scrapers
+node validator/index.mjs -a -s --ci
 ```
 
-Run Python tests:
+Run the policy gate for one scraper or all scrapers:
 
 ```bash
-python -m pytest tests/
+bash tools/scraper-quality-gate.sh scrapers/ACCEED.yml
+bash tools/validate-all.sh
 ```
 
-Run project workflows:
+Run Python tests and documentation checks:
 
 ```bash
-bash scripts/scraper-quality-gate.sh
-bash scripts/eval-run.sh
+python -m pytest tools/tests/
 python tools/check_scraper_docs.py
 ```
 

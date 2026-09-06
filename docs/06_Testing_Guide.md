@@ -2,87 +2,131 @@
 
 ## Overview
 
-This guide covers local testing, schema validation, CI/CD checks, and Python regression tests for the Stash Scraper Quality Gate system.
+This guide covers local tools, the upstream validator workflow, policy checks, Python tests, and manual GitHub Actions checks.
 
 ## Test Types
 
-### 1. Local Quality Gate Testing
+### 1. Local Testing
 
-Run the quality gate script against individual scraper files to test repository policy rules:
+#### Policy Gate
 
 ```bash
-# Test a single scraper
-bash scripts/scraper-quality-gate.sh scrapers/ACCEED.yml
+# Test one scraper
+bash tools/scraper-quality-gate.sh scrapers/ACCEED.yml
 
-# Test all public scrapers
-for file in scrapers/*.yml; do
-  bash scripts/scraper-quality-gate.sh "$file"
-done
+# Test all scrapers, including scrapers/private/
+bash tools/validate-all.sh
 ```
 
-### 2. Schema and URL Validation
+#### Local Validator
 
-Validate scraper files against `validator/scraper.schema.json` using the canonical validator runner:
+The local Node validator uses the repository copy of the schema. CI is authoritative because it fetches the upstream CommunityScrapers validator and schema.
 
 ```bash
-# Validate all scrapers
-node validator/index.mjs scrapers
-
-# Check URL alphabetical sorting
-node validator/index.mjs -s scrapers
+bash tools/install.sh
+node validator/index.mjs -a --ci
+node validator/index.mjs -a -s --ci
 ```
 
-### 3. Python Test Suite
-
-Run the Python test suite to check script executability, directory structures, and skill reference integrity:
+#### Python Tests and Documentation Checks
 
 ```bash
-python -m pytest tests/
-```
-
-### 4. Documentation Verification
-
-Validate Markdown documentation structure and references:
-
-```bash
+python -m pytest tools/tests/ -v
 python tools/check_scraper_docs.py
 ```
 
-## CI/CD Testing Pipeline
+### 2. CI/CD Testing
 
-GitHub Actions automatically run tests on pushes and pull requests:
+#### GitHub Actions Workflows
 
-- **`validate.yml`**: Blocking gate for schema validation and quality gate policy rules across all scraper files.
-- **`pr-check.yml`**: Validates modified scraper files in pull requests and posts inline status feedback.
-- **`link-check.yml`**: Periodically checks Markdown documentation link validity.
-- **`eval.yml`**: Evaluates scraper quality against standard evaluation pack scenarios.
+- **validate.yml**: Fetches the upstream CommunityScrapers validator/schema and validates all scrapers; URL sorting is reported in advisory mode.
+- **pr-check.yml**: Checks changed scrapers with the policy gate and runs documentation checks.
+- **link-check.yml**: Reports Markdown-link status weekly or on demand.
+- **eval.yml**: Runs the Python test suite manually; optionally accepts one test filename.
+- **test-eval.yml**: Runs one selected scraper through the policy gate manually.
 
-## Standard Verification Checklist
+#### Manual Trigger
 
-Before submitting a scraper change, confirm:
+```text
+Open the repository Actions page.
+Select "Test Eval Workflow" or "Eval Pack".
+Choose the optional scraper/test-file input when needed.
+Run the workflow and inspect its result.
+```
 
-- [ ] `node validator/index.mjs scrapers` passes without schema errors.
-- [ ] `node validator/index.mjs -s scrapers` confirms URL ordering.
-- [ ] `bash scripts/scraper-quality-gate.sh <scraper.yml>` passes all policy checks.
-- [ ] `python -m pytest tests/` passes all unit tests.
-- [ ] `python tools/check_scraper_docs.py` reports no documentation errors.
+### 3. Test Layout
+
+Tests live under `tools/tests/` and are selected by `pytest.ini`.
+
+```bash
+python -m pytest tools/tests/ -v
+```
+
+## Test Coverage
+
+### Scraper Set
+
+The full current scraper set is discovered dynamically under `scrapers/**/*.yml`, including private scrapers. Do not maintain a stale hardcoded scraper count in this document.
+
+### Policy Coverage
+
+- ✅ XPath scraper root `name:`.
+- ✅ Direct query fragments preserve `queryURL: "{url}"`.
+- ✅ Public/private cookie boundary.
+- ✅ Go `parseDate` layout policy.
+- ✅ Deterministic all-scraper traversal.
+
+### Schema Validation
+
+- ✅ Upstream CommunityScrapers validator/schema in `validate.yml`.
+- ✅ Local Node validator smoke test when dependencies are installed.
 
 ## Troubleshooting
 
-### Common Issues
+### Python Tests Fail
 
-#### Quality Gate Failure (`scraper-quality-gate.sh`)
-- **Missing root name**: Ensure `name:` is declared at column 0 in XPath scrapers.
-- **`driver.cookies` in public directory**: Move session-dependent scrapers to `scrapers/private/`.
-- **Invalid parseDate layout**: Use Go reference time formats (e.g., `2006-01-02`), not Moment/strftime tokens (`YYYY`, `%Y`).
+```bash
+bash tools/install.sh
+python -m pytest tools/tests/ -v
+```
 
-#### Python Test Failures
-- **Executable bit missing**: Run `chmod +x scripts/*.sh Build/Scripts/*.sh`.
-- **Missing dependencies**: Install requirements with `pip install -r requirements.txt`.
+### Policy Gate Fails
 
-## Related Documents
+```bash
+bash tools/scraper-quality-gate.sh scrapers/ACCEED.yml
+```
 
-- [01_System_Architecture.md](01_System_Architecture.md) — System design and component map
-- [03_Quality_Gate_Rules.md](03_Quality_Gate_Rules.md) — Detailed 5 quality rules
-- [04_Production_Gate.md](04_Production_Gate.md) — Business readiness checklist
-- [05_CI_Workflows.md](05_CI_Workflows.md) — CI/CD workflow details
+Check the reported rule, then inspect the relevant section of `tools/scraper-quality-gate.sh` and `docs/03_Quality_Gate_Rules.md`.
+
+### Upstream Validator Fails
+
+The CI run downloads the upstream validator and schema at run time. Review the failing scraper output in the workflow, then reproduce the local structural check with:
+
+```bash
+bash tools/install.sh
+node validator/index.mjs -a --ci
+```
+
+If local and CI results differ, treat the upstream CI result as authoritative and report the upstream commit/source used by the run.
+
+## Performance Metrics
+
+Track timings from current GitHub Actions runs rather than preserving historical estimates here.
+
+## Next Steps
+
+1. Run the manual `Test Eval Workflow` for a representative scraper.
+2. Run the manual `Eval Pack` workflow for the complete Python suite.
+3. Monitor the scheduled link-check report.
+4. Add focused regression tests when a new policy rule is introduced.
+
+## Related Files
+
+- [03_Quality_Gate_Rules.md](03_Quality_Gate_Rules.md) - policy rules.
+- [05_CI_Workflows.md](05_CI_Workflows.md) - CI workflows.
+- [01_System_Architecture.md](01_System_Architecture.md) - system design.
+
+---
+
+**Last Updated**: 2026-09-06
+**Status**: ✅ Active
