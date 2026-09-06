@@ -30,8 +30,8 @@ This document defines the boundary between repository-level documentation and th
 
 ## Canonical command policy
 
-- `node validator/index.mjs scrapers` — validate all scrapers.
-- `node validator/index.mjs -s scrapers` — check URL ordering.
+- `node validator/index.mjs -a --ci` — validate all scrapers.
+- `node validator/index.mjs -a -s --ci` — check URL ordering.
 - `python -m pytest tools/tests/` — run Python tests.
 - `bash tools/scraper-quality-gate.sh <scraper.yml>` — run the quality gate on one scraper.
 - `bash tools/validate-all.sh` — run the quality gate over all scrapers.

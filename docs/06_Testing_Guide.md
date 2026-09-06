@@ -12,11 +12,11 @@ Run the quality gate script against individual scraper files to test repository 
 
 ```bash
 # Test a single scraper
-bash scripts/scraper-quality-gate.sh scrapers/ACCEED.yml
+bash tools/scraper-quality-gate.sh scrapers/ACCEED.yml
 
 # Test all public scrapers
 for file in scrapers/*.yml; do
-  bash scripts/scraper-quality-gate.sh "$file"
+  bash tools/scraper-quality-gate.sh "$file"
 done
 ```
 
@@ -26,10 +26,10 @@ Validate scraper files against `validator/scraper.schema.json` using the canonic
 
 ```bash
 # Validate all scrapers
-node validator/index.mjs scrapers
+node validator/index.mjs -a --ci
 
 # Check URL alphabetical sorting
-node validator/index.mjs -s scrapers
+node validator/index.mjs -a -s --ci
 ```
 
 ### 3. Python Test Suite
@@ -37,7 +37,7 @@ node validator/index.mjs -s scrapers
 Run the Python test suite to check script executability, directory structures, and skill reference integrity:
 
 ```bash
-python -m pytest tests/
+python -m pytest tools/tests/
 ```
 
 ### 4. Documentation Verification
@@ -61,10 +61,10 @@ GitHub Actions automatically run tests on pushes and pull requests:
 
 Before submitting a scraper change, confirm:
 
-- [ ] `node validator/index.mjs scrapers` passes without schema errors.
-- [ ] `node validator/index.mjs -s scrapers` confirms URL ordering.
-- [ ] `bash scripts/scraper-quality-gate.sh <scraper.yml>` passes all policy checks.
-- [ ] `python -m pytest tests/` passes all unit tests.
+- [ ] `node validator/index.mjs -a --ci` passes without schema errors.
+- [ ] `node validator/index.mjs -a -s --ci` confirms URL ordering.
+- [ ] `bash tools/scraper-quality-gate.sh <scraper.yml>` passes all policy checks.
+- [ ] `python -m pytest tools/tests/` passes all unit tests.
 - [ ] `python tools/check_scraper_docs.py` reports no documentation errors.
 
 ## Troubleshooting
@@ -77,7 +77,7 @@ Before submitting a scraper change, confirm:
 - **Invalid parseDate layout**: Use Go reference time formats (e.g., `2006-01-02`), not Moment/strftime tokens (`YYYY`, `%Y`).
 
 #### Python Test Failures
-- **Executable bit missing**: Run `chmod +x scripts/*.sh Build/Scripts/*.sh`.
+- **Executable bit missing**: Run `chmod +x tools/*.sh`.
 - **Missing dependencies**: Install requirements with `pip install -r requirements.txt`.
 
 ## Related Documents

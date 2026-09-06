@@ -28,7 +28,7 @@ Read repository-level guidance before skill-level guidance.
 | Dates/post-processing | `date-formats.md` → `post-processing.md` |
 | Advanced patterns | `advanced-patterns.md` → `multi-site-network-scrapers.md` → `best-practices.md` |
 | Failures & incident reviews | `scraping-failures.md` → `incident-reviews.md` |
-| Regression/evaluation | `eval-pack.md` → `schema-checklist.md` → `examples.md` → repository `tests/` and `scripts/` |
+| Regression/evaluation | `eval-pack.md` → `schema-checklist.md` → `examples.md` → repository `tools/tests/` and `tools/` |
 
 ## Before editing
 

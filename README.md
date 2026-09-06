@@ -21,9 +21,8 @@ A collection of StashApp scrapers with a focus on correctness, maintainability, 
 - `skills/stash-scraper-builder/` — skill definition and specialized references.
 - `docs/` — repository-level workflow and architecture documentation.
 - `validator/` — executable Node validator and validator schema.
-- `tools/` — repository inspection, Scraper Request Builder (`SRB-2.0-documentation.md`), and documentation utilities.
-- `scripts/` — repeatable build, evaluation, and quality-gate workflows.
-- `tests/` — Python tests and regression checks.
+- `tools/` — repository inspection, Scraper Request Builder (`SRB-2.0-documentation.md`), documentation utilities, and repeatable build/evaluation/quality-gate workflows.
+- `tools/tests/` — Python tests and regression checks.
 
 ## Quick start
 
@@ -37,26 +36,25 @@ python -m pip install -r requirements.txt
 Validate all scrapers with the canonical validator:
 
 ```bash
-node validator/index.mjs scrapers
+node validator/index.mjs -a --ci
 ```
 
 Check URL ordering:
 
 ```bash
-node validator/index.mjs -s scrapers
+node validator/index.mjs -a -s --ci
 ```
 
 Run Python tests:
 
 ```bash
-python -m pytest tests/
+python -m pytest tools/tests/
 ```
 
 Run project workflows:
 
 ```bash
-bash scripts/scraper-quality-gate.sh
-bash scripts/eval-run.sh
+bash tools/validate-all.sh
 python tools/check_scraper_docs.py
 ```
 

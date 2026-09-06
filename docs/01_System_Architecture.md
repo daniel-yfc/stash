@@ -30,7 +30,7 @@ Location: `validator/index.mjs`
 
 ### 3. Quality Gate Script
 
-Location: `scripts/scraper-quality-gate.sh`
+Location: `tools/scraper-quality-gate.sh`
 
 - **Purpose**: Enforces repository policy rules (root `name:` check, `driver.cookies` privacy rules, Go date format checks, `sceneByQueryFragment` preservation)
 - **Execution**: Local execution and CI/CD workflow blocking gate
@@ -58,7 +58,7 @@ Developer → Scraper YAML → Quality Gate Script → Canonical Node Validator 
 ## Data Flow
 
 1. Developer creates or updates scraper YAML using scaffolding templates in `templates/`.
-2. Developer runs local validation (`node validator/index.mjs scrapers`) and quality gate (`bash scripts/scraper-quality-gate.sh <file>`).
+2. Developer runs local validation (`node validator/index.mjs -a --ci`) and quality gate (`bash tools/scraper-quality-gate.sh <file>`).
 3. Push to GitHub or PR creation triggers CI/CD workflows (`validate.yml` / `pr-check.yml`).
 4. Workflows execute schema and policy checks.
 5. All checks must pass before merging to main.

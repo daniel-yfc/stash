@@ -47,10 +47,10 @@ Use this checklist before emitting a scraper YAML file. Run the official Communi
 
 ## CI/CD Checks
 
-On every push and PR, GitHub Actions runs:
+On every push and PR, GitHub Actions runs (all against the upstream stashapp/CommunityScrapers validator and schema):
 
-- **Schema validation** — `validate.yml` runs `node validator/index.mjs scrapers`
-- **URL sorting** — `validate.yml` runs `node validator/index.mjs -s scrapers`
+- **Schema validation** — `validate.yml` runs the upstream validator with `-a --ci`
+- **URL sorting** — `validate.yml` runs the upstream validator with `-a -s --ci`
 - **Python tests** — `test-eval.yml` runs `pytest`
 - **Link check** — `link-check.yml` runs `lychee` on all Markdown files
 

@@ -21,7 +21,7 @@
 
 ### 1. 技術檢核機制
 
-核心規則由 `scripts/scraper-quality-gate.sh` 自動化檢查：
+核心規則由 `tools/scraper-quality-gate.sh` 自動化檢查：
 - **Rule 1**: YAML 根層級 `name` 欄位必須與檔名一致。
 - **Rule 2**: `useCDP` 僅能宣告於頂層 `driver` 區塊。
 - **Rule 3**: 公開 scraper 禁止包含 `driver.cookies`（私有版本需置於 `scrapers/private/`）。
