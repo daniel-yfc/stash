@@ -24,7 +24,7 @@ Use this checklist when starting from a file in `templates/`.
 - [ ] `*ByName` returns a list; other operations return the expected object shape.
 - [ ] Dependencies and relative paths exist.
 - [ ] Run the official validator and URL sorting checks.
-- [ ] Run `python -m pytest tests/` and the repository quality gate.
+- [ ] Run `python -m pytest tools/tests/` and the repository quality gate.
 - [ ] Mark untested assumptions as `# UNVERIFIED`.
 
 ## Documentation relationships

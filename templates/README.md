@@ -46,7 +46,7 @@ Suggested checks:
 ```bash
 npm run validate
 npm run validate-sort
-python -m pytest tests/
+python -m pytest tools/tests/
 python tools/check_scraper_docs.py
 ```
 
