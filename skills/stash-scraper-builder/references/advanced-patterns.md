@@ -2,36 +2,41 @@
 
 ## Anchors
 
-Use YAML anchors to share selector blocks across entry points without duplication.
+Use YAML anchors to share selector blocks across entry points without duplication. Anchors live inside the **root-level** `xPathScrapers` block; entry points reference it via `scraper:` (entry points have `additionalProperties: false` and must not carry an inline `xPathScrapers:`).
 
 ```yaml
+name: ExampleAnchors
+
 sceneByURL:
   - action: scrapeXPath
     url:
       - https://example.test
-    xPathScrapers:
-      scene: &scene_selectors
-        Title: //h1/text()
-        Date: //span[@class="date"]/text()
+    scraper: sceneScraper
 
 sceneByFragment:
   action: scrapeXPath
   queryURL: https://example.test/search?q={url}
-  xPathScrapers:
-    scene: *scene_selectors
+  scraper: sceneScraper
+
+xPathScrapers:
+  sceneScraper: &scene_selectors
+    scene:
+      Title: //h1/text()
+      Date: //span[@class="date"]/text()
 ```
 
 ## Studio map
 
-Use `map` under a studio field to normalise site names to canonical studio names.
+Normalize site names to canonical studio names with `map` inside `Name.postProcess` (the official `studioObject` allows only `Name` / `URL` / `URLs`, so `map` cannot be a sibling of `Name:`).
 
 ```yaml
 Studio:
   Name:
-    fixed: "Studio Name"
-  map:
-    "Old Name": "Canonical Name"
-    "Alternate Name": "Canonical Name"
+    fixed: "Canonical Name"
+    postProcess:
+      - map:
+          "Old Name": "Canonical Name"
+          "Alternate Name": "Canonical Name"
 ```
 
 ## subScraper

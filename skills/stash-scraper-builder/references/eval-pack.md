@@ -45,7 +45,7 @@ A scraper that returns the wrong studio is a fail, even if the YAML is valid.
 **Site:** Use any real public HTML site with scene pages.
 
 **Requirements:**
-- `sceneByURL` + `sceneByFragment` only (no search endpoint unless it exists).
+- `sceneByURL` required; add `sceneByFragment` only if the site verifiably supports fragment scraping (never as a nil-pointer workaround).
 - Title cleaning from `title-patterns.md`.
 - Date with `parseDate` (Go layout matching the site).
 - Performers with canonical JS from `performer-cleaning.md`; `Gender` omitted unless explicit.
@@ -81,7 +81,7 @@ A scraper that returns the wrong studio is a fail, even if the YAML is valid.
 **Site:** Use any site that already has a shared Python scraper.
 
 **Requirements:**
-- `sceneByURL` + `sceneByFragment` (or more if the site supports them).
+- `sceneByURL` required; add `sceneByFragment` only if the site verifiably supports fragment scraping (or more supported modes).
 - `action: script` with `# requires:` and the dependency path.
 - If the site supports `performerByFragment`, test it (script-only mode).
 - Response must state: Python on PATH, pip packages, dependency files exist.
