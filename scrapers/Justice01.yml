@@ -1,15 +1,47 @@
-# Last Updated: 2026-09-05
-# Justice01 (justice01.jp) — public CDP version.
-# Verification status: UNVERIFIED against live Stash.
+# Justice01 (justice01.com) — WordPress/Cocoon blog + EC-CUBE shop.
+# Public version: driver.useCDP: true; no driver.cookies.
+# IMPORTANT: the site moved from justice01.jp (dead, DNS no longer resolves)
+# to justice01.com. All URLs below target the live .com domain.
+#
+# Verification status (2026-09-06, anonymous fetch of live pages):
+#   VERIFIED against https://www.justice01.com/justice175th/ (detail) and
+#   https://www.justice01.com/?s=JUSTICE (search):
+#   - detail is a WordPress post: h1.entry-title, time.entry-date[datetime],
+#     figure.eye-catch (data-src thumb), slider div.sp-image[data-src] covers,
+#     div.entry-content paragraphs, footer div.entry-categories a.cat-link.
+#     No studio/maker, performers, code, or 発売日 fields exist on the page.
+#   - search cards: a.entry-card-wrap > article.entry-card
+#     (h2.entry-card-title, thumb img[data-src], title attr on the wrapper).
+#   - work slugs are /justice…th/ and /guilty…th/ (series JUSTICE/GUILTY);
+#     新発売 variant URLs also exist (…th新発売/) and are excluded via the
+#     slug prefixes below.
+# No age gate observed; HTTP fetches return 200 without cookies. CDP is kept
+# only as a safety net for future gating.
+#
+# Field rules (source language, not translated):
+#   Title    h1.entry-title as-is (e.g. JUSTICE17(5th))
+#   Date     time.entry-date @datetime (ISO, includes +09:00 offset)
+#   Image    eye-catch data-src (animated GIF cover); slider A.jpg as fallback
+#   Details  entry-content <p> text (contains price/notes lines)
+#   Tags     footer cat-link labels (JUSTICE5th, ゲイDVD, …)
+#   Studio/Performers/Code: not present on live pages — omitted intentionally.
+# Last Updated: 2026-09-06
 
 name: Justice01
 
 sceneByURL:
   - action: scrapeXPath
     url:
-      - "justice01.jp/"
-      - "www.justice01.jp/"
+      - "justice01.com/guilty"
+      - "justice01.com/justice"
+      - "www.justice01.com/guilty"
+      - "www.justice01.com/justice"
     scraper: sceneScraper
+
+sceneByName:
+  action: scrapeXPath
+  queryURL: "https://www.justice01.com/?s={}"
+  scraper: searchScraper
 
 sceneByQueryFragment:
   action: scrapeXPath
@@ -18,114 +50,112 @@ sceneByQueryFragment:
 
 sceneByFragment:
   action: scrapeXPath
-  queryURL: "{url}"
-  scraper: sceneScraper
+  queryURL: "https://www.justice01.com/?s={title}"
+  queryURLReplace:
+    title:
+      - regex: '\.[^.]+$'
+        with: ''
+      - regex: '[_\.]+'
+        with: ' '
+      - regex: '\s{2,}'
+        with: ' '
+      - regex: '^\s+|\s+$'
+        with: ''
+  scraper: searchScraper
 
 xPathScrapers:
-  sceneScraper:
+  searchScraper:
     common:
-      $main: "//div[@id='main']"
+      $card: "//a[contains(concat(' ',normalize-space(@class),' '),' entry-card-wrap ')][./article[contains(@class,'entry-card')]]"
 
     scene:
       Title:
-        selector: "//h1[@id='title'] | //h1[contains(@class,'product_title')]"
+        selector: "$card//h2[contains(@class,'entry-card-title')][1]"
         postProcess:
           - replace:
-              - regex: "\\s{2,}"
-                with: " "
+              - regex: "新発売$|フェア$"
+                with: ""
               - regex: "^\\s+|\\s+$"
                 with: ""
 
       Code:
-        selector: "//div[contains(@class,'product_code')] | //p[contains(.,'商品コード')]"
+        selector: "$card//article/@class"
+        postProcess:
+          - replace:
+              - regex: "^.*post-(\\d+).*$"
+                with: "$1"
+
+      URLs:
+        selector: "$card/@href"
         postProcess:
           - javascript: |
               var v = value || "";
-              var m = v.match(/([A-Z]{2,}\d{3,})/i);
-              return m ? m[1].toUpperCase() : "";
+              if (!v) return "";
+              v = v.replace(/^\/\//, "https://");
+              if (/^https?:/i.test(v)) return v;
+              if (v.charAt(0) === "/") return "https://www.justice01.com" + v;
+              return "https://www.justice01.com/" + v;
+
+      Image:
+        selector: "$card//figure[contains(@class,'entry-card-thumb')]//img/@data-src | $card//figure[contains(@class,'entry-card-thumb')]//img/@src"
+        postProcess:
+          - javascript: |
+              var v = value || "";
+              if (!v || v.indexOf("data:image") === 0) return "";
+              v = v.replace(/\?.*$/, "");
+              if (/^https?:/i.test(v)) return v;
+              if (v.charAt(0) === "/") return "https://www.justice01.com" + v;
+              return v;
+
+  sceneScraper:
+    common:
+      $article: "//article[contains(@class,'post')][.//h1[contains(@class,'entry-title')]]"
+
+    scene:
+      Title:
+        selector: "$article//h1[contains(@class,'entry-title')]/text()"
+        postProcess:
+          - replace:
+              - regex: "^\\s+|\\s+$"
+                with: ""
 
       URLs:
         selector: "//link[@rel='canonical']/@href | //meta[@property='og:url']/@content"
         concat: "\n"
-        postProcess:
-          - javascript: |
-              var seen = {};
-              var out = [];
-              function add(u) {
-                u = (u || "").replace(/^\s+|\s+$/g, "");
-                if (!u) return;
-                u = u.replace(/^\/\//, "https://");
-                u = u.replace(/^http:\/\//i, "https://");
-                if (u.indexOf("http") !== 0) {
-                  if (u.charAt(0) !== "/") return;
-                  u = "https://justice01.jp" + u;
-                }
-                if (seen[u]) return;
-                seen[u] = true;
-                out.push(u);
-              }
-              (value || "").split(/\n/).forEach(add);
-              return out.join("\n");
-        split: "\n"
 
       Date:
-        selector: "//div[contains(@class,'release_date')] | //p[contains(.,'発売日')]"
+        selector: "//time[contains(@class,'entry-date')]/@datetime"
         postProcess:
-          - javascript: |
-              var v = value || "";
-              if (!v) return "";
-              var m = v.match(/(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日/);
-              if (!m) m = v.match(/(\d{4})[.\/\-](\d{1,2})[.\/\-](\d{1,2})/);
-              if (!m) return "";
-              var mm = ("0" + m[2]).slice(-2);
-              var dd = ("0" + m[3]).slice(-2);
-              return m[1] + "-" + mm + "-" + dd;
+          - replace:
+              - regex: "^([0-9]{4}-[0-9]{2}-[0-9]{2}).*$"
+                with: "$1"
           - parseDate: "2006-01-02"
 
       Details:
-        selector: "$main//div[contains(@class,'description')]//text()[normalize-space()] | $main//p[contains(@class,'comment')]//text()[normalize-space()]"
+        selector: "$article//div[contains(@class,'entry-content')]//p//text()[normalize-space()]"
         concat: "\n"
         postProcess:
           - javascript: |
               var v = value || "";
-              v = v.replace(/\r\n/g, "\n");
-              v = v.replace(/[ \t]+\n/g, "\n");
-              v = v.replace(/^\s*商品説明\s*/g, "");
-              v = v.replace(/\n{3,}/g, "\n\n");
-              return v.replace(/^\s+|\s+$/g, "");
+              v = v.replace(/\\r\\n/g, "\n");
+              v = v.replace(/[ \\t]+\\n/g, "\n");
+              v = v.replace(/\\n{3,}/g, "\n\n");
+              return v.replace(/^\\s+|\\s+$/g, "");
 
       Image:
-        selector: "//div[@id='detail_image']//img/@src | //meta[@property='og:image']/@content"
+        selector: "$article//div[contains(@class,'sp-slides')]//img[contains(@class,'sp-image')][1]/@data-src | //figure[contains(@class,'eye-catch')]//img/@data-src | //meta[@property='og:image']/@content"
         postProcess:
           - javascript: |
               var v = value || "";
-              if (!v) return "";
+              if (!v || v.indexOf("data:image") === 0) return "";
               v = v.replace(/\?.*$/, "");
-              v = v.replace(/^\/\//, "https://");
-              v = v.replace(/^http:\/\//i, "https://");
               if (/^https?:/i.test(v)) return v;
-              if (v.charAt(0) === "/") return "https://justice01.jp" + v;
-              return "https://justice01.jp/" + v;
-
-      Studio:
-        Name:
-          selector: "//div[contains(@class,'maker')]//a | //p[contains(.,'メーカー')]//a"
-          postProcess:
-            - replace:
-                - regex: "^\\s+|\\s+$"
-                  with: ""
+              if (v.charAt(0) === "/") return "https://www.justice01.com" + v;
+              return v;
 
       Tags:
         Name:
-          selector: "$main//div[contains(@class,'category')]//a | $main//p[contains(@class,'tag')]//a"
-          postProcess:
-            - replace:
-                - regex: "^\\s+|\\s+$"
-                  with: ""
-
-      Performers:
-        Name:
-          selector: "$main//div[contains(@class,'actor')]//a | $main//p[contains(.,'出演者')]//a"
+          selector: "//div[contains(@class,'entry-categories')]//a[contains(@class,'cat-link')]/text()"
           postProcess:
             - replace:
                 - regex: "^\\s+|\\s+$"

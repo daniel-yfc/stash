@@ -1,6 +1,14 @@
-# Last Updated: 2026-09-05
+# Last Updated: 2026-09-06
 # ACCEED (acceed.jp) — public CDP version.
-# Verification status: UNVERIFIED against live Stash.
+# Verification status (2026-09-06, anonymous fetch):
+#   searchScraper: VERIFIED against https://acceed.jp/search.php?s=ACST
+#     - cards: div.item_img (class also carries movie_new/dvd_new variants)
+#     - title: h6.overflow > a (first h6 in div.des)
+#     - link:  a[href^='/detail.'] ; image: ./pic_base/product/{CODE}/…_pickup.jpg
+#     - tags:  div.index-label a.btn (search.php?c=) + models (search.php?model=on&c=)
+#   sceneScraper: UNVERIFIED — detail pages redirect anonymous sessions to
+#     /login.php (session-gated). Selectors kept from prior research; verify
+#     via CDP with a logged-in browser before relying on them.
 # Test URLs from ACCEED-2.md:
 #   - https://acceed.jp/detail.ACST424.html
 #   - https://acceed.jp/detail.ACST426.html
@@ -35,17 +43,22 @@ sceneByFragment:
 xPathScrapers:
   searchScraper:
     common:
-      $results: "//div[contains(@class,'list_area')][.//a[contains(@href,'/detail.')]]"
+      $results: "//div[contains(concat(' ',normalize-space(@class),' '),' item_img ')][.//a[contains(@href,'/detail.')]]"
 
     scene:
       Title:
-        selector: "$results//a[contains(@href,'/detail.')]//img/@alt | $results//h3"
+        selector: "$results//h6[contains(@class,'overflow')]//a[1]"
         postProcess:
           - replace:
-              - regex: "\\s{2,}"
-                with: " "
               - regex: "^\\s+|\\s+$"
                 with: ""
+
+      Code:
+        selector: "$results//a[contains(@href,'/detail.')][1]/@href"
+        postProcess:
+          - replace:
+              - regex: "^.*?/detail\\.([A-Za-z0-9]+)\\.html.*$"
+                with: "$1"
 
       URLs:
         selector: "$results//a[contains(@href,'/detail.')][1]/@href"
@@ -54,13 +67,12 @@ xPathScrapers:
               var v = value || "";
               if (!v) return "";
               v = v.replace(/^\/\//, "https://");
-              v = v.replace(/^http:\/\//i, "https://");
               if (v.indexOf("http") === 0) return v;
               if (v.indexOf("/") === 0) return "https://acceed.jp" + v;
               return "https://acceed.jp/" + v;
 
       Image:
-        selector: "$results//img[contains(@src,'/pic_base/')]/@src"
+        selector: "$results//img[contains(@src,'pic_base/product')]/@src"
         postProcess:
           - javascript: |
               var v = value || "";
@@ -71,6 +83,22 @@ xPathScrapers:
               if (/^https?:/i.test(v)) return v;
               if (v.charAt(0) === "/") return "https://acceed.jp" + v;
               return "https://acceed.jp/" + v;
+
+      Tags:
+        Name:
+          selector: "$results//div[contains(@class,'index-label')]//a[contains(@href,'search.php?c=')][not(contains(@href,'model=on'))]//span"
+          postProcess:
+            - replace:
+                - regex: "^\\s+|\\s+$"
+                  with: ""
+
+      Performers:
+        Name:
+          selector: "$results//div[contains(@class,'index-label')]//a[contains(@href,'model=on')]//span"
+          postProcess:
+            - replace:
+                - regex: "^\\s+|\\s+$"
+                  with: ""
 
   sceneScraper:
     common:
