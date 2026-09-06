@@ -2,14 +2,14 @@
 
 ## Purpose
 
-Use the templates in `Template/` as scaffolding, then move the working scraper into `scrapers/`. The templates do not replace the skill instructions or the official CommunityScrapers validator.
+Use the templates in `templates/` as scaffolding, then move the working scraper into `scrapers/`. The templates do not replace the skill instructions or the official CommunityScrapers validator.
 
 ## Which files belong together
 
 For a declarative scraper, copy one YAML template. For a script scraper, copy both files:
 
-- `Template/ScriptScraperTemplate.yml` — Stash-facing entry-point wrapper.
-- `Template/ScriptScraperTemplate.py` — Python implementation scaffold invoked by the wrapper.
+- `templates/ScriptScraperTemplate.yml` — Stash-facing entry-point wrapper.
+- `templates/ScriptScraperTemplate.py` — Python implementation scaffold invoked by the wrapper.
 
 The YAML operation arguments and the Python operation dispatcher must remain synchronized. The Python process must emit only scraper JSON on stdout; diagnostics belong on stderr.
 
@@ -30,7 +30,7 @@ The YAML operation arguments and the Python operation dispatcher must remain syn
 
 | Layer | Responsibility | Canonical location |
 | --- | --- | --- |
-| Templates | Starting YAML/Python scaffolds | `Template/` |
+| Templates | Starting YAML/Python scaffolds | `templates/` |
 | Repository workflow | Copying, pairing, and validation sequence | `docs/` |
 | Agent behavior | Scope, output contract, and global rules | `AGENTS.md` |
 | Skill behavior | Scraper design and authoring contract | `skills/stash-scraper-builder/SKILL.md` |
