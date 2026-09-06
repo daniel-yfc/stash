@@ -23,7 +23,7 @@ def test_skill_md_exists():
 
 def test_skill_md_has_frontmatter():
     """測試 SKILL.md 有 frontmatter"""
-    content = (SKILL_DIR / "SKILL.md").read_text()
+    content = (SKILL_DIR / "SKILL.md").read_text(encoding="utf-8")
     assert content.startswith("---")
     assert "name:" in content
     assert "description:" in content

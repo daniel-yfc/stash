@@ -13,9 +13,10 @@ def test_scrapers_pass_quality_gate():
     failures = []
     for scraper in scrapers:
         result = subprocess.run(
-            ["bash", GATE, str(scraper)],
+            ["bash", GATE, scraper.as_posix()],
             capture_output=True,
             text=True,
+            encoding="utf-8",
         )
         if result.returncode != 0:
             output = (result.stdout + result.stderr).strip()
@@ -26,10 +27,10 @@ def test_scrapers_pass_quality_gate():
 def test_scrapers_have_name():
     """所有刮削器都有 name"""
     for scraper in Path("scrapers/").rglob("*.yml"):
-        assert "name:" in scraper.read_text(), f"{scraper} 缺少 name"
+        assert "name:" in scraper.read_text(encoding="utf-8"), f"{scraper} 缺少 name"
 
 
 def test_scrapers_have_action():
     """所有刮削器都有 action"""
     for scraper in Path("scrapers/").rglob("*.yml"):
-        assert "action:" in scraper.read_text(), f"{scraper} 缺少 action"
+        assert "action:" in scraper.read_text(encoding="utf-8"), f"{scraper} 缺少 action"
