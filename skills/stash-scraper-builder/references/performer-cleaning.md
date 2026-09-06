@@ -17,7 +17,9 @@ Canonical reference: https://deepwiki.com/stashapp/CommunityScrapers/10.3-best-p
 
 ## Canonical block (copy verbatim)
 
-goja engine; input is `value`; must `return` a string. This is the only authorized implementation.
+goja engine; input is `value`; must `return` a string. This is the canonical block used by this skill.
+
+**goja constraints** (ES5.1-era engine): no named capture groups, no ES6+ syntax (`let`/`const`/arrow functions), and only ES5 built-ins. On an engine error goja returns the **original value** — a failed clean is silent, so test the block against real inputs rather than assuming an exception will surface.
 
 ```yaml
 postProcess:

@@ -49,7 +49,7 @@ Always quote XPath in YAML.
 
 ## 4. Multi-selector fallbacks
 
-`|` is XPath union. Put the preferred selector first:
+`|` is XPath union. **Unions return nodes in document order, not expression order** — listing a preferred selector first does not guarantee it supplies the value when multiple alternatives match. Prefer mutually exclusive alternatives; if two hooks can coexist, test a page where both appear:
 
 ```yaml
 Title:
