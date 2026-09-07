@@ -2,96 +2,46 @@
 
 ## Overview
 
-This document describes the 5 core rules enforced by the scraper quality gate system.
+The quality gate distinguishes schema validity, repository policy, and live-site behavior.
 
----
+## Core rules
 
-## The 5 Rules
+### Rule 1: Root name
 
-### Rule 1: name Must Match Filename
+Every XPath/JSON scraper must have a non-empty root `name:`. Matching the filename is recommended but is not an upstream schema requirement.
 
-**Requirement**: The `name` field must match the filename.
+### Rule 2: Official validator
 
-**Example**:
-```yaml
-# File: scrapers/ACCEED.yml
-name: ACCEED  # ✅ Correct
-```
-
----
-
-### Rule 2: useCDP at Top-Level Only
-
-**Requirement**: `useCDP` must be in top-level `driver` block only.
-
-**Example**:
-```yaml
-# ✅ Correct
-driver:
-  useCDP: true
-  headers:
-    - Key: User-Agent
-      Value: Mozilla/5.0
-```
-
----
-
-### Rule 3: No driver.cookies
-
-**Requirement**: The `driver.cookies` field is prohibited.
-
----
-
-### Rule 4: sceneByFragment Required
-
-**Requirement**: Every scraper must include `sceneByFragment`.
-
-**Example**:
-```yaml
-# ✅ Correct
-sceneByFragment:
-  action: scrapeXPath
-  scraper: sceneScraper
-```
-
----
-
-### Rule 5: Last Updated Header Required
-
-**Requirement**: Every scraper must include `# Last Updated: YYYY-MM-DD`.
-
-**Example**:
-```yaml
-# ✅ Correct
-# Last Updated: 2026-08-28
-# ACCEED (acceed.jp)
-
-name: ACCEED
-```
-
----
-
-## Testing
+Use the official Node/Ajv validator and schema:
 
 ```bash
-# Test single scraper
-bash tools/scraper-quality-gate.sh scrapers/ACCEED.yml
-
-# Test all scrapers
-bash tools/validate-all.sh
+node validator/index.mjs -a -s scrapers
 ```
 
----
+Do not use the removed Deno/localized validator.
 
-## Related Files
+### Rule 3: Credentials
 
-- [01_System_Architecture.md](01_System_Architecture.md) - System design
-- [02_Quality_Gate_Overview.md](02_Quality_Gate_Overview.md) - Chinese overview
-- [04_Production_Gate.md](04_Production_Gate.md) - Business checklist
-- [05_CI_Workflows.md](05_CI_Workflows.md) - CI/CD workflows
-- [06_Testing_Guide.md](06_Testing_Guide.md) - Testing guide
+Public files under `scrapers/*.yml` must not contain `driver.cookies`. Authenticated variants belong under `scrapers/private/`.
 
----
+### Rule 4: Fragment scraping is optional
 
-**Last Updated**: 2026-09-06
-**Status**: ✅ Active
+`sceneByFragment` is not required for every scraper. Omit it when the target site does not support reliable fragment/title lookup.
+
+When `sceneByFragment` uses `scrapeXPath` or `scrapeJson`, it must include the action-required `queryURL`. If present, `sceneByQueryFragment` must preserve the selected URL with `queryURL: "{url}"`.
+
+### Rule 5: Date syntax
+
+`parseDate` must use Go reference layouts, such as `2006-01-02`.
+
+### Rule 6: Live verification
+
+Schema validation does not prove that selectors match current site HTML. Record live verification separately in `docs/LIVE_TEST_STATUS.md`.
+
+## Commands
+
+```bash
+bash tools/scraper-quality-gate.sh scrapers/ACCEED.yml
+bash tools/validate-all.sh
+python tools/check_scraper_docs.py
+```

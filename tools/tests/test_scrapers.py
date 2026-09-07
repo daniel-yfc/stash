@@ -1,36 +1,29 @@
-"""Scraper checks driven by the repository quality gate."""
-
 import subprocess
 from pathlib import Path
 
-GATE = "tools/scraper-quality-gate.sh"
+ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_scrapers_pass_quality_gate():
-    """所有刮削器通過品質閘門"""
-    scrapers = sorted(Path("scrapers/").rglob("*.yml"))
-    assert scrapers, "scrapers/ 中沒有刮削器"
-    failures = []
-    for scraper in scrapers:
-        result = subprocess.run(
-            ["bash", GATE, scraper.as_posix()],
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-        )
-        if result.returncode != 0:
-            output = (result.stdout + result.stderr).strip()
-            failures.append(f"{scraper}: {output}")
-    assert not failures, "品質閘門失敗：\n" + "\n\n".join(failures)
+def test_scrapers_valid():
+    result = subprocess.run(
+        ["node", "validator/index.mjs", "-a", "-s", "scrapers"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_scrapers_have_name():
-    """所有刮削器都有 name"""
-    for scraper in Path("scrapers/").rglob("*.yml"):
-        assert "name:" in scraper.read_text(encoding="utf-8"), f"{scraper} 缺少 name"
+    for scraper in (ROOT / "scrapers").rglob("*.yml"):
+        content = scraper.read_text()
+        assert "name:" in content, f"{scraper} missing name"
 
 
-def test_scrapers_have_action():
-    """所有刮削器都有 action"""
-    for scraper in Path("scrapers/").rglob("*.yml"):
-        assert "action:" in scraper.read_text(encoding="utf-8"), f"{scraper} 缺少 action"
+def test_fragment_mapping_is_optional_but_valid_when_present():
+    for scraper in (ROOT / "scrapers").rglob("*.yml"):
+        data = scraper.read_text()
+        if "sceneByFragment:" not in data:
+            continue
+        block = data.split("sceneByFragment:", 1)[1]
+        assert 'queryURL: "{url}"' in block or "queryURL: '{url}'" in block
