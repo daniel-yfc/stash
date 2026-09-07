@@ -51,7 +51,7 @@ xPathScrapers:
               - regex: "^\\s+|\\s+$"
                 with: ""
       URLs:
-        selector: "$results//a[contains(@href,'/product/detail/')][1]/@href"
+        selector: "$results//a[contains(@href,'/product/detail/')]/@href"
         postProcess:
           - javascript: |
               var v = value || "";
@@ -71,7 +71,7 @@ xPathScrapers:
               if (v.indexOf("/") === 0) return "https://www.ck-download.com" + v;
               return "https://www.ck-download.com/" + v;
       Date:
-        selector: "$results//div[contains(@class,'date')][1]"
+        selector: "$results//div[contains(@class,'date')]"
         postProcess:
           - replace:
               - regex: "(\\d{4})[./-](\\d{1,2})[./-](\\d{1,2})"

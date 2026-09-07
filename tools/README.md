@@ -22,6 +22,34 @@ bash tools/validate-all.sh
 python tools/check_scraper_docs.py
 ```
 
+## Live scraper scrutiny
+
+`scrutiny.js` evaluates scrapers against live upstream websites. It runs probe queries, discovers scene detail pages, and tests XPath selector coverage against real DOM responses.
+
+| Script | Purpose |
+| --- | --- |
+| `scrutiny.js` | Live end-to-end evaluation of `sceneScraper` and `searchScraper` with probe terms and field coverage reporting |
+
+```bash
+# Evaluate a single scraper with automatic probes
+node tools/scrutiny.js scrapers/CK-Download.yml
+
+# Also test searchScraper selectors on search results
+node tools/scrutiny.js scrapers/CK-Download.yml --search
+
+# Walk pages 1-3 and test multiple candidates
+node tools/scrutiny.js scrapers/CK-Download.yml --paginate --multi
+
+# Custom probe search terms
+node tools/scrutiny.js scrapers/CK-Download.yml --probe=DVD,2026
+
+# Evaluate sceneScraper directly against a specific URL
+node tools/scrutiny.js scrapers/CK-Download.yml --url="https://www.ck-download.com/product/detail/27573"
+
+# Pass cookie header for session/auth-gated inspection
+node tools/scrutiny.js scrapers/ACCEED.yml --cookie="PHPSESSID=..."
+```
+
 ## Local helpers
 
 | Script | Purpose |

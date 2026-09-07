@@ -54,14 +54,14 @@ xPathScrapers:
                 with: ""
 
       Code:
-        selector: "$results//a[contains(@href,'/detail.')][1]/@href"
+        selector: "$results//h6[contains(@class,'overflow')]//a[1]/@href"
         postProcess:
           - replace:
               - regex: "^.*?/detail\\.([A-Za-z0-9]+)\\.html.*$"
                 with: "$1"
 
       URLs:
-        selector: "$results//a[contains(@href,'/detail.')][1]/@href"
+        selector: "$results//h6[contains(@class,'overflow')]//a[1]/@href"
         postProcess:
           - javascript: |
               var v = value || "";
@@ -94,7 +94,7 @@ xPathScrapers:
 
       Performers:
         Name:
-          selector: "$results//div[contains(@class,'index-label')]//a[contains(@href,'model=on')]//span"
+          selector: "$results//div[contains(@class,'index-label')]//a[contains(@href,'model=on')]"
           postProcess:
             - replace:
                 - regex: "^\\s+|\\s+$"
