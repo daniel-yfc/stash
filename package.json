@@ -5,6 +5,10 @@
   "engines": {
     "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
   },
+  "overrides": {
+    "whatwg-url": "^14.0.0",
+    "tr46": "^4.1.1"
+  },
   "scripts": {
     "validate": "node validator/index.mjs -a --ci",
     "validate-sort": "node validator/index.mjs -a -s --ci",
@@ -18,7 +22,6 @@
     "better-ajv-errors": "^2.0.3",
     "chalk": "^5.3.0",
     "jsdom": "^30.0.1",
-    "xpath": "^0.0.34",
     "yaml": "^2.5.0"
   }
 }
