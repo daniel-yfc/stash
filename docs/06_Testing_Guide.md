@@ -67,8 +67,9 @@ python tools/check_scraper_docs.py
 
 GitHub Actions automatically run tests on pushes and pull requests:
 
-- **`validate.yml`**: Blocking gate for schema validation and quality gate policy rules across all scraper files.
+- **`validate.yml`**: Blocking gate for schema validation, URL sorting, full quality gate policy rules, Python regression tests, and documentation checks across all scraper files.
 - **`pr-check.yml`**: Validates modified scraper files in pull requests and posts inline status feedback.
+- **`scrutiny.yml`**: On-demand live scraper scrutiny runner executing probe queries and scene extraction tests.
 - **`link-check.yml`**: Periodically checks Markdown documentation link validity.
 - **`eval.yml`**: Evaluates scraper quality against standard evaluation pack scenarios.
 

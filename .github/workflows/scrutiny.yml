@@ -1,0 +1,75 @@
+name: Live Scraper Scrutiny
+
+on:
+  workflow_dispatch:
+    inputs:
+      scraper:
+        description: 'Scraper path or filename (e.g. scrapers/CK-Download.yml or CK-Download.yml). Leave blank to test all.'
+        required: false
+        default: ''
+      search:
+        description: 'Test searchScraper query and multi-result parsing'
+        type: boolean
+        default: true
+      paginate:
+        description: 'Walk search pagination pages 1-3'
+        type: boolean
+        default: false
+      url:
+        description: 'Explicit detail scene URL to evaluate against sceneScraper'
+        required: false
+        default: ''
+      probe:
+        description: 'Custom probe keyword(s), comma-separated'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  scrutiny:
+    name: Live Site Scrutiny
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci || npm install
+
+      - name: Run Scrutiny
+        run: |
+          ARGS=""
+          if [ "${{ inputs.search }}" = "true" ]; then
+            ARGS="$ARGS --search"
+          fi
+          if [ "${{ inputs.paginate }}" = "true" ]; then
+            ARGS="$ARGS --paginate --multi"
+          fi
+          if [ -n "${{ inputs.url }}" ]; then
+            ARGS="$ARGS --url='${{ inputs.url }}'"
+          fi
+          if [ -n "${{ inputs.probe }}" ]; then
+            ARGS="$ARGS --probe='${{ inputs.probe }}'"
+          fi
+
+          TARGET="${{ inputs.scraper }}"
+          if [ -z "$TARGET" ]; then
+            echo "Running scrutiny against all scrapers..."
+            node tools/scrutiny.js --all $ARGS
+          else
+            # Ensure path prefix if only filename was given
+            if [[ "$TARGET" != scrapers/* ]]; then
+              TARGET="scrapers/$TARGET"
+            fi
+            echo "Running scrutiny on $TARGET with args: $ARGS"
+            node tools/scrutiny.js "$TARGET" $ARGS
+          fi
