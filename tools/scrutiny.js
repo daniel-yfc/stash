@@ -261,7 +261,8 @@ async function findSceneURLs(scraperDoc, opts) {
       const hasLoginGate = /(?:window\.location|location\.href)\s*=\s*["'][^"']*login\.(?:php|html)/i.test(html) ||
         /<form[^>]+action=["'][^"']*login\.(?:php|html)["']/i.test(html) ||
         /<input[^>]+(?:type=["']password["']|name=["']pass(?:word)?["'])/i.test(html);
-      if (hasLoginGate && !html.includes('movie_box') && !html.includes('item_img')) {
+      const hasResults = html.includes('movie_detail.php') || html.includes('movie_box') || html.includes('item_img');
+      if (hasLoginGate && !hasResults) {
         lastReason = 'search redirected to login';
         continue;
       }
@@ -451,7 +452,7 @@ async function testScraper(file, opts) {
     const searchDef = searchKey && doc.xPathScrapers && doc.xPathScrapers[searchKey];
     const bestCand = tested[0] || found.urls[0];
     const probe = bestCand && bestCand.probe !== 'direct' ? bestCand.probe : (opts.probe ? opts.probe[0] : 'a');
-    const page = bestCand ? bestCand.page : null;
+    const page = opts.paginate ? 2 : (bestCand ? bestCand.page : null);
     const searchPageURL = buildProbeURL(sb.queryURL, probe, page);
     if (searchDef) {
       try {
