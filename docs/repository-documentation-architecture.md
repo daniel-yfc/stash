@@ -35,6 +35,7 @@ This document defines the boundary between repository-level documentation and th
 - `python -m pytest tools/tests/` — run Python tests.
 - `bash tools/scraper-quality-gate.sh <scraper.yml>` — run the quality gate on one scraper.
 - `bash tools/validate-all.sh` — run the quality gate over all scrapers.
+- `node tools/scrutiny.js scrapers/<Scraper>.yml --search` — live scraper scrutiny against upstream website.
 - `python tools/check_scraper_docs.py` — run documentation checks.
 
 If a command differs between local tooling and documentation, inspect the executable file first and update the documentation rather than inventing an alias.

@@ -40,7 +40,22 @@ Run the Python test suite to check script executability, directory structures, a
 python -m pytest tools/tests/
 ```
 
-### 4. Documentation Verification
+### 4. Live Scraper Scrutiny
+
+Run live-site evaluation to verify selectors against real DOM responses:
+
+```bash
+# Evaluate sceneScraper and searchScraper with probes
+node tools/scrutiny.js scrapers/CK-Download.yml --search
+
+# Walk pages and test multiple scene candidates
+node tools/scrutiny.js scrapers/CK-Download.yml --paginate --multi
+
+# Evaluate a specific scene URL directly
+node tools/scrutiny.js scrapers/CK-Download.yml --url="<URL>"
+```
+
+### 5. Documentation Verification
 
 Validate Markdown documentation structure and references:
 
@@ -65,6 +80,7 @@ Before submitting a scraper change, confirm:
 - [ ] `node validator/index.mjs -a -s --ci` confirms URL ordering.
 - [ ] `bash tools/scraper-quality-gate.sh <scraper.yml>` passes all policy checks.
 - [ ] `python -m pytest tools/tests/` passes all unit tests.
+- [ ] `node tools/scrutiny.js <scraper.yml> --search` verifies live selectors when site is accessible.
 - [ ] `python tools/check_scraper_docs.py` reports no documentation errors.
 
 ## Troubleshooting

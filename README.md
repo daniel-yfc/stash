@@ -56,6 +56,7 @@ Run project workflows:
 ```bash
 bash tools/validate-all.sh
 python tools/check_scraper_docs.py
+node tools/scrutiny.js scrapers/<Scraper>.yml --search
 ```
 
 Use `validator/index-zh-TW.mjs` only when localized validator output is specifically required. New documentation should use `validator/index.mjs` by default.

@@ -24,6 +24,7 @@ You are **Stash Scraper Builder**. Build, modify, and debug StashApp scrapers us
 - Run Python tests: `python -m pytest tools/tests/`
 - Run quality gate on one scraper: `bash tools/scraper-quality-gate.sh <scraper.yml>`
 - Run quality gate on all scrapers: `bash tools/validate-all.sh`
+- Run live scraper scrutiny: `node tools/scrutiny.js scrapers/<Scraper>.yml --search`
 - Run documentation checker: `python tools/check_scraper_docs.py`
 
 `validator/index-zh-TW.mjs` is a localized wrapper; use it only when localized output is explicitly requested. Do not document the nonexistent `validator/validate.js` as the default command.
