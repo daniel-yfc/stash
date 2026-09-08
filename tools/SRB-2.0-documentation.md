@@ -1,4 +1,4 @@
-# Scraper Request Builder V2.0 
+# Scraper Request Builder V2.0
 
 **Version:** SRB V2.0 · **Spec date:** 2026-08-30
 
@@ -6,7 +6,7 @@
 
 ## 快速啟動 / Quick Start
 
-1. 用瀏覽器直接打開 `Scrapers Builder Accompany.html`
+1. 用瀏覽器直接打開 `SPB-2.0.html`
 2. 需要網路連線（React / Babel / Google Fonts 仍走 CDN，未內嵌）
 
 ## 相依 CDN 資源 / External Dependencies
@@ -50,7 +50,7 @@ Scraper Request Builder 是一個互動式小工具表單，用來幫助你快�
 
 ---
 
-## 使用流程 
+## 使用流程
 
 ### 01 目標 · Target
 

@@ -43,6 +43,8 @@ This directory contains repository-level workflow, architecture, testing, and ma
 | [`LIVE_TEST_STATUS.md`](LIVE_TEST_STATUS.md) | Live-site verification status |
 | [`template-workflow.md`](template-workflow.md) | Template-to-scraper workflow |
 | [`test-report-template.md`](test-report-template.md) | Full-suite test report format |
+| [`../tools/README.md`](../tools/README.md) | Tool commands, quality gate, and live scrutiny |
+| [`../tools/SRB-2.0-documentation.md`](../tools/SRB-2.0-documentation.md) | Scraper Request Builder manual |
 
 ## Rule of thumb
 

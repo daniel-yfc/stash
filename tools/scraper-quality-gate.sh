@@ -2,13 +2,10 @@
 # Scraper Quality Gate
 # Usage: bash tools/scraper-quality-gate.sh <scraper.yml>
 #
-# Schema validation uses the official stashapp/CommunityScrapers validator.
-# Set CS_VALIDATOR_DIR to a prepared upstream checkout (containing validate.js
-# and an installed validator/ directory) to enable it per file. Without it,
-# only the repository policy checks run.
-#
-# The legacy Deno validator (validator/index-zh-TW.mjs) is retained for
-# reference only and is intentionally NOT used here.
+# Optional schema validation uses the official stashapp/CommunityScrapers
+# validator. Set CS_VALIDATOR_DIR to a prepared upstream checkout containing
+# validator/index.mjs, validator/scraper.schema.json, and installed Node
+# dependencies. Without it, only the repository policy checks run.
 
 set -uo pipefail
 
@@ -34,15 +31,19 @@ if [[ "${SCRAPER_FILE}" != scrapers/*.yml ]]; then
   fail "Expected a .yml scraper path under scrapers/: ${SCRAPER_FILE}"
 fi
 
-# Official schema validation (stashapp/CommunityScrapers).
+# Optional official schema validation (stashapp/CommunityScrapers).
 if [[ -n "${CS_VALIDATOR_DIR:-}" ]]; then
-  if [[ ! -f "${CS_VALIDATOR_DIR}/validate.js" ]]; then
-    echo "::error::CS_VALIDATOR_DIR does not contain validate.js: ${CS_VALIDATOR_DIR}" >&2
+  if [[ ! -f "${CS_VALIDATOR_DIR}/validator/index.mjs" ]]; then
+    echo "::error::CS_VALIDATOR_DIR does not contain validator/index.mjs: ${CS_VALIDATOR_DIR}" >&2
+    exit 2
+  fi
+  if [[ ! -f "${CS_VALIDATOR_DIR}/validator/scraper.schema.json" ]]; then
+    echo "::error::CS_VALIDATOR_DIR does not contain validator/scraper.schema.json: ${CS_VALIDATOR_DIR}" >&2
     exit 2
   fi
   mkdir -p "${CS_VALIDATOR_DIR}/$(dirname "${SCRAPER_FILE}")"
   cp "${SCRAPER_FILE}" "${CS_VALIDATOR_DIR}/${SCRAPER_FILE}"
-  if ! (cd "${CS_VALIDATOR_DIR}" && node validate.js "${SCRAPER_FILE}"); then
+  if ! (cd "${CS_VALIDATOR_DIR}" && node validator/index.mjs "${SCRAPER_FILE}"); then
     fail "Official CommunityScrapers validation failed"
   fi
 fi

@@ -14,6 +14,8 @@ bash tools/scraper-quality-gate.sh scrapers/ACCEED.yml
 bash tools/validate-all.sh
 ```
 
+Set `CS_VALIDATOR_DIR` only when using a prepared `stashapp/CommunityScrapers` checkout that contains `validator/index.mjs`, `validator/scraper.schema.json`, and installed Node dependencies. The repository default validation path is `npm run validate` and `npm run validate-sort`.
+
 ## Documentation checker
 
 `check_scraper_docs.py` checks documentation examples and contradictions. It runs automatically in the `pr-check.yml` workflow.

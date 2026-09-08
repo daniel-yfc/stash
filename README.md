@@ -12,6 +12,7 @@ A collection of StashApp scrapers with a focus on correctness, maintainability, 
 - [`templates/README.md`](templates/README.md) — copyable scraper scaffolds and template relationships.
 - [`skills/stash-scraper-builder/SKILL.md`](skills/stash-scraper-builder/SKILL.md) — scraper-builder skill contract.
 - [`skills/stash-scraper-builder/references/`](skills/stash-scraper-builder/references/) — specialized scraper authoring references.
+- [`tools/SRB-2.0-documentation.md`](tools/SRB-2.0-documentation.md) — Scraper Request Builder form tool manual.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — contribution and review workflow.
 
 ## Repository structure
@@ -22,7 +23,7 @@ A collection of StashApp scrapers with a focus on correctness, maintainability, 
 - `skills/stash-scraper-builder/` — skill definition and specialized references.
 - `docs/` — repository-level workflow and architecture documentation.
 - `validator/` — executable Node validator and validator schema.
-- `tools/` — repository inspection, validation, documentation, and live-scrutiny utilities.
+- `tools/` — repository inspection, validation, documentation, live-scrutiny utilities, and Scraper Request Builder (`SRB-2.0-documentation.md`).
 - `tools/tests/` — Python tests and regression checks.
 - `evidence/` — historical audit evidence; not a live policy source.
 
