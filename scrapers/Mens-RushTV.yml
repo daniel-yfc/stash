@@ -1,15 +1,17 @@
 # Men's Rush TV — sceneByURL + search scraper
 # Public CDP version: driver.useCDP: true; no driver.cookies.
 # Search verification: selectors checked against rendered search DOM
-#   https://www.mensrush.tv/list.php?keyword=雄穴
-#   (2026-08-27 snapshot; file is dominated by Font Awesome CSS).
-#   Confirmed card: div.movie_box > a[href*='single.php'] > img + p
-#   img/@alt is empty; title is in <p>.
-# sceneByURL still UNVERIFIED against live detail pages.
+#   https://www.mensrush.tv/list.php?keyword=%E9%9B%84%E7%A9%B4
+# sceneByURL verified against live detail pages (2026-09-07):
+#   - https://www.mensrush.tv/single.php?id=MR-KR2247_DL
+#   - https://www.mensrush.tv/single.php?id=GT-2641_DL
+#   - https://www.mensrush.tv/single.php?id=ARGA-126_DL
+#   - https://www.mensrush.tv/single.php?id=NAO-512_DL (session-only, title only for guests)
+#   - https://www.mensrush.tv/single.php?id=RCHS-068_DL (session-only, title only for guests)
 #
-# This site may use age-gate / login. Public CDP version requires browser session.
-# See: skills/stash-scraper-builder/references/scraping-failures.md
-# Last Updated: 2026-08-28
+# Detail pages for NAO/RCHS product codes appear to be session/purchased-only;
+# the search index still returns them, but single.php only renders a title.
+# Last Updated: 2026-09-07
 
 name: Men's Rush TV
 
@@ -35,13 +37,13 @@ sceneByFragment:
   queryURL: "https://www.mensrush.tv/list.php?keyword={title}"
   queryURLReplace:
     title:
-      - regex: '\.[^.]+$'
+      - regex: '\\.[^.]+$'
         with: ''
-      - regex: '[_\.]+'
+      - regex: '[_\\.]+'
         with: ' '
-      - regex: '\s{2,}'
+      - regex: '\\s{2,}'
         with: ' '
-      - regex: '^\s+|\s+$'
+      - regex: '^\\s+|\\s+$'
         with: ''
   scraper: searchScraper
 
@@ -55,20 +57,20 @@ xPathScrapers:
         selector: $results//p[1]
         postProcess:
           - replace:
-              - regex: '^\s+|\s+$'
+              - regex: '^\\s+|\\s+$'
                 with: ''
 
       Code:
-        selector: $results//a[contains(@href,'single.php')][1]/@href
+        selector: $results//a[contains(@href,'single.php')]/@href
         postProcess:
           - replace:
               - regex: '^.*?[?&]id=([^&]+).*$'
                 with: '$1'
-              - regex: '\s+'
+              - regex: '\\s+'
                 with: ''
 
       URLs:
-        selector: $results//a[contains(@href,'single.php')][1]/@href
+        selector: $results//a[contains(@href,'single.php')]/@href
         postProcess:
           - javascript: |
               var v = value || "";
@@ -90,13 +92,26 @@ xPathScrapers:
               if (v.indexOf("/") === 0) return "https://www.mensrush.tv" + v;
               return v.replace(/_sm\.(webp|jpg)$/, ".$1");
 
+      Date:
+        selector: $results//p[contains(@class,'price') or contains(text(),'円')]/preceding-sibling::p[contains(text(),'/')][1]
+        postProcess:
+          - replace:
+              - regex: '^\\s+|\\s+$'
+                with: ''
+          - parseDate: "2006/01/02"
+        # NOTE: Men's Rush search cards only expose title + thumbnail; release
+        # dates are not shown on the list view, so this selector intentionally
+        # returns 0 nodes for the public search mode.
+
   sceneScraper:
     scene:
       Title:
         selector: //div[@class='detail_title'][1]//h2[1]/text() | //title
         postProcess:
           - replace:
-              - regex: '^\s+|\s+$'
+              - regex: '^\\s+|\\s+$'
+                with: ''
+              - regex: "Men''s Rush\\.TV.*$"
                 with: ''
 
       Code:
@@ -106,13 +121,13 @@ xPathScrapers:
               - regex: '_DL$'
                 with: ''
           - replace:
-              - regex: '^\s+|\s+$'
+              - regex: '^\\s+|\\s+$'
                 with: ''
 
       URLs:
         fixed: "{inputURL}"
 
-      Date:  # UNVERIFIED — date position on single.php not confirmed on a live page
+      Date:
         selector: //div[@class='movie_detail'][1]//p[contains(.,'発売') or contains(.,'配信')]
         postProcess:
           - javascript: |
@@ -133,7 +148,7 @@ xPathScrapers:
                 - regex: '^FansMe（(.+)）$'
                   with: '$1'
             - replace:
-                - regex: '^\s+|\s+$'
+                - regex: '^\\s+|\\s+$'
                   with: ''
 
       Performers:
@@ -167,7 +182,7 @@ xPathScrapers:
           selector: //div[@class='movie_detail'][1]//p//a[contains(@href,'list.php?geid=')]/text()
           postProcess:
             - replace:
-                - regex: '^\s+|\s+$'
+                - regex: '^\\s+|\\s+$'
                   with: ''
 
       Details:
@@ -192,4 +207,4 @@ driver:
     - Key: User-Agent
       Value: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 
-# Last Updated: 2026-08-28
+# Last Updated: 2026-09-07

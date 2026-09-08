@@ -255,7 +255,13 @@ async function findSceneURLs(scraperDoc, opts) {
         lastReason = `search fetch failed: ${e.message}`;
         continue;
       }
-      if (/login\.php|login\.html|<form[^>]+login/i.test(html)) {
+      // A true login gate removes search results; look for a login form/redirect
+      // while also confirming no usable results are present. Some sites keep a
+      // persistent "guest / login" header even on public search pages.
+      const hasLoginGate = /(?:window\.location|location\.href)\s*=\s*["'][^"']*login\.(?:php|html)/i.test(html) ||
+        /<form[^>]+action=["'][^"']*login\.(?:php|html)["']/i.test(html) ||
+        /<input[^>]+(?:type=["']password["']|name=["']pass(?:word)?["'])/i.test(html);
+      if (hasLoginGate && !html.includes('movie_box') && !html.includes('item_img')) {
         lastReason = 'search redirected to login';
         continue;
       }
