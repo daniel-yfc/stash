@@ -261,7 +261,7 @@ async function findSceneURLs(scraperDoc, opts) {
       const hasLoginGate = /(?:window\.location|location\.href)\s*=\s*["'][^"']*login\.(?:php|html)/i.test(html) ||
         /<form[^>]+action=["'][^"']*login\.(?:php|html)["']/i.test(html) ||
         /<input[^>]+(?:type=["']password["']|name=["']pass(?:word)?["'])/i.test(html);
-      const hasResults = html.includes('movie_detail.php') || html.includes('movie_box') || html.includes('item_img');
+      const hasResults = html.includes('movie_detail.php') || html.includes('movie_box') || html.includes('item_img') || html.includes('detail.php?product_id') || html.includes('list_title');
       if (hasLoginGate && !hasResults) {
         lastReason = 'search redirected to login';
         continue;

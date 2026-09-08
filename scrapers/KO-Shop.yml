@@ -44,13 +44,15 @@ sceneByFragment:
 xPathScrapers:
   searchScraper:
     common:
-      # UNVERIFIED class; scoped to product_id links that contain an image
-      $results: "//a[contains(@href,'/products/detail.php?product_id=')][.//img]"
+      $results: "//a[contains(@href,'/products/detail.php?product_id=')][.//img][.//div[contains(@class,'list_title')]]"
     scene:
       Title:
-        selector: "$results//img[1]/@alt | $results"
+        selector: "$results//div[contains(@class,'list_title')]//text()"
+        concat: " "
         postProcess:
           - replace:
+              - regex: "\\s{2,}"
+                with: " "
               - regex: "^\\s+|\\s+$"
                 with: ""
       URLs:
