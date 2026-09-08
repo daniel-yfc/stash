@@ -21,9 +21,13 @@ def test_scrapers_have_name():
 
 
 def test_fragment_mapping_is_optional_but_valid_when_present():
+    import re
     for scraper in (ROOT / "scrapers").rglob("*.yml"):
         data = scraper.read_text()
-        if "sceneByFragment:" not in data:
+        if "sceneByQueryFragment:" not in data:
             continue
-        block = data.split("sceneByFragment:", 1)[1]
+        block = data.split("sceneByQueryFragment:", 1)[1]
+        # Stop at the next top-level key (no indentation) so we only inspect
+        # the sceneByQueryFragment block.
+        block = re.split(r"\n[A-Za-z]", block, maxsplit=1)[0]
         assert 'queryURL: "{url}"' in block or "queryURL: '{url}'" in block

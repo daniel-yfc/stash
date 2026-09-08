@@ -28,7 +28,7 @@ sceneByQueryFragment:
 
 sceneByFragment:
   action: scrapeXPath
-  queryURL: "https://www.ko-shop.com/products/list.php?word={title}"
+  queryURL: "{url}"
   queryURLReplace:
     title:
       - regex: '\.[^.]+$'

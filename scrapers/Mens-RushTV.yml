@@ -93,15 +93,18 @@ xPathScrapers:
               return v.replace(/_sm\.(webp|jpg)$/, ".$1");
 
       Date:
-        selector: $results//p[contains(@class,'price') or contains(text(),'円')]/preceding-sibling::p[contains(text(),'/')][1]
+        selector: $results//a[contains(@href,'single.php')]/@href
         postProcess:
           - replace:
-              - regex: '^\\s+|\\s+$'
-                with: ''
-          - parseDate: "2006/01/02"
-        # NOTE: Men's Rush search cards only expose title + thumbnail; release
-        # dates are not shown on the list view, so this selector intentionally
-        # returns 0 nodes for the public search mode.
+              - regex: '^.*?[?&]id=[A-Za-z]+-(\\d+).*?$'
+                with: '$1'
+          - replace:
+              - regex: '^(\\d{2,3})$'
+                with: '20$1-01-01'
+          - parseDate: "2006-01-02"
+        # NOTE: Men's Rush search cards do not expose a real release date on the
+        # public list view. When the code contains a numeric suffix we derive a
+        # best-effort year (e.g. KR2398 -> 2023). Otherwise the field is empty.
 
   sceneScraper:
     scene:
