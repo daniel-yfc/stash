@@ -57,7 +57,7 @@ xPathScrapers:
                 with: ''
 
       Code:
-        selector: $results//a[contains(@href,'/products/detail.php')][1]/@href
+        selector: $results//a[contains(@href,'/products/detail.php')]/@href
         postProcess:
           - replace:
               - regex: '^.*?[?&]product_code=([^&]+).*$'
@@ -66,7 +66,7 @@ xPathScrapers:
                 with: ''
 
       URLs:
-        selector: $results//a[contains(@href,'/products/detail.php')][1]/@href
+        selector: $results//a[contains(@href,'/products/detail.php')]/@href
         postProcess:
           - javascript: |
               var v = value || "";
