@@ -1,28 +1,35 @@
 # Validator
 
-Scraper validation in this repository follows the official [stashapp/CommunityScrapers](https://github.com/stashapp/CommunityScrapers) validator and schema, which are authoritative.
+The repository uses the official CommunityScrapers Node validator and schema:
 
-## Files
+- `validator/index.mjs`
+- `validator/scraper.schema.json`
 
-| File | Role |
-| --- | --- |
-| `index.mjs` | Local copy of the upstream validator (Node + Ajv). Runs against the local `scraper.schema.json`. |
-| `index-zh-TW.mjs` | Localized (zh-TW) Deno variant, retained for reference and localized output only. |
-| `scraper.schema.json` | Minimal local schema stub. The upstream `validator/scraper.schema.json` is the authoritative schema. |
+## Validate
 
-## How validation runs
-
-- CI (`validate.yml`) downloads the upstream `index.mjs` and `scraper.schema.json` from `stashapp/CommunityScrapers@master` at run time and validates `scrapers/` against them (Node or Deno, auto-detected from the upstream imports).
-- Local quick check (uses the local stub schema — the CI/upstream result is authoritative):
+From the repository root:
 
 ```bash
-npm install
-node validator/index.mjs -a --ci        # validate all scrapers
-node validator/index.mjs -a -s --ci     # also check URL ordering
+node validator/index.mjs -a scrapers
+node validator/index.mjs -a -s scrapers
 ```
 
-- Localized output (reference only):
+`-a` reports all failures. `-s` additionally checks URL-array ordering.
+
+The localized Deno validator has been removed. Do not add a second validator or a local schema fork; the upstream CommunityScrapers validator and schema are authoritative.
+
+## Quality gate
+
+For one scraper:
 
 ```bash
-cd validator && deno run --allow-read --allow-write index-zh-TW.mjs ../scrapers/ACCEED.yml
+bash tools/scraper-quality-gate.sh scrapers/ACCEED.yml
 ```
+
+For the full repository:
+
+```bash
+bash tools/validate-all.sh
+```
+
+Schema validation proves configuration validity only. It does not prove that selectors still match the live website.
