@@ -17,7 +17,7 @@ This directory contains repository-level workflow, architecture, testing, and ma
 - [`04_Production_Gate.md`](04_Production_Gate.md) — business readiness checklist and A-H workstream.
 - [`05_CI_Workflows.md`](05_CI_Workflows.md) — CI/CD workflow pipeline details.
 - [`06_Testing_Guide.md`](06_Testing_Guide.md) — local and CI testing guide.
-- [`TEST-REPORT-TEMPLATE.md`](TEST-REPORT-TEMPLATE.md) — full-suite markdown test report template.
+- [`test-report-template.md`](test-report-template.md) — full-suite markdown test report template.
 - [`repository-documentation-architecture.md`](repository-documentation-architecture.md) — naming, format, ownership, and cross-level linking rules.
 
 ## Scaffolding & Tooling Documentation

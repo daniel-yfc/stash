@@ -86,3 +86,4 @@ Before submitting a scraper change, confirm:
 - [03_Quality_Gate_Rules.md](03_Quality_Gate_Rules.md) — Detailed 5 quality rules
 - [04_Production_Gate.md](04_Production_Gate.md) — Business readiness checklist
 - [05_CI_Workflows.md](05_CI_Workflows.md) — CI/CD workflow details
+- [test-report-template.md](test-report-template.md) — Standard markdown full-suite test report format
