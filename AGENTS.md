@@ -10,24 +10,35 @@ You are **Stash Scraper Builder**. Build, modify, and debug StashApp scrapers us
 
 **Do not use this repository workflow for:** generic YAML; generic crawling; `action: stash` / stash-box / Identify scrapers; fabricated search endpoints; fragment or diff output; translating scraped values; inventing performer-cleaning JavaScript.
 
+## Documentation routing
+
+- Documentation policy, numbering, naming, metadata, indexing, and formatter rules: `docs/repository-documentation-architecture.md`
+- Machine-readable documentation index: `docs/index.yml`
+- Human documentation index: `docs/README.md`
+- Scraper authoring contract: `skills/stash-scraper-builder/SKILL.md`
+- Skill reference routing: `skills/stash-scraper-builder/references/skill-read-order.md`
+
+Do not duplicate detailed policy here; link to the owning document.
+
 ## Documentation ownership
 
 - Repository-level workflow, commands, directory structure, CI, and contribution rules belong in `README.md`, `docs/`, `CONTRIBUTING.md`, and this file.
 - Scraper authoring rules belong in `skills/stash-scraper-builder/SKILL.md`.
 - Specialized scraper behavior belongs in `skills/stash-scraper-builder/references/`.
-- Do not duplicate detailed skill rules here; link to the owning skill reference instead.
 
 ## Canonical commands
 
-- Validate all scrapers: `node validator/index.mjs -a --ci`
-- Sort URL arrays: `node validator/index.mjs -a -s --ci`
+- Validate all scrapers: `npm run validate`
+- Sort URL arrays: `npm run validate-sort`
+- Check formatting: `npm run format:check`
 - Run Python tests: `python -m pytest tools/tests/`
 - Run quality gate on one scraper: `bash tools/scraper-quality-gate.sh <scraper.yml>`
 - Run quality gate on all scrapers: `bash tools/validate-all.sh`
 - Run live scraper scrutiny: `node tools/scrutiny.js scrapers/<Scraper>.yml --search`
 - Run documentation checker: `python tools/check_scraper_docs.py`
+- Run documentation-index checker: `python tools/check_docs_index.py`
 
-`validator/index-zh-TW.mjs` is a localized wrapper; use it only when localized output is explicitly requested. Do not document the nonexistent `validator/validate.js` as the default command.
+The official Node/Ajv validator is the only supported validator path. The removed localized Deno validator must not be reintroduced as a fallback.
 
 ## Repository-wide rules
 
@@ -36,6 +47,7 @@ You are **Stash Scraper Builder**. Build, modify, and debug StashApp scrapers us
 - Keep credentials, cookies, and browser state out of public scrapers.
 - Use CamelCase for new scraper/template YAML names and lowercase kebab-case for new Markdown files.
 - Keep root scraper `name:` and do not emit unsupported `documentHeader` or `$vars` keys.
+- `sceneByFragment` is optional unless the target site verifiably supports it.
 - Official CommunityScrapers schema and validator override local stubs and prose.
 
 ## Skill handoff
@@ -46,4 +58,4 @@ Before authoring a scraper, read:
 2. `skills/stash-scraper-builder/references/skill-read-order.md`
 3. The specialized references selected by that read order.
 
-For repository workflow, testing, and contribution questions, read `docs/README.md` and the linked repository-level guides.
+For repository workflow, testing, and contribution questions, read `docs/README.md`, `docs/index.yml`, and the linked repository-level guides.

@@ -1,58 +1,61 @@
+---
+doc_id: DOC-QG-20
+title: Quality Gate Overview
+status: active
+layer: repository
+owner: maintainer
+audience:
+  - agent
+  - maintainer
+applies_to:
+  - scrapers
+  - ci
+last_verified: "2026-09-09"
+authority: canonical
+routing:
+  intents:
+    - quality-gate
+    - validation
+---
 # Scraper 品質管線總覽
 
-## 📋 執行摘要
+## 目的
 
-本文檔說明 Stash Scraper 品質管線（Quality Gate Pipeline）的架構與標準。品質管線旨在確保所有 Scraper 程式碼符合技術規範、業務需求與 CI/CD 自動化檢查。
+本文件提供品質管線的高层概覽。詳細規則以 [`03_Quality_Gate_Rules.md`](03_Quality_Gate_Rules.md) 為準；文件編號、命名與索引規則以 [`repository-documentation-architecture.md`](repository-documentation-architecture.md) 為準。
 
----
+## 技術檢核原則
 
-## 🎯 核心目標
+1. XPath/JSON scraper 必須有非空白的根層級 `name:`；檔名一致是專案慣例。
+2. `driver.useCDP` 只能宣告於頂層 `driver` 區塊。
+3. 公開 `scrapers/*.yml` 不得包含 `driver.cookies`；需要登入的版本置於 `scrapers/private/`。
+4. `sceneByFragment` 不是每個 scraper 的必填項目；只有目標網站確實支援 fragment/title lookup 時才加入。若 XPath/JSON fragment mapping 存在，必須提供對應 `queryURL`。
+5. 日期格式使用 Go reference layout，例如 `2006-01-02`。
+6. Schema 驗證與 live-site selector 驗證是不同層級，不得以 schema 通過取代實頁測試。
 
-建立一套完整的 Scraper 開發與驗證管線，確保：
-1. **技術規範**：遵循品質閘門核心規則（格式、結構與安全性）。
-2. **業務與資料品質**：涵蓋完整欄位提取與場景需求（A-H Workstream）。
-3. **自動化驗證**：透過 CI/CD 在提交與 Pull Request 時自動執行檢查。
-4. **職責分離**：區分公開版（`scrapers/`）與私有版（`scrapers/private/`）檔案。
-5. **測試覆蓋**：提供完整的語法、Schema 與單元測試機制。
+## 驗證層級
 
----
+| 層級 | 工具 | 證明範圍 |
+|---|---|---|
+| Schema | `npm run validate` | YAML 符合官方 schema |
+| URL ordering | `npm run validate-sort` | URL array 排序符合 validator 要求 |
+| Repository policy | `bash tools/validate-all.sh` | 命名、credentials、fragment、日期等政策 |
+| Python regression | `python -m pytest tools/tests/` | 工具與測試套件可執行 |
+| Documentation | `python tools/check_scraper_docs.py` | 文件範例與規則一致 |
+| Documentation index | `python tools/check_docs_index.py` | 文件 ID、路徑與索引一致 |
+| Live scrutiny | `node tools/scrutiny.js scrapers/<Scraper>.yml --search` | 目標網站實頁 selector 可用性 |
 
-## 🏛️ 品質管線架構
+## CI 工作流
 
-### 1. 技術檢核機制
+- `validate.yml`：blocking schema、sorting、quality gate、pytest 與文件檢查。
+- `pr-check.yml`：針對 PR 變更的 scraper 執行檢查並回報。
+- `scrutiny.yml`：手動觸發 live-site probing。
+- `link-check.yml`：檢查 Markdown 連結。
+- `eval.yml`：手動評估測試。
 
-核心規則由 `tools/scraper-quality-gate.sh` 自動化檢查：
-- **Rule 1**: YAML 根層級 `name` 欄位必須與檔名一致。
-- **Rule 2**: `useCDP` 僅能宣告於頂層 `driver` 區塊。
-- **Rule 3**: 公開 scraper 禁止包含 `driver.cookies`（私有版本需置於 `scrapers/private/`）。
-- **Rule 4**: 必須包含 `sceneByFragment` 等相應片段定義。
-- **Rule 5**: 必須包含 `# Last Updated: YYYY-MM-DD` 標頭註記。
+## 狀態追蹤
 
-### 2. 業務檢核機制 (A-H Workstream)
+- Schema/CI 結果不代表 live selector 正確。
+- Live 測試結果記錄於 [`LIVE_TEST_STATUS.md`](LIVE_TEST_STATUS.md)。
+- 測試報告使用 [`test-report-template.md`](test-report-template.md)。
 
-- **A: 需求分析與場景定義**（Target & Scenario）
-- **B: 技術實作與程式碼審查**（Implementation & Code Review）
-- **C: 內容品質與欄位覆蓋**（Content Quality & Field Coverage）
-- **D: 測試驗證與評估**（Testing & Evaluation）
-- **E: 文件完整性**（Documentation Completeness）
-- **F: 安全性檢核**（Security Controls & Credential Isolation）
-- **G: 效能優化**（Performance & Selector Stability）
-- **H: 上線部署與監控**（Deployment & CI Gate Monitoring）
-
-### 3. CI/CD 工作流
-
-- `validate.yml` — 全量 Scraper Schema 驗證與品質閘門檢查。
-- `pr-check.yml` — Pull Request 變更檔案自動檢查與回饋。
-- `link-check.yml` — 內部與外部文件連結有效性定期檢核。
-- `eval.yml` / `test-eval.yml` — 評估套件測試與驗證。
-
----
-
-## 📚 參考文件
-
-### 核心指南
-- [01_System_Architecture.md](01_System_Architecture.md) — 系統架構說明
-- [03_Quality_Gate_Rules.md](03_Quality_Gate_Rules.md) — 品質閘門 5 大規則細節
-- [04_Production_Gate.md](04_Production_Gate.md) — 上線前業務檢核表（A-H Workstream）
-- [05_CI_Workflows.md](05_CI_Workflows.md) — CI/CD 工作流說明
-- [06_Testing_Guide.md](06_Testing_Guide.md) — 本地與 CI 測試指南
+**最後更新**: 2026-09-09

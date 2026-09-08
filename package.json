@@ -5,6 +5,8 @@
   "scripts": {
     "validate": "node validator/index.mjs -a --ci",
     "validate-sort": "node validator/index.mjs -a -s --ci",
+    "format": "npx --yes prettier@3.6.3 --write \"**/*.{md,yml,yaml,json,js}\"",
+    "format:check": "npx --yes prettier@3.6.3 --check \"**/*.{md,yml,yaml,json,js}\"",
     "test": "echo \"No JS tests\" && exit 0"
   },
   "dependencies": {

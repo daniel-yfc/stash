@@ -7,6 +7,16 @@ on:
       - 'scrapers/**/*.yml'
       - 'validator/**'
       - 'tools/**'
+      - 'docs/**'
+      - 'skills/**'
+      - 'templates/README.md'
+      - 'README.md'
+      - 'AGENTS.md'
+      - 'CLAUDE.md'
+      - 'CONTRIBUTING.md'
+      - '.prettierrc.yml'
+      - '.prettierignore'
+      - 'package.json'
       - '.github/workflows/validate.yml'
   pull_request:
     branches: [main]
@@ -14,6 +24,16 @@ on:
       - 'scrapers/**/*.yml'
       - 'validator/**'
       - 'tools/**'
+      - 'docs/**'
+      - 'skills/**'
+      - 'templates/README.md'
+      - 'README.md'
+      - 'AGENTS.md'
+      - 'CLAUDE.md'
+      - 'CONTRIBUTING.md'
+      - '.prettierrc.yml'
+      - '.prettierignore'
+      - 'package.json'
       - '.github/workflows/validate.yml'
 
 jobs:
@@ -57,3 +77,6 @@ jobs:
 
       - name: Check documentation examples and contradictions
         run: python tools/check_scraper_docs.py
+
+      - name: Check documentation index
+        run: python tools/check_docs_index.py

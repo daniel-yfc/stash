@@ -1,6 +1,27 @@
+---
+doc_id: DOC-INDEX-00
+title: Documentation Index
+status: active
+layer: repository
+owner: maintainer
+audience:
+  - agent
+  - maintainer
+last_verified: "2026-09-09"
+authority: canonical
+routing:
+  intents:
+    - documentation-index
+    - repository-workflow
+---
 # Documentation Index
 
 This directory contains repository-level workflow, architecture, testing, and maintenance documentation.
+
+## Index layers
+
+- [`index.yml`](index.yml) — machine-readable documentation registry for agents and CI.
+- [`repository-documentation-architecture.md`](repository-documentation-architecture.md) — canonical numbering, naming, metadata, routing, and formatter policy.
 
 ## Ownership
 
@@ -9,24 +30,20 @@ This directory contains repository-level workflow, architecture, testing, and ma
 - Scraper authoring rules belong in `skills/stash-scraper-builder/SKILL.md`.
 - Specialized scraper behavior belongs in `skills/stash-scraper-builder/references/`.
 
-## Core System & Architecture Guides
+## Guides
 
-- [`01_System_Architecture.md`](01_System_Architecture.md) — repository architecture and data flow.
-- [`02_Quality_Gate_Overview.md`](02_Quality_Gate_Overview.md) — quality gate overview and workstream standards.
-- [`03_Quality_Gate_Rules.md`](03_Quality_Gate_Rules.md) — the 5 core quality gate technical rules.
-- [`04_Production_Gate.md`](04_Production_Gate.md) — business readiness checklist and A-H workstream.
-- [`05_CI_Workflows.md`](05_CI_Workflows.md) — CI/CD workflow pipeline details.
-- [`06_Testing_Guide.md`](06_Testing_Guide.md) — local and CI testing guide.
-- [`test-report-template.md`](test-report-template.md) — full-suite markdown test report template.
-- [`repository-documentation-architecture.md`](repository-documentation-architecture.md) — naming, format, ownership, and cross-level linking rules.
+| Document | Purpose |
+|---|---|
+| [`01_System_Architecture.md`](01_System_Architecture.md) | Repository architecture and verification layers |
+| [`02_Quality_Gate_Overview.md`](02_Quality_Gate_Overview.md) | Quality-gate overview |
+| [`03_Quality_Gate_Rules.md`](03_Quality_Gate_Rules.md) | Canonical quality rules |
+| [`04_Production_Gate.md`](04_Production_Gate.md) | Production readiness |
+| [`05_CI_Workflows.md`](05_CI_Workflows.md) | CI workflow details |
+| [`06_Testing_Guide.md`](06_Testing_Guide.md) | Testing and live-scrutiny guidance |
+| [`LIVE_TEST_STATUS.md`](LIVE_TEST_STATUS.md) | Live-site verification status |
+| [`template-workflow.md`](template-workflow.md) | Template-to-scraper workflow |
+| [`test-report-template.md`](test-report-template.md) | Full-suite test report format |
 
-## Scaffolding & Tooling Documentation
+## Rule of thumb
 
-- [`template-workflow.md`](template-workflow.md) — how `templates/` scaffolds relate to `scrapers/`, the skill, and validation.
-- [`../templates/README.md`](../templates/README.md) — scraper scaffolds and template relationships.
-- [`../scrapers/README.md`](../scrapers/README.md) — public vs private scrapers deployment and migration guide.
-- [`../tools/SRB-2.0-documentation.md`](../tools/SRB-2.0-documentation.md) — Scraper Request Builder (SRB V2.0) interactive form tool manual.
-
-## Rule of Thumb
-
-Use `templates/` to start a file, `skills/stash-scraper-builder/` to decide how it should be authored, `validator/` and `tests/` to verify it, `tools/` to generate or inspect request specs, and `docs/` to understand repository workflow and maintenance.
+Use `templates/` to start a file, `skills/stash-scraper-builder/` to decide how it should be authored, `validator/` and `tools/` to verify it, and `docs/` to understand repository workflow and maintenance.
