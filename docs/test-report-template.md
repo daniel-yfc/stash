@@ -2,60 +2,85 @@
 
 ## Purpose
 
-A single, human‑readable Markdown table that captures the result of running **every** automated verification layer in this repository (schema validator, quality gate, Python regression tests, documentation checker, and any future suites).  
-The goal is to give a contributor or reviewer a one‑page health snapshot without needing to open CI logs.
+A standardized Markdown report structure designed for human contributors, code reviewers, and release managers. It synthesizes static validation, policy enforcement, unit/regression suites, documentation checks, and live site scrutiny into a scannable, structured summary.
 
 ---
 
-## Template (copy‑paste ready)
+## 1. Quick Status Header
 
 ```markdown
-# Full‑Suite Test Report — <YYYY‑MM‑DD>
+# Full‑Suite Test Report
 
-| Test Suite / Module | Total Tests | Passed | Failed | Skipped | Duration (s) | Notes / Failure Summary |
-|---------------------|------------:|-------:|-------:|-------:|-------------:|:------------------------|
-| **Schema Validator** (`npm run validate`) | 1 | 1 | 0 | 0 | — | Validation passed! |
-| **Quality Gate** (`bash tools/validate-all.sh`) | 14 | 14 | 0 | 0 | — | All scrapers passed |
-| **Python Tests** (`python3 -m pytest tools/tests/ -v`) | 13 | 13 | 0 | 0 | 1.67 | All passed |
-| **Documentation Checker** (`python3 tools/check_scraper_docs.py`) | 1 | 1 | 0 | 0 | — | No contradictions |
-| **URL Sorting Check** (`npm run validate-sort`) | 1 | 1 | 0 | 0 | — | (optional, run when URLs changed) |
-| **TOTAL** | **30** | **30** | **0** | **0** | **1.67** | **100 % pass rate** |
+- **Date / Timestamp:** 2026-09-08 14:30:00 UTC
+- **Commit / Ref:** `ab12cd3` (branch: `main`)
+- **Environment:** Ubuntu 24.04 LTS / Node v20.x / Python 3.12.3
+- **Executed By:** <Contributor Name / GitHub Actions Run #ID>
+- **Verdict:** ✅ PASS (100% pass rate, 0 regressions)
 ```
 
 ---
 
-## How to fill it in
+## 2. Executive Test Matrix (Markdown Table)
 
-1. **Run each suite locally** (or collect CI artifacts) and note the exact command used.
-2. **Record one row per suite** with the counts you observed:
-   - `Total Tests` – number of individual checks/items the suite reports (e.g., pytest items, scraper files validated).
-   - `Passed`, `Failed`, `Skipped` – straight from the runner output.
-   - `Duration (s)` – wall‑clock time reported by the runner (use `—` if the runner does not emit timing).
-3. **Add a `TOTAL` row** that sums the numbers and computes the overall pass‑rate:
-   ```
-   Overall pass‑rate = (Σ Passed / Σ Total) × 100 %
-   ```
-4. **Notes / Failure Summary** – keep it concise:
-   - For a clean run: a short phrase such as “All passed” or “No contradictions”.
-   - For failures: list each failing test/scraper with a one‑line reason (e.g., `test_fragment_mapping – AssertionError: expected 3 got 2`).
-   - For skipped items: give the skip reason (e.g., `requires‑docker`, `network‑only`).
+| Test Suite / Layer | Command / Tool | Total | Passed | Failed | Skipped | Duration | Status | Notes / Key Findings |
+|:---|:---|---:|---:|---:|---:|---:|:---:|:---|
+| **Schema Validation** | `npm run validate` | 14 | 14 | 0 | 0 | 0.8s | PASS | All scrapers conform to `scraper.schema.json` |
+| **Repository Quality Gate** | `bash tools/validate-all.sh` | 14 | 14 | 0 | 0 | 1.2s | PASS | Strict syntax, naming, and policy rules satisfied |
+| **Python Test Suite** | `python3 -m pytest tools/tests/ -v` | 13 | 13 | 0 | 0 | 1.67s | PASS | Tool scripts, validator wrappers, and skill references pass |
+| **Documentation Check** | `python3 tools/check_scraper_docs.py` | 9 | 9 | 0 | 0 | 0.4s | PASS | 9 embedded YAML blocks verified without contradiction |
+| **URL Sorting Check** | `npm run validate-sort` | 14 | 14 | 0 | 0 | 0.8s | PASS | URLs alphabetically ordered across all scrapers |
+| **Live Scrutiny (Smoke)** | `node tools/scrutiny.js scrapers/<Target>.yml --search` | 8 | 8 | 0 | 0 | 4.5s | PASS | Target site live search and detail extraction verified |
+| **TOTAL / SUMMARY** | *All Verification Layers* | **72** | **72** | **0** | **0** | **9.37s** | **PASS** | **Pass Rate: 100.0%** |
 
 ---
 
-## Where to store the report
+## 3. Failure & Warning Breakdown
 
-- **CI artifacts** – the workflow can generate this file and upload it as a build artifact.
-- **Local runs** – commit the file as `TEST-REPORT.md` in the repository root (or `docs/TEST-REPORT.md`) when you want to snapshot a known‑good state before a release or after a large refactor.
-- **Historical tracking** – add a dated suffix (e.g., `TEST-REPORT-2026-09-08.md`) if you keep multiple reports.
+If any suite reports non-zero failures, detail each incident in this section:
+
+| Issue ID | Suite | Target / Test Name | Root Cause / Error Message | Action Taken / Owner |
+|:---|:---|:---|:---|:---|
+| *None* | — | — | *No failures encountered during this run* | — |
+
+*If failures occur, use this format:*
+```markdown
+| BUG-01 | Quality Gate | scrapers/Sample.yml | Root `name:` declaration missing at col 0 | Fixed indentation in YAML |
+| BUG-02 | Python Tests | test_tools.py::test_scrutiny_cli_help | Exit code 1: missing npm dependency | Added dependency to package.json |
+```
 
 ---
 
-## Integration with existing docs
+## 4. Live Scrutiny Snapshot (Optional / Release Smoke)
 
-- The **[Testing Guide](06_Testing_Guide.md)** lists the canonical commands; this template is the *output format* for those commands.
-- The **[Production Gate](04_Production_Gate.md)** checklist can reference a completed test report as evidence that the gate criteria are met.
-- Future CI jobs can auto‑populate the table by parsing JSON/JUnit output and appending a row per suite.
+When testing live upstream endpoints with `tools/scrutiny.js`:
+
+| Scraper | Test Target / URL | Mode | Fields Extracted | Coverage | Notes |
+|:---|:---|:---:|---:|:---:|:---|
+| `scrapers/Ko-Video.yml` | `product_code=KKE0149_DVD` | Detail | 8 / 8 | 100% | Title, Code, Date, Image, Studio, Tags, Performers, URL |
+| `scrapers/Ko-Video.yml` | `probe=雄穴` | Search | 4 / 4 | 100% | 20 candidates retrieved, pagination functional |
 
 ---
 
-*Template version: 1.0 — created 2026‑09‑08*
+## 5. Definition of Done & Sign-Off Checklist
+
+Before merging a pull request or tagging a release, verify:
+
+- [ ] All automated suites in Section 2 executed cleanly (0 failed).
+- [ ] Any test failure in Section 3 is triaged, resolved, and documented.
+- [ ] Modified scrapers have passed live verification via `tools/scrutiny.js`.
+- [ ] No secrets, tokens, or personal session credentials committed to public files.
+- [ ] Documentation check (`check_scraper_docs.py`) confirms no doc-code drift.
+
+---
+
+## Usage Instructions
+
+1. **Copy Sections 1 through 5** above into your PR description, issue comment, or a release note artifact (e.g., `evidence/audit/report-YYYY-MM-DD.md`).
+2. **Execute the standard commands** listed in column 2.
+3. **Record actual counts and wall-clock times** emitted by the test runners.
+4. **Calculate total pass rate:** `(Total Passed / Total Checked) × 100%`.
+5. **Sign off** using Section 5.
+
+---
+
+*Template Version: 2.0 — Updated 2026-09-08*
