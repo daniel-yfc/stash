@@ -76,7 +76,7 @@ python3 -m pytest tools/tests/ -v
 
 ## Dependencies
 
-- Node.js 20+ (`validator/index.mjs`)
+- Node.js `^22.22.2 || ^24.15.0 || >=26.0.0` (`.nvmrc` pins `24.15.0`; required by `jsdom` 30)
 - Python 3 + pytest (`requirements.txt`)
 
 Scripts are invoked via `bash tools/<script>.sh` so no executable bit is required.
