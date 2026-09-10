@@ -4,12 +4,12 @@ Stash uses Go-style reference time layouts for `parseDate`. The reference time i
 
 ## Common layouts
 
-| Site format | Go layout | Example input |
-|---|---|---|
-| `2006-01-02` | `2006-01-02` | `2024-03-15` |
-| `02 Jan 2006` | `02 Jan 2006` | `15 Mar 2024` |
+| Site format       | Go layout         | Example input    |
+| ----------------- | ----------------- | ---------------- |
+| `2006-01-02`      | `2006-01-02`      | `2024-03-15`     |
+| `02 Jan 2006`     | `02 Jan 2006`     | `15 Mar 2024`    |
 | `January 2, 2006` | `January 2, 2006` | `March 15, 2024` |
-| `02/01/2006` | `02/01/2006` | `15/03/2024` |
+| `02/01/2006`      | `02/01/2006`      | `15/03/2024`     |
 
 ## Broken vs. fixed example
 

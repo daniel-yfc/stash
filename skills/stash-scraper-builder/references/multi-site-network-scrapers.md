@@ -22,6 +22,7 @@ Use a network scraper when:
 ## Merge criteria (G7)
 
 Merge network sites **only when templates match**. Use:
+
 - Anchors for shared blocks.
 - Domain map for studio names.
 - Per-domain overrides when DOM / image host diverges.

@@ -7,11 +7,13 @@ Debug common scraping issues and failures.
 **Symptoms:** All scraped fields return empty/null values.
 
 **Causes:**
+
 - Selectors are wrong
 - Age-gate or interstitial blocking access
 - Site requires cookies or CDP that aren't configured
 
 **Debug steps:**
+
 1. `$x()` your selectors in browser console to verify they match
 2. Check for age-gate or interstitial pages
 3. Verify `useCDP` and cookie configuration
@@ -22,10 +24,12 @@ Debug common scraping issues and failures.
 **Symptoms:** All fields scrape correctly except Date returns nil.
 
 **Causes:**
+
 - Raw date string doesn't match Go layout
 - `replace` not applied before `parseDate`
 
 **Debug steps:**
+
 1. Check the raw date string format
 2. Verify `parseDate` uses Go layout (`2006-01-02`), not `YYYY-MM-DD`
 3. Apply `replace` before `parseDate` if needed (e.g., remove time, timezone)
@@ -36,10 +40,12 @@ Debug common scraping issues and failures.
 **Symptoms:** Studio shows manufacturer when it should show label; Details has HTML tags.
 
 **Causes:**
+
 - Using メーカー (manufacturer) as studio when レーベル (label) is correct
 - Not stripping HTML from Details field
 
 **Debug steps:**
+
 1. For JP sites: prefer レーベル over メーカー for Studio.Name
 2. Use `concat` or post-process to strip HTML from Details
 3. Check if シリーズ is being confused with Group (only use if user asks)
@@ -53,6 +59,7 @@ Debug common scraping issues and failures.
 **Important:** This is not a scraper-authoring workaround. Adding `sceneByFragment` with relationship mappings can create the trigger condition rather than preventing it.
 
 **Mitigation:**
+
 - Test fragment modes against non-matching input before deployment
 - Verify fragment scrapers return valid results on test scenes
 - If a site doesn't support fragment scraping, omit `sceneByFragment`
@@ -65,11 +72,13 @@ Debug common scraping issues and failures.
 **Symptoms:** HTTP 403 errors when fetching pages.
 
 **Causes:**
+
 - Missing or incorrect User-Agent
 - Site requires authentication (cookies)
 - AJAX/JavaScript-rendered content
 
 **Debug steps:**
+
 1. Add custom User-Agent via `driver.headers`
 2. Configure cookies if site requires login
 3. Use CDP for JavaScript-rendered content
@@ -80,6 +89,7 @@ Debug common scraping issues and failures.
 **Symptoms:** Site requires human verification
 
 **Mitigation:**
+
 - Use CDP with visible browser
 - Solve CAPTCHA manually in browser
 - Consider whether site is appropriate for automation

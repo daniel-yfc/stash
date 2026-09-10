@@ -4,10 +4,10 @@ Repository tooling: quality gate, documentation checker, local build/test helper
 
 ## Quality gate
 
-| Script | Purpose |
-| --- | --- |
+| Script                    | Purpose                                                                                                     |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | `scraper-quality-gate.sh` | Per-scraper policy checks, plus official CommunityScrapers schema validation when `CS_VALIDATOR_DIR` is set |
-| `validate-all.sh` | Run the gate over every `scrapers/**/*.yml` (including `scrapers/private/`) |
+| `validate-all.sh`         | Run the gate over every `scrapers/**/*.yml` (including `scrapers/private/`)                                 |
 
 ```bash
 bash tools/scraper-quality-gate.sh scrapers/ACCEED.yml
@@ -28,8 +28,8 @@ python tools/check_scraper_docs.py
 
 `scrutiny.js` evaluates scrapers against live upstream websites. It runs probe queries, discovers scene detail pages, and tests XPath selector coverage against real DOM responses.
 
-| Script | Purpose |
-| --- | --- |
+| Script        | Purpose                                                                                                        |
+| ------------- | -------------------------------------------------------------------------------------------------------------- |
 | `scrutiny.js` | Live end-to-end evaluation of `sceneScraper` and `searchScraper` with probe terms and field coverage reporting |
 
 ```bash
@@ -54,12 +54,12 @@ node tools/scrutiny.js scrapers/ACCEED.yml --cookie="PHPSESSID=..."
 
 ## Local helpers
 
-| Script | Purpose |
-| --- | --- |
-| `install.sh` | Install Python (`requirements.txt`) and Node dependencies |
-| `build-site.sh` | Build the static `site/` directory |
-| `clean.sh` | Remove `site/` and `.cache/` |
-| `test.sh` | Run the pytest suite in `tools/tests/` |
+| Script          | Purpose                                                   |
+| --------------- | --------------------------------------------------------- |
+| `install.sh`    | Install Python (`requirements.txt`) and Node dependencies |
+| `build-site.sh` | Build the static `site/` directory                        |
+| `clean.sh`      | Remove `site/` and `.cache/`                              |
+| `test.sh`       | Run the pytest suite in `tools/tests/`                    |
 
 ## Tests
 
@@ -69,10 +69,10 @@ python3 -m pytest tools/tests/ -v
 
 ## Standalone utilities
 
-| File | Purpose |
-| --- | --- |
-| `SPB-2.0.html` | Scraper pattern builder (open in a browser) |
-| `SRB-2.0-documentation.md` | Documentation for the SRB tool |
+| File                       | Purpose                                     |
+| -------------------------- | ------------------------------------------- |
+| `SPB-2.0.html`             | Scraper pattern builder (open in a browser) |
+| `SRB-2.0-documentation.md` | Documentation for the SRB tool              |
 
 ## Dependencies
 

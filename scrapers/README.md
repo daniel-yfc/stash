@@ -20,6 +20,7 @@ scrapers/
 **Use when:** Sharing scrapers publicly or in community repositories.
 
 **Characteristics:**
+
 - No `driver.cookies` configuration
 - No session tokens or credentials in git history
 - May use `driver.useCDP: true` for age-gated sites (requires user to login via visible Chrome)
@@ -27,6 +28,7 @@ scrapers/
 - Follows CommunityScrapers security best practices
 
 **Example:**
+
 ```yaml
 driver:
   useCDP: true
@@ -41,6 +43,7 @@ driver:
 **Use when:** Personal deployment where you control the repository access.
 
 **Characteristics:**
+
 - May include `driver.cookies` with session tokens for sites without CDP
 - Requires private repository to prevent credential exposure
 - Higher maintenance burden (sessions expire, need rotation)
@@ -49,11 +52,13 @@ driver:
 **Two private deployment modes:**
 
 1. **CDP Mode (Recommended):**
+
    ```yaml
    driver:
      useCDP: true
      # No CookieURL - browser session carries cookies
    ```
+
    - Login via visible Chrome browser
    - Stash CDP path: `ws://localhost:9222`
    - Sessions persist in browser, not in YAML
@@ -77,6 +82,7 @@ driver:
 ### ⚠️ Never commit session tokens to public repos
 
 Session cookies (like `PHPSESSID`, `ECSESSID`, `LOGIN_KEEP_INFO2`) are equivalent to passwords. If committed:
+
 1. Immediately invalidate the session on the target website
 2. Rotate all affected credentials
 3. Scrub git history or make repo private
@@ -84,6 +90,7 @@ Session cookies (like `PHPSESSID`, `ECSESSID`, `LOGIN_KEEP_INFO2`) are equivalen
 ### ⚠️ Private scrapers require private repositories
 
 The `scrapers/private/` directory must only exist in private repositories. If your repo becomes public:
+
 - All session tokens are exposed
 - Attackers can impersonate your accounts
 - Target websites may ban compromised accounts

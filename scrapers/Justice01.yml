@@ -54,13 +54,13 @@ sceneByFragment:
   queryURLReplace:
     title:
       - regex: '\.[^.]+$'
-        with: ''
+        with: ""
       - regex: '[_\.]+'
-        with: ' '
+        with: " "
       - regex: '\s{2,}'
-        with: ' '
+        with: " "
       - regex: '^\s+|\s+$'
-        with: ''
+        with: ""
   scraper: searchScraper
 
 xPathScrapers:

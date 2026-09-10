@@ -19,6 +19,7 @@ routing:
     - indexing
     - formatter-policy
 ---
+
 # Repository Documentation Architecture
 
 ## Purpose
@@ -27,30 +28,30 @@ This document is the canonical policy for repository documentation numbering, na
 
 ## Ownership model
 
-| Layer | Owns | Must not own |
-|---|---|---|
-| Root `README.md` | Project purpose, quick start, canonical commands, directory map | Detailed scraper selector or runtime semantics |
-| `AGENTS.md` | Repository-wide agent constraints, safety, and routing pointers | A second copy of detailed repository or skill rules |
-| `CLAUDE.md` | Claude-specific behavior that differs from repository-wide rules | A second copy of `AGENTS.md` or skill references |
-| `CONTRIBUTING.md` | Human contribution and review workflow | Runtime implementation details |
-| `templates/README.md` | Template inventory, pairing, provenance, naming, copy workflow | Full scraper authoring manual |
-| `docs/` | Repository architecture, CI, testing, production gates, maintenance, and status | Per-field scraper rules |
-| `skills/stash-scraper-builder/SKILL.md` | Skill purpose, trigger conditions, output contract, authoring workflow | Repository administration and CI policy |
-| `skills/stash-scraper-builder/references/` | Specialized XPath, JSON, script, CDP, date, failure, and validation guidance | Project-wide contribution policy |
-| `validator/` | Executable validation behavior and schema | Prose-only source of truth |
-| `tools/` | Inspection, validation, documentation, and live-scrutiny utilities | Canonical schema definitions |
+| Layer                                      | Owns                                                                            | Must not own                                        |
+| ------------------------------------------ | ------------------------------------------------------------------------------- | --------------------------------------------------- |
+| Root `README.md`                           | Project purpose, quick start, canonical commands, directory map                 | Detailed scraper selector or runtime semantics      |
+| `AGENTS.md`                                | Repository-wide agent constraints, safety, and routing pointers                 | A second copy of detailed repository or skill rules |
+| `CLAUDE.md`                                | Claude-specific behavior that differs from repository-wide rules                | A second copy of `AGENTS.md` or skill references    |
+| `CONTRIBUTING.md`                          | Human contribution and review workflow                                          | Runtime implementation details                      |
+| `templates/README.md`                      | Template inventory, pairing, provenance, naming, copy workflow                  | Full scraper authoring manual                       |
+| `docs/`                                    | Repository architecture, CI, testing, production gates, maintenance, and status | Per-field scraper rules                             |
+| `skills/stash-scraper-builder/SKILL.md`    | Skill purpose, trigger conditions, output contract, authoring workflow          | Repository administration and CI policy             |
+| `skills/stash-scraper-builder/references/` | Specialized XPath, JSON, script, CDP, date, failure, and validation guidance    | Project-wide contribution policy                    |
+| `validator/`                               | Executable validation behavior and schema                                       | Prose-only source of truth                          |
+| `tools/`                                   | Inspection, validation, documentation, and live-scrutiny utilities              | Canonical schema definitions                        |
 
 ## Document identity and numbering
 
 Every indexed document has a stable `doc_id`. The ID is independent of the filename and must not be reused after deprecation.
 
-| Layer | Format | Example |
-|---|---|---|
-| Repository docs | `DOC-<DOMAIN>-<NN>` | `DOC-QG-21` |
-| Skill references | `REF-<DOMAIN>-<NN>` | `REF-MODE-40` |
-| Templates | `TPL-<DOMAIN>-<NN>` | `TPL-REPORT-71` |
-| Status records | `STATUS-<DOMAIN>-<NN>` | `STATUS-LIVE-60` |
-| Skill contract | `SKILL-<DOMAIN>-<NN>` | `SKILL-CORE-00` |
+| Layer            | Format                 | Example          |
+| ---------------- | ---------------------- | ---------------- |
+| Repository docs  | `DOC-<DOMAIN>-<NN>`    | `DOC-QG-21`      |
+| Skill references | `REF-<DOMAIN>-<NN>`    | `REF-MODE-40`    |
+| Templates        | `TPL-<DOMAIN>-<NN>`    | `TPL-REPORT-71`  |
+| Status records   | `STATUS-<DOMAIN>-<NN>` | `STATUS-LIVE-60` |
+| Skill contract   | `SKILL-<DOMAIN>-<NN>`  | `SKILL-CORE-00`  |
 
 Use increments of 10 where practical. Do not renumber documents solely to close gaps.
 

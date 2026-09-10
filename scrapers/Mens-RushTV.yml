@@ -38,13 +38,13 @@ sceneByFragment:
   queryURLReplace:
     title:
       - regex: '\\.[^.]+$'
-        with: ''
+        with: ""
       - regex: '[_\\.]+'
-        with: ' '
+        with: " "
       - regex: '\\s{2,}'
-        with: ' '
+        with: " "
       - regex: '^\\s+|\\s+$'
-        with: ''
+        with: ""
   scraper: searchScraper
 
 xPathScrapers:
@@ -58,16 +58,16 @@ xPathScrapers:
         postProcess:
           - replace:
               - regex: '^\\s+|\\s+$'
-                with: ''
+                with: ""
 
       Code:
         selector: $results//a[contains(@href,'single.php')]/@href
         postProcess:
           - replace:
-              - regex: '^.*?[?&]id=([^&]+).*$'
-                with: '$1'
+              - regex: "^.*?[?&]id=([^&]+).*$"
+                with: "$1"
               - regex: '\\s+'
-                with: ''
+                with: ""
 
       URLs:
         selector: $results//a[contains(@href,'single.php')]/@href
@@ -97,10 +97,10 @@ xPathScrapers:
         postProcess:
           - replace:
               - regex: '^.*?[?&]id=[A-Za-z]+-(\\d+).*?$'
-                with: '$1'
+                with: "$1"
           - replace:
               - regex: '^(\\d{2,3})$'
-                with: '20$1-01-01'
+                with: "20$1-01-01"
           - parseDate: "2006-01-02"
         # NOTE: Men's Rush search cards do not expose a real release date on the
         # public list view. When the code contains a numeric suffix we derive a
@@ -113,19 +113,19 @@ xPathScrapers:
         postProcess:
           - replace:
               - regex: '^\\s+|\\s+$'
-                with: ''
+                with: ""
               - regex: "Men''s Rush\\.TV.*$"
-                with: ''
+                with: ""
 
       Code:
         selector: //input[@name='fid']/@value
         postProcess:
           - replace:
-              - regex: '_DL$'
-                with: ''
+              - regex: "_DL$"
+                with: ""
           - replace:
               - regex: '^\\s+|\\s+$'
-                with: ''
+                with: ""
 
       URLs:
         fixed: "{inputURL}"
@@ -148,16 +148,16 @@ xPathScrapers:
           selector: //div[@class='movie_detail'][1]//p//a[contains(@href,'list.php?maid=')][1]/text() | //div[@class='movie_detail'][1]//p//a[contains(@href,'fansme.jp/user/')][1]/text()
           postProcess:
             - replace:
-                - regex: '^FansMe（(.+)）$'
-                  with: '$1'
+                - regex: "^FansMe（(.+)）$"
+                  with: "$1"
             - replace:
                 - regex: '^\\s+|\\s+$'
-                  with: ''
+                  with: ""
 
       Performers:
         Name:
           selector: //div[@class='movie_detail'][1]//p[contains(normalize-space(.),'モデル')][1]//text()[normalize-space()]
-          concat: ' '
+          concat: " "
           postProcess:
             - javascript: |
                 var v = value || "";
@@ -178,7 +178,7 @@ xPathScrapers:
                 };
                 text.split(/[｜|\/,、]/u).forEach(push);
                 return out.join(',');
-          split: ','
+          split: ","
 
       Tags:
         Name:
@@ -186,7 +186,7 @@ xPathScrapers:
           postProcess:
             - replace:
                 - regex: '^\\s+|\\s+$'
-                  with: ''
+                  with: ""
 
       Details:
         selector: //div[@class='movie_detail']/h3[1]/following-sibling::p[1]//text()[normalize-space()]
@@ -209,5 +209,4 @@ driver:
   headers:
     - Key: User-Agent
       Value: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
-
 # Last Updated: 2026-09-07

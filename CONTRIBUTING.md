@@ -6,6 +6,7 @@ Thanks for contributing to Stash Scraper Builder!
 
 1. Fork and clone the repository
 2. Install dependencies:
+
    ```bash
    # Node.js (validator)
    npm install
@@ -13,6 +14,7 @@ Thanks for contributing to Stash Scraper Builder!
    # Python (tests)
    pip install -r requirements.txt
    ```
+
 3. Create a branch: `git checkout -b feat/my-scraper`
 
 ## Making Changes

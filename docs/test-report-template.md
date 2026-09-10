@@ -22,15 +22,15 @@ A standardized Markdown report structure designed for human contributors, code r
 
 ## 2. Executive Test Matrix (Markdown Table)
 
-| Test Suite / Layer | Command / Tool | Total | Passed | Failed | Skipped | Duration | Status | Notes / Key Findings |
-|:---|:---|---:|---:|---:|---:|---:|:---:|:---|
-| **Schema Validation** | `npm run validate` | 14 | 14 | 0 | 0 | 0.8s | PASS | All scrapers conform to `scraper.schema.json` |
-| **Repository Quality Gate** | `bash tools/validate-all.sh` | 14 | 14 | 0 | 0 | 1.2s | PASS | Strict syntax, naming, and policy rules satisfied |
-| **Python Test Suite** | `python3 -m pytest tools/tests/ -v` | 13 | 13 | 0 | 0 | 1.67s | PASS | Tool scripts, validator wrappers, and skill references pass |
-| **Documentation Check** | `python3 tools/check_scraper_docs.py` | 9 | 9 | 0 | 0 | 0.4s | PASS | 9 embedded YAML blocks verified without contradiction |
-| **URL Sorting Check** | `npm run validate-sort` | 14 | 14 | 0 | 0 | 0.8s | PASS | URLs alphabetically ordered across all scrapers |
-| **Live Scrutiny (Smoke)** | `node tools/scrutiny.js scrapers/<Target>.yml --search` | 8 | 8 | 0 | 0 | 4.5s | PASS | Target site live search and detail extraction verified |
-| **TOTAL / SUMMARY** | *All Verification Layers* | **72** | **72** | **0** | **0** | **9.37s** | **PASS** | **Pass Rate: 100.0%** |
+| Test Suite / Layer          | Command / Tool                                          |  Total | Passed | Failed | Skipped |  Duration |  Status  | Notes / Key Findings                                        |
+| :-------------------------- | :------------------------------------------------------ | -----: | -----: | -----: | ------: | --------: | :------: | :---------------------------------------------------------- |
+| **Schema Validation**       | `npm run validate`                                      |     14 |     14 |      0 |       0 |      0.8s |   PASS   | All scrapers conform to `scraper.schema.json`               |
+| **Repository Quality Gate** | `bash tools/validate-all.sh`                            |     14 |     14 |      0 |       0 |      1.2s |   PASS   | Strict syntax, naming, and policy rules satisfied           |
+| **Python Test Suite**       | `python3 -m pytest tools/tests/ -v`                     |     13 |     13 |      0 |       0 |     1.67s |   PASS   | Tool scripts, validator wrappers, and skill references pass |
+| **Documentation Check**     | `python3 tools/check_scraper_docs.py`                   |      9 |      9 |      0 |       0 |      0.4s |   PASS   | 9 embedded YAML blocks verified without contradiction       |
+| **URL Sorting Check**       | `npm run validate-sort`                                 |     14 |     14 |      0 |       0 |      0.8s |   PASS   | URLs alphabetically ordered across all scrapers             |
+| **Live Scrutiny (Smoke)**   | `node tools/scrutiny.js scrapers/<Target>.yml --search` |      8 |      8 |      0 |       0 |      4.5s |   PASS   | Target site live search and detail extraction verified      |
+| **TOTAL / SUMMARY**         | _All Verification Layers_                               | **72** | **72** |  **0** |   **0** | **9.37s** | **PASS** | **Pass Rate: 100.0%**                                       |
 
 ---
 
@@ -38,11 +38,12 @@ A standardized Markdown report structure designed for human contributors, code r
 
 If any suite reports non-zero failures, detail each incident in this section:
 
-| Issue ID | Suite | Target / Test Name | Root Cause / Error Message | Action Taken / Owner |
-|:---|:---|:---|:---|:---|
-| *None* | — | — | *No failures encountered during this run* | — |
+| Issue ID | Suite | Target / Test Name | Root Cause / Error Message                | Action Taken / Owner |
+| :------- | :---- | :----------------- | :---------------------------------------- | :------------------- |
+| _None_   | —     | —                  | _No failures encountered during this run_ | —                    |
 
-*If failures occur, use this format:*
+_If failures occur, use this format:_
+
 ```markdown
 | BUG-01 | Quality Gate | scrapers/Sample.yml | Root `name:` declaration missing at col 0 | Fixed indentation in YAML |
 | BUG-02 | Python Tests | test_tools.py::test_scrutiny_cli_help | Exit code 1: missing npm dependency | Added dependency to package.json |
@@ -54,10 +55,10 @@ If any suite reports non-zero failures, detail each incident in this section:
 
 When testing live upstream endpoints with `tools/scrutiny.js`:
 
-| Scraper | Test Target / URL | Mode | Fields Extracted | Coverage | Notes |
-|:---|:---|:---:|---:|:---:|:---|
-| `scrapers/Ko-Video.yml` | `product_code=KKE0149_DVD` | Detail | 8 / 8 | 100% | Title, Code, Date, Image, Studio, Tags, Performers, URL |
-| `scrapers/Ko-Video.yml` | `probe=雄穴` | Search | 4 / 4 | 100% | 20 candidates retrieved, pagination functional |
+| Scraper                 | Test Target / URL          |  Mode  | Fields Extracted | Coverage | Notes                                                   |
+| :---------------------- | :------------------------- | :----: | ---------------: | :------: | :------------------------------------------------------ |
+| `scrapers/Ko-Video.yml` | `product_code=KKE0149_DVD` | Detail |            8 / 8 |   100%   | Title, Code, Date, Image, Studio, Tags, Performers, URL |
+| `scrapers/Ko-Video.yml` | `probe=雄穴`               | Search |            4 / 4 |   100%   | 20 candidates retrieved, pagination functional          |
 
 ---
 
@@ -83,4 +84,4 @@ Before merging a pull request or tagging a release, verify:
 
 ---
 
-*Template Version: 2.0 — Updated 2026-09-08*
+_Template Version: 2.0 — Updated 2026-09-08_

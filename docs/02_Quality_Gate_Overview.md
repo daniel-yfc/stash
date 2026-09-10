@@ -17,6 +17,7 @@ routing:
     - quality-gate
     - validation
 ---
+
 # Scraper 品質管線總覽
 
 ## 目的
@@ -34,15 +35,15 @@ routing:
 
 ## 驗證層級
 
-| 層級 | 工具 | 證明範圍 |
-|---|---|---|
-| Schema | `npm run validate` | YAML 符合官方 schema |
-| URL ordering | `npm run validate-sort` | URL array 排序符合 validator 要求 |
-| Repository policy | `bash tools/validate-all.sh` | 命名、credentials、fragment、日期等政策 |
-| Python regression | `python -m pytest tools/tests/` | 工具與測試套件可執行 |
-| Documentation | `python tools/check_scraper_docs.py` | 文件範例與規則一致 |
-| Documentation index | `python tools/check_docs_index.py` | 文件 ID、路徑與索引一致 |
-| Live scrutiny | `node tools/scrutiny.js scrapers/<Scraper>.yml --search` | 目標網站實頁 selector 可用性 |
+| 層級                | 工具                                                     | 證明範圍                                |
+| ------------------- | -------------------------------------------------------- | --------------------------------------- |
+| Schema              | `npm run validate`                                       | YAML 符合官方 schema                    |
+| URL ordering        | `npm run validate-sort`                                  | URL array 排序符合 validator 要求       |
+| Repository policy   | `bash tools/validate-all.sh`                             | 命名、credentials、fragment、日期等政策 |
+| Python regression   | `python -m pytest tools/tests/`                          | 工具與測試套件可執行                    |
+| Documentation       | `python tools/check_scraper_docs.py`                     | 文件範例與規則一致                      |
+| Documentation index | `python tools/check_docs_index.py`                       | 文件 ID、路徑與索引一致                 |
+| Live scrutiny       | `node tools/scrutiny.js scrapers/<Scraper>.yml --search` | 目標網站實頁 selector 可用性            |
 
 ## CI 工作流
 

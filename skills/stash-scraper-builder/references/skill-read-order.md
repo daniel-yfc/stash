@@ -13,6 +13,7 @@ routing:
     - agent-routing
     - read-order
 ---
+
 # Skill Read Order
 
 Read repository-level routing before skill-level guidance.
@@ -35,16 +36,16 @@ Read repository-level routing before skill-level guidance.
 
 ## Specialized references
 
-| Task | Read |
-|---|---|
-| New XPath scraper | `xpath-patterns.md` → `schema-checklist.md` → `post-processing.md` |
-| New JSON scraper | `json-patterns.md` → `schema-checklist.md` → `post-processing.md` |
-| Script scraper | `script-actions.md` → `template-workflow.md` → `schema-checklist.md` |
-| CDP/login scraper | `cdp-workflow.md` → `phase0-secrets-policy.md` → `schema-checklist.md` |
-| Dates/post-processing | `date-formats.md` → `post-processing.md` |
-| Advanced patterns | `advanced-patterns.md` |
-| Regression/evaluation | `eval-pack.md` → repository `tools/tests/` and validation commands |
-| Live-site verification | repository `docs/06_Testing_Guide.md` → `docs/LIVE_TEST_STATUS.md` |
+| Task                   | Read                                                                   |
+| ---------------------- | ---------------------------------------------------------------------- |
+| New XPath scraper      | `xpath-patterns.md` → `schema-checklist.md` → `post-processing.md`     |
+| New JSON scraper       | `json-patterns.md` → `schema-checklist.md` → `post-processing.md`      |
+| Script scraper         | `script-actions.md` → `template-workflow.md` → `schema-checklist.md`   |
+| CDP/login scraper      | `cdp-workflow.md` → `phase0-secrets-policy.md` → `schema-checklist.md` |
+| Dates/post-processing  | `date-formats.md` → `post-processing.md`                               |
+| Advanced patterns      | `advanced-patterns.md`                                                 |
+| Regression/evaluation  | `eval-pack.md` → repository `tools/tests/` and validation commands     |
+| Live-site verification | repository `docs/06_Testing_Guide.md` → `docs/LIVE_TEST_STATUS.md`     |
 
 ## Before editing
 

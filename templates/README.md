@@ -6,16 +6,16 @@ This directory contains scaffolding templates for Stash scrapers. Declarative te
 
 ## Files
 
-| File | Object / role | Entry point or interface |
-| --- | --- | --- |
-| `SceneScraperTemplate.yml` | Scene | `sceneByURL` |
-| `WordpressSceneScraper.yml` | Scene (WordPress `og:` meta) | `sceneByURL` |
-| `PerformerScraperTemplate.yml` | Performer | `performerByURL` |
-| `GroupScraperTemplate.yml` | Group | `groupByURL` |
-| `GalleryScraperTemplate.yml` | Gallery | `galleryByURL` |
-| `ImageScraperTemplate.yml` | Image | `imageByURL` |
-| `ScriptScraperTemplate.yml` | Script-based multi-object wrapper | Stash `*ByURL`, `*ByName`, and fragment entry points |
-| `ScriptScraperTemplate.py` | Python implementation scaffold | Operation argument received from the YAML wrapper |
+| File                           | Object / role                     | Entry point or interface                             |
+| ------------------------------ | --------------------------------- | ---------------------------------------------------- |
+| `SceneScraperTemplate.yml`     | Scene                             | `sceneByURL`                                         |
+| `WordpressSceneScraper.yml`    | Scene (WordPress `og:` meta)      | `sceneByURL`                                         |
+| `PerformerScraperTemplate.yml` | Performer                         | `performerByURL`                                     |
+| `GroupScraperTemplate.yml`     | Group                             | `groupByURL`                                         |
+| `GalleryScraperTemplate.yml`   | Gallery                           | `galleryByURL`                                       |
+| `ImageScraperTemplate.yml`     | Image                             | `imageByURL`                                         |
+| `ScriptScraperTemplate.yml`    | Script-based multi-object wrapper | Stash `*ByURL`, `*ByName`, and fragment entry points |
+| `ScriptScraperTemplate.py`     | Python implementation scaffold    | Operation argument received from the YAML wrapper    |
 
 ## Script template relationship
 
@@ -54,15 +54,15 @@ These templates contain placeholders and may not extract data until implementati
 
 ## Documentation map
 
-| Need | Read |
-| --- | --- |
-| Repository-wide agent rules | [`AGENTS.md`](../AGENTS.md) |
-| Repository workflow and ownership | [`docs/repository-documentation-architecture.md`](../docs/repository-documentation-architecture.md) |
-| Skill contract and workflow | [`skills/stash-scraper-builder/SKILL.md`](../skills/stash-scraper-builder/SKILL.md) |
-| Script YAML and Python I/O contract | [`references/script-actions.md`](../skills/stash-scraper-builder/references/script-actions.md) |
-| Schema and entry-point checklist | [`references/schema-checklist.md`](../skills/stash-scraper-builder/references/schema-checklist.md) |
-| Five-task regression pack | [`references/eval-pack.md`](../skills/stash-scraper-builder/references/eval-pack.md) |
-| Skill-local template checklist | [`references/template-workflow.md`](../skills/stash-scraper-builder/references/template-workflow.md) |
+| Need                                | Read                                                                                                 |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Repository-wide agent rules         | [`AGENTS.md`](../AGENTS.md)                                                                          |
+| Repository workflow and ownership   | [`docs/repository-documentation-architecture.md`](../docs/repository-documentation-architecture.md)  |
+| Skill contract and workflow         | [`skills/stash-scraper-builder/SKILL.md`](../skills/stash-scraper-builder/SKILL.md)                  |
+| Script YAML and Python I/O contract | [`references/script-actions.md`](../skills/stash-scraper-builder/references/script-actions.md)       |
+| Schema and entry-point checklist    | [`references/schema-checklist.md`](../skills/stash-scraper-builder/references/schema-checklist.md)   |
+| Five-task regression pack           | [`references/eval-pack.md`](../skills/stash-scraper-builder/references/eval-pack.md)                 |
+| Skill-local template checklist      | [`references/template-workflow.md`](../skills/stash-scraper-builder/references/template-workflow.md) |
 
 ## Naming and format rules
 

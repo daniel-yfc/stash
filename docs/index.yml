@@ -90,12 +90,30 @@ documents:
     layer: template
     status: active
     intents: [test-report]
+  - doc_id: DOC-SCRAPERS-00
+    title: Scrapers README
+    path: scrapers/README.md
+    layer: repository
+    status: active
+    intents: [scrapers-overview, public-vs-private]
   - doc_id: DOC-TEMPLATES-00
     title: Templates README
     path: templates/README.md
     layer: template
     status: active
     intents: [templates]
+  - doc_id: DOC-TOOLS-00
+    title: Tools README
+    path: tools/README.md
+    layer: tool
+    status: active
+    intents: [tools-overview, quality-gate, live-scrutiny]
+  - doc_id: DOC-SRB-00
+    title: Scraper Request Builder Documentation
+    path: tools/SRB-2.0-documentation.md
+    layer: tool
+    status: active
+    intents: [srb-tool, form-generator]
   - doc_id: DOC-VALIDATOR-00
     title: Validator README
     path: validator/README.md

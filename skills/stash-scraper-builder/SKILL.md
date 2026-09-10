@@ -11,6 +11,7 @@ metadata:
   version: "2026-09-03"
   canonical-schema: "https://github.com/stashapp/CommunityScrapers/blob/master/src/scraper.schema.json"
 ---
+
 # Skill: stash-scraper-builder
 
 **Version**: 2026-09-03
@@ -66,23 +67,23 @@ xPathScrapers:
 
 ## Reference map
 
-| Need | Reference |
-|---|---|
-| Read order and ownership | `references/skill-read-order.md` |
-| Source selection & scope | `references/source-selection.md`, `references/out-of-scope.md` |
-| Security & secrets policy | `references/phase0-secrets-policy.md` |
-| Template workflow | `references/template-workflow.md` |
-| XPath extraction | `references/xpath-patterns.md` |
-| JSON extraction | `references/json-patterns.md` and `references/json-examples.md` |
-| Script actions | `references/script-actions.md` |
-| CDP / Headless workflow | `references/cdp-workflow.md` |
-| Dates & formatting | `references/date-formats.md` |
-| Post-processing | `references/post-processing.md` |
-| Field quality | `references/title-patterns.md`, `references/performer-cleaning.md` |
-| Best practices & patterns | `references/best-practices.md`, `references/advanced-patterns.md`, `references/multi-site-network-scrapers.md` |
-| Failures & incident reviews | `references/scraping-failures.md`, `references/incident-reviews.md` |
-| Examples & validation | `references/examples.md`, `references/schema-checklist.md`, `references/eval-pack.md` |
-| Upstream sources | `references/UPSTREAM_SOURCES.md` |
+| Need                        | Reference                                                                                                      |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Read order and ownership    | `references/skill-read-order.md`                                                                               |
+| Source selection & scope    | `references/source-selection.md`, `references/out-of-scope.md`                                                 |
+| Security & secrets policy   | `references/phase0-secrets-policy.md`                                                                          |
+| Template workflow           | `references/template-workflow.md`                                                                              |
+| XPath extraction            | `references/xpath-patterns.md`                                                                                 |
+| JSON extraction             | `references/json-patterns.md` and `references/json-examples.md`                                                |
+| Script actions              | `references/script-actions.md`                                                                                 |
+| CDP / Headless workflow     | `references/cdp-workflow.md`                                                                                   |
+| Dates & formatting          | `references/date-formats.md`                                                                                   |
+| Post-processing             | `references/post-processing.md`                                                                                |
+| Field quality               | `references/title-patterns.md`, `references/performer-cleaning.md`                                             |
+| Best practices & patterns   | `references/best-practices.md`, `references/advanced-patterns.md`, `references/multi-site-network-scrapers.md` |
+| Failures & incident reviews | `references/scraping-failures.md`, `references/incident-reviews.md`                                            |
+| Examples & validation       | `references/examples.md`, `references/schema-checklist.md`, `references/eval-pack.md`                          |
+| Upstream sources            | `references/UPSTREAM_SOURCES.md`                                                                               |
 
 ## Output contract
 

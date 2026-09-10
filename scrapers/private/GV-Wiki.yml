@@ -54,7 +54,7 @@ xPathScrapers:
         postProcess:
           - replace:
               - regex: '^\s+|\s+$'
-                with: ''
+                with: ""
       URLs:
         selector: "$results/@href"
         postProcess:
@@ -73,19 +73,19 @@ xPathScrapers:
         postProcess:
           - replace:
               - regex: '^\s+|\s+$'
-                with: ''
+                with: ""
       Code:
         selector: "$info//tr[td[1][normalize-space()='ID']]/td[2]/text()"
         postProcess:
           - replace:
               - regex: '^\s+|\s+$'
-                with: ''
+                with: ""
       Date:
         selector: "$info//tr[td[1][normalize-space()='Release Date']]/td[2]/text()"
         postProcess:
           - replace:
               - regex: '^\s+|\s+$'
-                with: ''
+                with: ""
           - parseDate: "2006-01-02"
       Details:
         selector: "$main//*[@id='plot-box']//p"
@@ -102,21 +102,21 @@ xPathScrapers:
           postProcess:
             - replace:
                 - regex: '^\s+|\s+$'
-                  with: ''
+                  with: ""
       Tags:
         Name:
           selector: "$info//tr[td[1][normalize-space()='Tag']]/td[2]//a/text()"
           postProcess:
             - replace:
                 - regex: '^\s+|\s+$'
-                  with: ''
+                  with: ""
       Performers:
         Name:
           selector: "$main//a[starts-with(@href, '/model/')]/text()"
           postProcess:
             - replace:
                 - regex: '^\s+|\s+$'
-                  with: ''
+                  with: ""
       URLs:
         selector: "$info//tr[td[1][normalize-space()='Buy']]/td[2]//a/@href | //link[@rel='canonical']/@href"
         postProcess:
