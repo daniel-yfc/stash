@@ -8,8 +8,9 @@ Use the templates in `templates/` as scaffolding, then move the working scraper 
 
 For a declarative scraper, copy one YAML template. For a script scraper, copy both files:
 
-- `templates/ScriptScraperTemplate.yml` — Stash-facing entry-point wrapper.
-- `templates/ScriptScraperTemplate.py` — Python implementation scaffold invoked by the wrapper.
+- `templates/ScriptScraper/ScriptScraperTemplate.yml` — Stash-facing entry-point wrapper.
+- `templates/ScriptScraper/ScriptScraperTemplate.py` — Python implementation scaffold invoked by the wrapper.
+- Upstream source: [`stashapp/CommunityScrapers` › `templates/ScriptScraper/`](https://github.com/stashapp/CommunityScrapers/tree/master/templates/ScriptScraper).
 
 The YAML operation arguments and the Python operation dispatcher must remain synchronized. The Python process must emit only scraper JSON on stdout; diagnostics belong on stderr.
 

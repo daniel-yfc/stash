@@ -5,8 +5,8 @@ Use this checklist when starting from a file in `templates/`.
 ## Select
 
 - [ ] Choose the smallest viable runtime: XPath, JSON, script, or CDP.
-- [ ] Copy a matching object template from `Template/`.
-- [ ] For script scrapers, copy both `ScriptScraperTemplate.yml` and `ScriptScraperTemplate.py` as a matched pair.
+- [ ] Copy a matching object template from `templates/`.
+- [ ] For script scrapers, copy both `ScriptScraper/ScriptScraperTemplate.yml` and `ScriptScraper/ScriptScraperTemplate.py` as a matched pair (upstream: [`stashapp/CommunityScrapers` › `templates/ScriptScraper/`](https://github.com/stashapp/CommunityScrapers/tree/master/templates/ScriptScraper)).
 
 ## Adapt
 

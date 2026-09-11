@@ -6,20 +6,20 @@ This directory contains scaffolding templates for Stash scrapers. Declarative te
 
 ## Files
 
-| File                           | Object / role                     | Entry point or interface                             |
-| ------------------------------ | --------------------------------- | ---------------------------------------------------- |
-| `SceneScraperTemplate.yml`     | Scene                             | `sceneByURL`                                         |
-| `WordpressSceneScraper.yml`    | Scene (WordPress `og:` meta)      | `sceneByURL`                                         |
-| `PerformerScraperTemplate.yml` | Performer                         | `performerByURL`                                     |
-| `GroupScraperTemplate.yml`     | Group                             | `groupByURL`                                         |
-| `GalleryScraperTemplate.yml`   | Gallery                           | `galleryByURL`                                       |
-| `ImageScraperTemplate.yml`     | Image                             | `imageByURL`                                         |
-| `ScriptScraperTemplate.yml`    | Script-based multi-object wrapper | Stash `*ByURL`, `*ByName`, and fragment entry points |
-| `ScriptScraperTemplate.py`     | Python implementation scaffold    | Operation argument received from the YAML wrapper    |
+| File                                      | Object / role                     | Entry point or interface                             |
+| ----------------------------------------- | --------------------------------- | ---------------------------------------------------- |
+| `SceneScraperTemplate.yml`                | Scene                             | `sceneByURL`                                         |
+| `WordpressSceneScraper.yml`               | Scene (WordPress `og:` meta)      | `sceneByURL`                                         |
+| `PerformerScraperTemplate.yml`            | Performer                         | `performerByURL`                                     |
+| `GroupScraperTemplate.yml`                | Group                             | `groupByURL`                                         |
+| `GalleryScraperTemplate.yml`              | Gallery                           | `galleryByURL`                                       |
+| `ImageScraperTemplate.yml`                | Image                             | `imageByURL`                                         |
+| `ScriptScraper/ScriptScraperTemplate.yml` | Script-based multi-object wrapper | Stash `*ByURL`, `*ByName`, and fragment entry points |
+| `ScriptScraper/ScriptScraperTemplate.py`  | Python implementation scaffold    | Operation argument received from the YAML wrapper    |
 
 ## Script template relationship
 
-`ScriptScraperTemplate.yml` is the Stash-facing configuration. Each entry point selects `action: script` and invokes `ScriptScraperTemplate.py` with an operation such as `scene-by-url`, `scene-by-name`, or `performer-by-fragment`.
+`ScriptScraper/ScriptScraperTemplate.yml` is the Stash-facing configuration. Each entry point selects `action: script` and invokes `ScriptScraperTemplate.py` with an operation such as `scene-by-url`, `scene-by-name`, or `performer-by-fragment`.
 
 `ScriptScraperTemplate.py` is the implementation scaffold. It reads the operation and JSON input, returns a Stash-compatible JSON object or list, and writes diagnostics to stderr. Replace its example functions and operation coverage with the target site's real implementation; do not treat placeholder URLs, names, images, or metadata as verified data.
 
@@ -34,7 +34,7 @@ The two files are intentionally edited together:
 ## How to use
 
 1. Choose the closest YAML template and copy it into `scrapers/` using a CamelCase filename.
-2. For a script scraper, copy both `ScriptScraperTemplate.yml` and `ScriptScraperTemplate.py`; keep them as a matched pair.
+2. For a script scraper, copy both `ScriptScraper/ScriptScraperTemplate.yml` and `ScriptScraper/ScriptScraperTemplate.py`; keep them as a matched pair.
 3. Keep root `name:` in the YAML and make it conventionally match the filename.
 4. Replace placeholder domains, selectors, operation names, and example metadata with site-specific values.
 5. Include only entry points that the target site actually supports. `sceneByName` requires a real search flow and should be paired with `sceneByQueryFragment` when used.
@@ -73,6 +73,6 @@ These templates contain placeholders and may not extract data until implementati
 
 ## Provenance
 
-- **Source:** stashapp/CommunityScrapers template set plus repository-local script scaffolding.
-- **Retrieved:** 2026-08-30; script-template relationship documented 2026-09-03.
-- **Local changes:** documentation and cross-reference updates only; template implementation files are unchanged.
+- **Source:** [stashapp/CommunityScrapers template set](https://github.com/stashapp/CommunityScrapers/tree/master/templates); script templates mirror upstream [`templates/ScriptScraper/`](https://github.com/stashapp/CommunityScrapers/tree/master/templates/ScriptScraper).
+- **Retrieved:** 2026-08-30; script-template relationship documented 2026-09-03; script pair re-nested under `ScriptScraper/` to match upstream layout 2026-09-12.
+- **Local changes:** directory layout and documentation cross-references only; template implementation files are byte-identical to upstream.
