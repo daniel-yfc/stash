@@ -3,12 +3,12 @@ name: PR Scraper Check
 on:
   pull_request:
     paths:
-      - 'scrapers/**/*.yml'
-      - 'validator/**'
-      - 'tools/scraper-quality-gate.sh'
-      - 'skills/stash-scraper-builder/**'
-      - 'tools/**'
-      - 'requirements.txt'
+      - "scrapers/**/*.yml"
+      - "validator/**"
+      - "tools/scraper-quality-gate.sh"
+      - "skills/stash-scraper-builder/**"
+      - "tools/**"
+      - "requirements.txt"
 
 permissions:
   contents: read
@@ -31,7 +31,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: "3.x"
           cache: pip
           cache-dependency-path: requirements.txt
 

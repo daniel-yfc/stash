@@ -2,18 +2,18 @@
 
 **Load when:** building Performer Name (and optionally Gender).
 
-> **概要（zh-TW）：** 漢字 > 英語 > 假名。保留 `・` / `-`。無明確性別欄位時預設不寫 Gender；單性別站才用 `fixed`。別名用 `replace` 去掉 ` / ` 後段。
+> **概要（zh-TW）：** 漢字 > 英語 > 假名。保留 `・` / `-`。無明確性別欄位時預設不寫 Gender；單性別站才用 `fixed`。別名用 `replace` 去掉 `/` 後段。
 
 Canonical reference: https://deepwiki.com/stashapp/CommunityScrapers/10.3-best-practices
 
 ## Priority
 
-| Input | Output | Pattern |
-| --- | --- | --- |
-| `東出省吾 Shogo` | `東出省吾` | Hanzi (+ optional English) |
-| `大河 (たいが)` / `大河（たいが）` | `大河` | Hanzi + kana in parens |
-| `うる Uru` | `Uru` | kana + English → English |
-| `たろう` | `たろう` | pure kana |
+| Input                              | Output     | Pattern                    |
+| ---------------------------------- | ---------- | -------------------------- |
+| `東出省吾 Shogo`                   | `東出省吾` | Hanzi (+ optional English) |
+| `大河 (たいが)` / `大河（たいが）` | `大河`     | Hanzi + kana in parens     |
+| `うる Uru`                         | `Uru`      | kana + English → English   |
+| `たろう`                           | `たろう`   | pure kana                  |
 
 ## Canonical block (copy verbatim)
 
@@ -50,7 +50,7 @@ Single-gender sites may use `fixed` with a stated reason:
 
 ```yaml
 Gender:
-  fixed: "Female"  # all performers on this site are female
+  fixed: "Female" # all performers on this site are female
 ```
 
 When an explicit field exists, map to the schema enum (case-insensitive; capitalize output):

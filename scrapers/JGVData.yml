@@ -38,7 +38,7 @@ xPathScrapers:
         postProcess:
           - replace:
               - regex: '^\s+|\s+$'
-                with: ''
+                with: ""
       URLs:
         selector: "$results//a[contains(concat(' ', normalize-space(@class), ' '), ' link-div ')]/@href"
 
@@ -51,26 +51,26 @@ xPathScrapers:
         postProcess:
           - replace:
               - regex: '^\s+|\s+$'
-                with: ''
+                with: ""
       Code:
         selector: "$main//dt[normalize-space()='GV Code']/following-sibling::dd[1]/text()"
         postProcess:
           - replace:
               - regex: '^\s+|\s+$'
-                with: ''
+                with: ""
       Date:
         selector: "$main//dt[normalize-space()='Release Date']/following-sibling::dd[1]/text()"
         postProcess:
           - replace:
               - regex: '^\s+|\s+$'
-                with: ''
+                with: ""
           - parseDate: "2006-01-02"
       Details:
         selector: "$main//dt[normalize-space()='Context:']/following-sibling::dd[1]"
         postProcess:
           - replace:
               - regex: '^\s+|\s+$'
-                with: ''
+                with: ""
       Image:
         selector: "$main//img[contains(concat(' ', normalize-space(@class), ' '), ' wp-post-image ')]/@src"
       Studio:
@@ -79,13 +79,13 @@ xPathScrapers:
           postProcess:
             - replace:
                 - regex: '^\s+|\s+$'
-                  with: ''
+                  with: ""
       Tags:
         Name:
           selector: "$main//dt[normalize-space()='Label']/following-sibling::dd[1]//a/text()"
           postProcess:
             - replace:
                 - regex: '^\s+|\s+$'
-                  with: ''
+                  with: ""
       URLs:
         selector: "//link[@rel='canonical']/@href | //meta[@property='og:url']/@content"

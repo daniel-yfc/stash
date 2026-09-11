@@ -18,13 +18,13 @@
 
 Test each task against these scenarios:
 
-| Scenario | Purpose |
-| --- | --- |
-| **New** (recent scene) | Verify current HTML structure |
-| **Old** (archive scene) | Catch selector drift over time |
+| Scenario                                   | Purpose                                     |
+| ------------------------------------------ | ------------------------------------------- |
+| **New** (recent scene)                     | Verify current HTML structure               |
+| **Old** (archive scene)                    | Catch selector drift over time              |
 | **Missing field** (no performers, no date) | Ensure graceful handling of optional fields |
-| **Multi-performer** (3+ performers) | Verify array handling, not single-value |
-| **Non-ASCII** (CJK, accented Latin) | Ensure encoding and regex handling |
+| **Multi-performer** (3+ performers)        | Verify array handling, not single-value     |
+| **Non-ASCII** (CJK, accented Latin)        | Ensure encoding and regex handling          |
 
 **Network scrapers:** test 3–5 domains from the network to confirm template consistency.
 
@@ -45,6 +45,7 @@ A scraper that returns the wrong studio is a fail, even if the YAML is valid.
 **Site:** Use any real public HTML site with scene pages.
 
 **Requirements:**
+
 - `sceneByURL` required; add `sceneByFragment` only if the site verifiably supports fragment scraping (never as a nil-pointer workaround).
 - Title cleaning from `title-patterns.md`.
 - Date with `parseDate` (Go layout matching the site).
@@ -54,6 +55,7 @@ A scraper that returns the wrong studio is a fail, even if the YAML is valid.
 **Expected output:** one complete YAML, all selectors verified or marked `# UNVERIFIED`.
 
 **Failure modes to catch:**
+
 - Fragment-only output.
 - Missing title cleaning or wrong `parseDate` layout.
 - Invented `sceneByName`.
@@ -63,6 +65,7 @@ A scraper that returns the wrong studio is a fail, even if the YAML is valid.
 **Site:** Use any real JSON API that returns scene metadata.
 
 **Requirements:**
+
 - `sceneByURL` (mandatory) + `sceneByName` + `sceneByQueryFragment` (**only if the API has a real search endpoint**).
 - `action: scrapeJson` with GJSON selectors.
 - Title cleaning + `parseDate` on the release date field.
@@ -72,6 +75,7 @@ A scraper that returns the wrong studio is a fail, even if the YAML is valid.
 **Expected output:** one complete YAML using `jsonScrapers`.
 
 **Failure modes to catch:**
+
 - Invented GJSON paths not tested on the real response.
 - Using `scrapeXPath` on a JSON-only endpoint.
 - Putting `scrapeJson` definitions in `xPathScrapers`.
@@ -81,6 +85,7 @@ A scraper that returns the wrong studio is a fail, even if the YAML is valid.
 **Site:** Use any site that already has a shared Python scraper.
 
 **Requirements:**
+
 - `sceneByURL` required; add `sceneByFragment` only if the site verifiably supports fragment scraping (or more supported modes).
 - `action: script` with `# requires:` and the dependency path.
 - If the site supports `performerByFragment`, test it (script-only mode).
@@ -89,6 +94,7 @@ A scraper that returns the wrong studio is a fail, even if the YAML is valid.
 **Expected output:** one complete YAML + install prerequisites in the explanation.
 
 **Failure modes to catch:**
+
 - Missing `# requires:` or wrong relative path.
 - No install notice in the response.
 - `*ByName` returning a bare object instead of an array.
@@ -98,12 +104,14 @@ A scraper that returns the wrong studio is a fail, even if the YAML is valid.
 **Input:** Existing scraper that fails on `15&nbsp;Jan&nbsp;2024`.
 
 **Requirements:**
+
 - Fix the Date field with `replace` then `parseDate`.
 - Return the **entire** scraper file, not just the Date block.
 
 **Expected output:** full YAML with the corrected Date `postProcess`.
 
 **Failure modes to catch:**
+
 - Fragment output ("only the changed section").
 - `parseDate` before `replace` (still fails).
 
@@ -112,6 +120,7 @@ A scraper that returns the wrong studio is a fail, even if the YAML is valid.
 **Site:** Any real login/paywall/human-check site.
 
 **Requirements:**
+
 - Do **not** emit a scraper that silently returns nothing.
 - Either:
   - Emit `driver: useCDP: true` **and** the visible-CDP steps, or
@@ -120,18 +129,19 @@ A scraper that returns the wrong studio is a fail, even if the YAML is valid.
 **Expected output:** YAML + CDP steps, or an explicit "out of scope" explanation.
 
 **Failure modes to catch:**
+
 - `useCDP: true` without the setup steps.
 - Plain HTTP scraper that will fail on a gated page.
 
 ## Scoring
 
-| Task | Pass | Fail |
-| --- | --- | --- |
-| 1 XPath | 1 | 0 |
-| 2 JSON | 1 | 0 |
-| 3 Script | 1 | 0 |
-| 4 Date | 1 | 0 |
-| 5 CDP | 1 | 0 |
-| **Total** | **/5** | |
+| Task      | Pass   | Fail |
+| --------- | ------ | ---- |
+| 1 XPath   | 1      | 0    |
+| 2 JSON    | 1      | 0    |
+| 3 Script  | 1      | 0    |
+| 4 Date    | 1      | 0    |
+| 5 CDP     | 1      | 0    |
+| **Total** | **/5** |      |
 
 Target: **5/5** before calling the skill "done." If any task fails, fix the workflow or checklists, then re-run.

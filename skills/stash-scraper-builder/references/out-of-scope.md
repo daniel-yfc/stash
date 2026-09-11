@@ -19,8 +19,8 @@ This skill covers CommunityScrapers-style YAML, JSON, and script scrapers only.
 
 ## Reading guidance for upstream docs
 
-| Upstream doc | Treatment |
-|---|---|
-| `docs.stashapp.cc/api/` | Background context only — not implemented here |
-| `docs.stashapp.cc/metadata-sources/` | Broader ecosystem view — this skill covers the scraper branch only |
+| Upstream doc                           | Treatment                                                             |
+| -------------------------------------- | --------------------------------------------------------------------- |
+| `docs.stashapp.cc/api/`                | Background context only — not implemented here                        |
+| `docs.stashapp.cc/metadata-sources/`   | Broader ecosystem view — this skill covers the scraper branch only    |
 | DeepWiki architecture and driver pages | Design context — not a claim that all integration paths are supported |

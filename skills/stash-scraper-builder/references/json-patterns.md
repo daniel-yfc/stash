@@ -4,13 +4,14 @@ Patterns and guidance for JSON-based scrapers.
 
 ## queryURL rules
 
-| Mode | queryURL value |
-|------|----------------|
-| `sceneByName` | `{}` (empty object for search endpoint) |
-| `sceneByQueryFragment` | `{url}` of the selected hit, optionally rewritten with `queryURLReplace`. |
+| Mode                             | queryURL value                                                                                                                                                         |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sceneByName`                    | `{}` (empty object for search endpoint)                                                                                                                                |
+| `sceneByQueryFragment`           | `{url}` of the selected hit, optionally rewritten with `queryURLReplace`.                                                                                              |
 | `sceneByURL` / `sceneByFragment` | Use a direct API URL or an action-supported rewrite of the pasted URL. For XPath/JSON fragment actions, provide the required `queryURL`; do not assume it is optional. |
 
 **Official queryURL placeholders:**
+
 - `{}` — empty object (used for `sceneByName` search endpoint)
 - `{url}` — the selected hit URL (used for `sceneByQueryFragment`)
 - `{filename}` — the scraper filename (fragment modes)

@@ -39,7 +39,10 @@ def expected_markdown_paths() -> set[str]:
         "AGENTS.md",
         "CLAUDE.md",
         "CONTRIBUTING.md",
+        "scrapers/README.md",
         "templates/README.md",
+        "tools/README.md",
+        "tools/SRB-2.0-documentation.md",
         "validator/README.md",
         "skills/stash-scraper-builder/SKILL.md",
     }

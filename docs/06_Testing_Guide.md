@@ -89,11 +89,13 @@ Before submitting a scraper change, confirm:
 ### Common Issues
 
 #### Quality Gate Failure (`scraper-quality-gate.sh`)
+
 - **Missing root name**: Ensure `name:` is declared at column 0 in XPath scrapers.
 - **`driver.cookies` in public directory**: Move session-dependent scrapers to `scrapers/private/`.
 - **Invalid parseDate layout**: Use Go reference time formats (e.g., `2006-01-02`), not Moment/strftime tokens (`YYYY`, `%Y`).
 
 #### Python Test Failures
+
 - **Executable bit missing**: Run `chmod +x tools/*.sh`.
 - **Missing dependencies**: Install requirements with `pip install -r requirements.txt`.
 

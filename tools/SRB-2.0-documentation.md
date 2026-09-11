@@ -13,12 +13,12 @@
 
 執行時從 CDN 載入（未內嵌）：
 
-| Resource | Source |
-|---|---|
-| React 18.3.1 | `unpkg.com/react@18.3.1` |
-| ReactDOM 18.3.1 | `unpkg.com/react-dom@18.3.1` |
-| Babel Standalone 7.29.0 | `unpkg.com/@babel/standalone@7.29.0` |
-| Space Grotesk / Space Mono | `fonts.googleapis.com` |
+| Resource                   | Source                               |
+| -------------------------- | ------------------------------------ |
+| React 18.3.1               | `unpkg.com/react@18.3.1`             |
+| ReactDOM 18.3.1            | `unpkg.com/react-dom@18.3.1`         |
+| Babel Standalone 7.29.0    | `unpkg.com/@babel/standalone@7.29.0` |
+| Space Grotesk / Space Mono | `fonts.googleapis.com`               |
 
 ## 資料儲存 / Data Storage
 
@@ -35,11 +35,13 @@
 Scraper Request Builder 是一個互動式小工具表單，用來幫助你快速建立 Stash 爬蟲/刮取器(Scarper)。可動態選擇要提取的物件欄位、新增多個測試用的實例，最後一鍵匯出 Markdown 或 JSON，方便爬蟲技能使用或回報問題。
 
 # Scrapers Builder Accompany — Manual / 操作手冊
+
 **Version:** SRB V2.0 · 2026-08-30
 
 **Scrapers Builder Accompany** 是一個互動式表單工具，用來為 [Stash](https://github.com/stashapp/stash) 產生**爬蟲請求規格檔（Scraper Request Spec）**。你透過五個步驟描述目標網站、要抓取的資料欄位、測試案例與技術條件，工具會產生對應的 **JSON** 或 **Markdown** 檔案，可交給爬蟲開發流程使用。
 
 **核心特色：**
+
 - 五步驟引導（目標 → 欄位 → 測試 → 技術 → 匯出）
 - 支援 Stash 五種物件類型（場景 / 演出者 / 合集 / 製作商 / 標籤）
 - 多值欄位（Tags、URLs、Performers、Aliases…）用 chip 標籤方式輸入
@@ -59,6 +61,7 @@ Scraper Request Builder 是一個互動式小工具表單，用來幫助你快�
 **步驟：**
 
 1. **選物件類型** — 五選一：
+
    - 場景 (Scene) — 單一影片頁
    - 演出者 (Performer) — 演員個人頁
    - 合集 (Group) — 系列 / 合輯
@@ -132,6 +135,7 @@ Scraper Request Builder 是一個互動式小工具表單，用來幫助你快�
 勾選代表：**網站需要執行 JavaScript 才能取得內容**（例：SPA、無限滾動、需要點展開）。
 
 勾選後選擇動態載入類型：
+
 - 等待特定元素出現
 - 固定等待時間
 - 需要滾動載入
@@ -158,13 +162,13 @@ Scraper Request Builder 是一個互動式小工具表單，用來幫助你快�
 
 勾選後可**複選**五種驗證方式：
 
-| 方式 | 需要輸入 |
-|---|---|
-| **存取權杖 (Access Token)** | Token 值 |
-| **提取 API 金鑰狀況 (API Key Extraction)** | 來源 URL + Regex 樣式 + 放入的 Header 名稱 |
-| **靜態標頭 (Cookie Header)** | 完整 `name=value; name2=value2` Cookie 字串 |
-| **API 金鑰 Header** | Header 名稱 + Key 值 |
-| **Cookie 檔上傳 (.txt)** | Netscape 格式的 Cookie 檔案 |
+| 方式                                       | 需要輸入                                    |
+| ------------------------------------------ | ------------------------------------------- |
+| **存取權杖 (Access Token)**                | Token 值                                    |
+| **提取 API 金鑰狀況 (API Key Extraction)** | 來源 URL + Regex 樣式 + 放入的 Header 名稱  |
+| **靜態標頭 (Cookie Header)**               | 完整 `name=value; name2=value2` Cookie 字串 |
+| **API 金鑰 Header**                        | Header 名稱 + Key 值                        |
+| **Cookie 檔上傳 (.txt)**                   | Netscape 格式的 Cookie 檔案                 |
 
 **Cookie 檔案內容不會存草稿** — 只記檔名，關閉頁面後需重新載入。
 

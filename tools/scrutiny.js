@@ -13,27 +13,28 @@
 //
 // Network: yes, hits the live upstream sites. Be polite.
 
-import fs from 'node:fs';
-import path from 'node:path';
-import yaml from 'yaml';
-import { JSDOM, VirtualConsole } from 'jsdom';
+import fs from "node:fs";
+import path from "node:path";
+import yaml from "yaml";
+import { JSDOM, VirtualConsole } from "jsdom";
 
 // Suppress noisy CSS parse warnings from JSDOM (cosmetic, not real errors)
 const quietConsole = new VirtualConsole();
-quietConsole.on('jsdomError', () => {});
+quietConsole.on("jsdomError", () => {});
 const _origConsoleError = console.error;
 console.error = (...args) => {
-  const s = args.join(' ');
+  const s = args.join(" ");
   if (/Could not parse CSS stylesheet/.test(s)) return;
   _origConsoleError.apply(console, args);
 };
 
 const ROOT = process.cwd();
-const SCRAPERS = path.join(ROOT, 'scrapers');
-const POLITE_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+const SCRAPERS = path.join(ROOT, "scrapers");
+const POLITE_UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
 // XPath result types
-const XP_ALL = 7;    // ORDERED_NODE_SNAPSHOT_TYPE
+const XP_ALL = 7; // ORDERED_NODE_SNAPSHOT_TYPE
 
 function showHelp() {
   console.log(`
@@ -58,18 +59,50 @@ Examples:
 
 // --- CLI args ---
 function parseArgs(argv) {
-  const opts = { files: [], probe: null, paginate: false, multiUrl: false, searchReport: false, url: null, cookie: null };
+  const opts = {
+    files: [],
+    probe: null,
+    paginate: false,
+    multiUrl: false,
+    searchReport: false,
+    url: null,
+    cookie: null,
+  };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a === '--help' || a === '-h') { opts.help = true; continue; }
-    if (a === '--all') { opts.all = true; continue; }
-    if (a === '--paginate') { opts.paginate = true; continue; }
-    if (a === '--multi') { opts.multiUrl = true; continue; }
-    if (a === '--search') { opts.searchReport = true; continue; }
-    if (a.startsWith('--probe=')) { opts.probe = a.slice(8).split(','); continue; }
-    if (a.startsWith('--url=')) { opts.url = a.slice(6); continue; }
-    if (a.startsWith('--cookie=')) { opts.cookie = a.slice(9); continue; }
-    if (a.startsWith('-')) continue;
+    if (a === "--help" || a === "-h") {
+      opts.help = true;
+      continue;
+    }
+    if (a === "--all") {
+      opts.all = true;
+      continue;
+    }
+    if (a === "--paginate") {
+      opts.paginate = true;
+      continue;
+    }
+    if (a === "--multi") {
+      opts.multiUrl = true;
+      continue;
+    }
+    if (a === "--search") {
+      opts.searchReport = true;
+      continue;
+    }
+    if (a.startsWith("--probe=")) {
+      opts.probe = a.slice(8).split(",");
+      continue;
+    }
+    if (a.startsWith("--url=")) {
+      opts.url = a.slice(6);
+      continue;
+    }
+    if (a.startsWith("--cookie=")) {
+      opts.cookie = a.slice(9);
+      continue;
+    }
+    if (a.startsWith("-")) continue;
     opts.files.push(a);
   }
   return opts;
@@ -78,9 +111,9 @@ function parseArgs(argv) {
 // --- File listing ---
 function listScrapers() {
   const out = [];
-  for (const dir of [SCRAPERS, path.join(SCRAPERS, 'private')]) {
+  for (const dir of [SCRAPERS, path.join(SCRAPERS, "private")]) {
     if (!fs.existsSync(dir)) continue;
-    for (const f of fs.readdirSync(dir).filter(x => x.endsWith('.yml'))) {
+    for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".yml"))) {
       out.push(path.join(dir, f));
     }
   }
@@ -90,21 +123,21 @@ function listScrapers() {
 // --- HTTP fetch with retries ---
 async function fetchHTML(url, cookie, attempt = 1) {
   const headers = {
-    'User-Agent': POLITE_UA,
-    'Accept-Language': 'ja,en;q=0.5',
+    "User-Agent": POLITE_UA,
+    "Accept-Language": "ja,en;q=0.5",
   };
   if (cookie) {
-    headers['Cookie'] = cookie;
+    headers["Cookie"] = cookie;
   }
   try {
-    const res = await fetch(url, { headers, redirect: 'follow' });
+    const res = await fetch(url, { headers, redirect: "follow" });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const ct = res.headers.get('content-type') || '';
+    const ct = res.headers.get("content-type") || "";
     if (!/text\/html|xml/.test(ct)) throw new Error(`non-HTML content-type: ${ct}`);
     return await res.text();
   } catch (e) {
     if (attempt < 2 && /ECONNRESET|fetch failed|socket hang up/i.test(e.message)) {
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise((r) => setTimeout(r, 500));
       return fetchHTML(url, cookie, attempt + 1);
     }
     throw e;
@@ -114,22 +147,22 @@ async function fetchHTML(url, cookie, attempt = 1) {
 // --- Build a probe URL from a scraper's search config ---
 function buildProbeURL(template, probe, page) {
   let url = template
-    .replaceAll('{}', encodeURIComponent(probe))
-    .replaceAll('{query}', encodeURIComponent(probe))
-    .replaceAll('{q}', encodeURIComponent(probe))
-    .replaceAll('{title}', encodeURIComponent(probe));
+    .replaceAll("{}", encodeURIComponent(probe))
+    .replaceAll("{query}", encodeURIComponent(probe))
+    .replaceAll("{q}", encodeURIComponent(probe))
+    .replaceAll("{title}", encodeURIComponent(probe));
 
   if (page != null) {
-    if (url.includes('{page}')) {
-      url = url.replaceAll('{page}', page);
-    } else if (url.includes('{p}')) {
-      url = url.replaceAll('{p}', page);
+    if (url.includes("{page}")) {
+      url = url.replaceAll("{page}", page);
+    } else if (url.includes("{p}")) {
+      url = url.replaceAll("{p}", page);
     } else if (/[?&]page=/.test(url)) {
       url = url.replace(/([?&]page=)\d+/, `$1${page}`);
     } else if (/[?&]p=/.test(url)) {
       url = url.replace(/([?&]p=)\d+/, `$1${page}`);
     } else {
-      url += (url.includes('?') ? '&' : '?') + 'page=' + page;
+      url += (url.includes("?") ? "&" : "?") + "page=" + page;
     }
   }
   return url;
@@ -137,15 +170,15 @@ function buildProbeURL(template, probe, page) {
 
 // --- Default probes by domain/family ---
 function defaultProbes(scraperDoc) {
-  const queryURL = (scraperDoc.sceneByName || scraperDoc.sceneByFragment || {}).queryURL || '';
-  const probes = ['a', 'DVD', '2026', 'sample'];
-  if (/acceed/i.test(queryURL)) probes.unshift('ACST', 'ノンケ');
-  if (/ck-download/i.test(queryURL)) probes.unshift('CK', '男');
-  if (/games-video/i.test(queryURL)) probes.unshift('GV-OAV', 'GVO');
-  if (/mensrush/i.test(queryURL)) probes.unshift('MR-');
-  if (/ko-video|ko-shop|ko-tube/i.test(queryURL)) probes.unshift('KBEA', 'KBO');
-  if (/justice/i.test(queryURL)) probes.unshift('JUSTICE');
-  if (/hunks/i.test(queryURL)) probes.unshift('HUNKS');
+  const queryURL = (scraperDoc.sceneByName || scraperDoc.sceneByFragment || {}).queryURL || "";
+  const probes = ["a", "DVD", "2026", "sample"];
+  if (/acceed/i.test(queryURL)) probes.unshift("ACST", "ノンケ");
+  if (/ck-download/i.test(queryURL)) probes.unshift("CK", "男");
+  if (/games-video/i.test(queryURL)) probes.unshift("GV-OAV", "GVO");
+  if (/mensrush/i.test(queryURL)) probes.unshift("MR-");
+  if (/ko-video|ko-shop|ko-tube/i.test(queryURL)) probes.unshift("KBEA", "KBO");
+  if (/justice/i.test(queryURL)) probes.unshift("JUSTICE");
+  if (/hunks/i.test(queryURL)) probes.unshift("HUNKS");
   return probes;
 }
 
@@ -163,19 +196,19 @@ function extractSceneURLs(searchHTML, scraperDoc, baseURL, probe, page) {
 
   let candidates = [];
   try {
-    let sel = typeof urlsSel === 'string' ? urlsSel : urlsSel.selector;
+    let sel = typeof urlsSel === "string" ? urlsSel : urlsSel.selector;
     if (!sel) return [];
     const common = searchScraper.common || {};
     for (const [k, v] of Object.entries(common)) {
-      const key = k.startsWith('$') ? k : '$' + k;
+      const key = k.startsWith("$") ? k : "$" + k;
       sel = sel.replaceAll(key, v);
     }
     const snap = xdoc.evaluate(sel, xdoc, null, XP_ALL, null);
     for (let i = 0; i < snap.snapshotLength; i++) {
       const node = snap.snapshotItem(i);
-      let href = node.nodeValue || node.textContent || '';
+      let href = node.nodeValue || node.textContent || "";
       if (!href) continue;
-      if (typeof urlsSel === 'object' && urlsSel.postProcess) {
+      if (typeof urlsSel === "object" && urlsSel.postProcess) {
         for (const pp of urlsSel.postProcess) {
           if (pp.replace) {
             for (const r of pp.replace) {
@@ -197,17 +230,17 @@ function extractSceneURLs(searchHTML, scraperDoc, baseURL, probe, page) {
 
   // Fallback heuristic: find all <a> matching sceneByURL patterns
   if (candidates.length === 0) {
-    const patterns = (scraperDoc.sceneByURL || []).map(s => s.url);
-    const snap = xdoc.evaluate('//a[@href]/@href', xdoc, null, XP_ALL, null);
+    const patterns = (scraperDoc.sceneByURL || []).map((s) => s.url);
+    const snap = xdoc.evaluate("//a[@href]/@href", xdoc, null, XP_ALL, null);
     for (let i = 0; i < snap.snapshotLength; i++) {
       const href = snap.snapshotItem(i).nodeValue;
       if (!href) continue;
       try {
         const full = new URL(href, baseURL).toString();
         for (const pat of patterns) {
-          const patNorm = pat.replace(/^https?:\/\//, '').replace(/^www\./, '');
-          const hostAndPath = full.replace(/^https?:\/\//, '').replace(/^www\./, '');
-          if (hostAndPath.startsWith(patNorm.split('?')[0]) || hostAndPath.includes(patNorm)) {
+          const patNorm = pat.replace(/^https?:\/\//, "").replace(/^www\./, "");
+          const hostAndPath = full.replace(/^https?:\/\//, "").replace(/^www\./, "");
+          if (hostAndPath.startsWith(patNorm.split("?")[0]) || hostAndPath.includes(patNorm)) {
             candidates.push(full);
             break;
           }
@@ -233,7 +266,7 @@ function extractSceneURLs(searchHTML, scraperDoc, baseURL, probe, page) {
 async function findSceneURLs(scraperDoc, opts) {
   const sb = scraperDoc.sceneByName || scraperDoc.sceneByFragment;
   if (!sb || !sb.queryURL) {
-    return { urls: [], reason: 'no sceneByName/sceneByFragment.queryURL' };
+    return { urls: [], reason: "no sceneByName/sceneByFragment.queryURL" };
   }
 
   const probes = opts.probe || defaultProbes(scraperDoc);
@@ -242,7 +275,7 @@ async function findSceneURLs(scraperDoc, opts) {
   const PER_PROBE_CAP = 5;
   const seen = new Set();
   const candidates = [];
-  let lastReason = '';
+  let lastReason = "";
 
   for (const probe of probes) {
     for (const page of pages) {
@@ -258,12 +291,18 @@ async function findSceneURLs(scraperDoc, opts) {
       // A true login gate removes search results; look for a login form/redirect
       // while also confirming no usable results are present. Some sites keep a
       // persistent "guest / login" header even on public search pages.
-      const hasLoginGate = /(?:window\.location|location\.href)\s*=\s*["'][^"']*login\.(?:php|html)/i.test(html) ||
+      const hasLoginGate =
+        /(?:window\.location|location\.href)\s*=\s*["'][^"']*login\.(?:php|html)/i.test(html) ||
         /<form[^>]+action=["'][^"']*login\.(?:php|html)["']/i.test(html) ||
         /<input[^>]+(?:type=["']password["']|name=["']pass(?:word)?["'])/i.test(html);
-      const hasResults = html.includes('movie_detail.php') || html.includes('movie_box') || html.includes('item_img') || html.includes('detail.php?product_id') || html.includes('list_title');
+      const hasResults =
+        html.includes("movie_detail.php") ||
+        html.includes("movie_box") ||
+        html.includes("item_img") ||
+        html.includes("detail.php?product_id") ||
+        html.includes("list_title");
       if (hasLoginGate && !hasResults) {
-        lastReason = 'search redirected to login';
+        lastReason = "search redirected to login";
         continue;
       }
       const cands = extractSceneURLs(html, scraperDoc, probeURL, probe, page);
@@ -283,7 +322,7 @@ async function findSceneURLs(scraperDoc, opts) {
         };
       }
       if (pages.length > 1) {
-        await new Promise(r => setTimeout(r, 200));
+        await new Promise((r) => setTimeout(r, 200));
       }
     }
     if (!opts.multiUrl && candidates.length > 0) {
@@ -296,7 +335,7 @@ async function findSceneURLs(scraperDoc, opts) {
     probeCount: probes.length,
     pageCount: pages.length,
     searchURL: sb.queryURL,
-    reason: candidates.length === 0 ? (lastReason || 'no candidates from any probe') : null,
+    reason: candidates.length === 0 ? lastReason || "no candidates from any probe" : null,
   };
 }
 
@@ -306,7 +345,7 @@ function runXPath(selector, ctx) {
   let sel = selector;
   if (common) {
     for (const [k, v] of Object.entries(common)) {
-      const key = k.startsWith('$') ? k : '$' + k;
+      const key = k.startsWith("$") ? k : "$" + k;
       sel = sel.replaceAll(key, v);
     }
   }
@@ -317,7 +356,7 @@ function runXPath(selector, ctx) {
     const samples = [];
     for (let i = 0; i < Math.min(count, 3); i++) {
       const node = snap.snapshotItem(i);
-      const text = node.nodeValue || node.textContent || '';
+      const text = node.nodeValue || node.textContent || "";
       samples.push(text.trim());
     }
     return { count, samples, selector: sel, error: null };
@@ -327,8 +366,8 @@ function runXPath(selector, ctx) {
 }
 
 function tryFieldWithDoc(val, ctx) {
-  if (typeof val === 'string') return runXPath(val, ctx);
-  if (val && typeof val === 'object') {
+  if (typeof val === "string") return runXPath(val, ctx);
+  if (val && typeof val === "object") {
     const out = {};
     if (val.selector) out.selector = runXPath(val.selector, ctx);
     if (val.fixed !== undefined) out.fixed = val.fixed;
@@ -347,13 +386,13 @@ function collectSelectors(val, acc = []) {
 }
 
 function summarize(v) {
-  if (v == null) return '∅';
-  if (typeof v === 'string') return v;
+  if (v == null) return "∅";
+  if (typeof v === "string") return v;
   if (v.selector) {
     const s = v.selector;
     if (s.error) return `ERROR: ${s.message || JSON.stringify(s)}`;
-    if (s.count === 0) return '∅ (0 nodes)';
-    return `${s.count} nodes | ${(s.samples || []).map(x => '"' + x.replace(/\s+/g, ' ').slice(0, 60) + '"').join(' / ')}`;
+    if (s.count === 0) return "∅ (0 nodes)";
+    return `${s.count} nodes | ${(s.samples || []).map((x) => '"' + x.replace(/\s+/g, " ").slice(0, 60) + '"').join(" / ")}`;
   }
   if (v.Name) {
     return summarize(v.Name);
@@ -387,19 +426,19 @@ function countTotal(fields) {
 // --- Test one scraper against scene URLs ---
 async function testScraper(file, opts) {
   const rel = path.relative(ROOT, file);
-  const doc = yaml.parse(fs.readFileSync(file, 'utf8'));
+  const doc = yaml.parse(fs.readFileSync(file, "utf8"));
   const entry = { file: rel, name: doc.name };
 
   let tested = [];
   let found = { urls: [] };
 
   if (opts.url) {
-    tested = [{ url: opts.url, probe: 'direct', page: null }];
+    tested = [{ url: opts.url, probe: "direct", page: null }];
     entry.urlCandidates = 1;
   } else {
     found = await findSceneURLs(doc, opts);
     if (found.urls.length === 0) {
-      entry.status = 'SKIP';
+      entry.status = "SKIP";
       entry.reason = found.reason;
       return entry;
     }
@@ -418,7 +457,7 @@ async function testScraper(file, opts) {
     try {
       html = await fetchHTML(cand.url, opts.cookie);
     } catch (e) {
-      urlEntry.status = 'FETCH_FAIL';
+      urlEntry.status = "FETCH_FAIL";
       urlEntry.reason = e.message;
       perUrl.push(urlEntry);
       continue;
@@ -427,7 +466,7 @@ async function testScraper(file, opts) {
     const xdoc = dom.window.document;
     const sceneScraper = (doc.xPathScrapers || {})[doc.sceneByURL?.[0]?.scraper];
     if (!sceneScraper) {
-      urlEntry.status = 'NO_SCENE_SCRAPER';
+      urlEntry.status = "NO_SCENE_SCRAPER";
       perUrl.push(urlEntry);
       continue;
     }
@@ -440,9 +479,9 @@ async function testScraper(file, opts) {
       }
     }
     urlEntry.fields = result;
-    urlEntry.status = 'OK';
+    urlEntry.status = "OK";
     perUrl.push(urlEntry);
-    await new Promise(r => setTimeout(r, 300));
+    await new Promise((r) => setTimeout(r, 300));
   }
 
   // Also exercise the searchScraper on the search results page, if present
@@ -451,8 +490,9 @@ async function testScraper(file, opts) {
     const searchKey = sb && sb.scraper;
     const searchDef = searchKey && doc.xPathScrapers && doc.xPathScrapers[searchKey];
     const bestCand = tested[0] || found.urls[0];
-    const probe = bestCand && bestCand.probe !== 'direct' ? bestCand.probe : (opts.probe ? opts.probe[0] : 'a');
-    const page = opts.paginate ? 2 : (bestCand ? bestCand.page : null);
+    const probe =
+      bestCand && bestCand.probe !== "direct" ? bestCand.probe : opts.probe ? opts.probe[0] : "a";
+    const page = opts.paginate ? 2 : bestCand ? bestCand.page : null;
     const searchPageURL = buildProbeURL(sb.queryURL, probe, page);
     if (searchDef) {
       try {
@@ -476,8 +516,8 @@ async function testScraper(file, opts) {
   }
 
   entry.urls = perUrl;
-  entry.status = perUrl.some(u => u.status === 'OK') ? 'OK' : perUrl[0].status;
-  const firstOk = perUrl.find(u => u.status === 'OK');
+  entry.status = perUrl.some((u) => u.status === "OK") ? "OK" : perUrl[0].status;
+  const firstOk = perUrl.find((u) => u.status === "OK");
   if (firstOk) {
     entry.sceneURL = firstOk.url;
     entry.fields = firstOk.fields;
@@ -487,15 +527,18 @@ async function testScraper(file, opts) {
 
 function printEntry(e) {
   console.log(`\n=== ${e.file} ===`);
-  if (e.probeCount) console.log(`  probes : ${e.probeCount} (${e.pageCount} page each), ${e.urlCandidates} candidates`);
+  if (e.probeCount)
+    console.log(
+      `  probes : ${e.probeCount} (${e.pageCount} page each), ${e.urlCandidates} candidates`,
+    );
   if (e.urls && e.urls.length > 1) console.log(`  tested : ${e.urls.length} URLs`);
   if (e.sceneURL) console.log(`  scene  : ${e.sceneURL}`);
   if (e.fields) {
-    console.log('  [scene-scraper on detail page]');
+    console.log("  [scene-scraper on detail page]");
     printFields(e.fields);
   }
   if (e.searchFields) {
-    console.log('  [search-scraper on search page]');
+    console.log("  [search-scraper on search page]");
     printFields(e.searchFields);
   } else if (e.reason) {
     console.log(`  result : ${e.reason}`);
@@ -503,10 +546,12 @@ function printEntry(e) {
   if (e.searchError) console.log(`  search-error: ${e.searchError}`);
   if (e.urls && e.urls.length > 1) {
     for (const u of e.urls) {
-      if (u.status !== 'OK') continue;
+      if (u.status !== "OK") continue;
       const pop = countPopulated(u.fields);
       const tot = countTotal(u.fields);
-      console.log(`    [${pop}/${tot}] ${u.url}  (probe=${u.probe}${u.page != null ? ` p=${u.page}` : ''})`);
+      console.log(
+        `    [${pop}/${tot}] ${u.url}  (probe=${u.probe}${u.page != null ? ` p=${u.page}` : ""})`,
+      );
     }
   }
 }
@@ -531,7 +576,7 @@ async function main() {
   if (opts.all) {
     files = listScrapers();
   } else if (opts.files.length > 0) {
-    files = opts.files.map(a => path.isAbsolute(a) ? a : path.join(ROOT, a));
+    files = opts.files.map((a) => (path.isAbsolute(a) ? a : path.join(ROOT, a)));
   } else {
     showHelp();
     return;
@@ -544,18 +589,27 @@ async function main() {
     printEntry(entry);
   }
 
-  console.log('\n\n========== SUMMARY ==========');
+  console.log("\n\n========== SUMMARY ==========");
   for (const e of summary) {
     const populated = e.fields ? countPopulated(e.fields) : 0;
     const total = e.fields ? countTotal(e.fields) : 0;
     const searchPop = e.searchFields ? countPopulated(e.searchFields) : 0;
     const searchTot = e.searchFields ? countTotal(e.searchFields) : 0;
-    const extra = e.urls && e.urls.length > 1
-      ? ` [multi: ${e.urls.filter(u => u.status === 'OK').map(u => countPopulated(u.fields) + '/' + countTotal(u.fields)).join(', ')}]`
-      : '';
-    const searchExtra = e.searchFields ? ` search=${searchPop}/${searchTot}` : '';
-    console.log(`${e.status.padEnd(12)} ${e.file.padEnd(40)} scene=${populated}/${total}${searchExtra}  candidates=${e.urlCandidates || '-'}  ${e.sceneURL ? e.sceneURL.slice(0, 60) : (e.reason || '')}${extra}`);
+    const extra =
+      e.urls && e.urls.length > 1
+        ? ` [multi: ${e.urls
+            .filter((u) => u.status === "OK")
+            .map((u) => countPopulated(u.fields) + "/" + countTotal(u.fields))
+            .join(", ")}]`
+        : "";
+    const searchExtra = e.searchFields ? ` search=${searchPop}/${searchTot}` : "";
+    console.log(
+      `${e.status.padEnd(12)} ${e.file.padEnd(40)} scene=${populated}/${total}${searchExtra}  candidates=${e.urlCandidates || "-"}  ${e.sceneURL ? e.sceneURL.slice(0, 60) : e.reason || ""}${extra}`,
+    );
   }
 }
 
-main().catch(e => { console.error(e); process.exit(1); });
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

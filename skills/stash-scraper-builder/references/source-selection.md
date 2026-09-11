@@ -4,13 +4,13 @@ Choose the simplest viable implementation path before writing any scraper.
 
 ## Decision Table
 
-| Situation | Approach | Why | Avoid when |
-|---|---|---|---|
-| Static HTML, stable fields | `scrapeXPath` | Lowest maintenance declarative path | Content is JavaScript-only or requires browser login |
-| JSON endpoint or embedded JSON | `scrapeJson` | Data is already structured | Response only appears after browser automation |
-| Complex logic, helper packages, multi-step | `script` | Needed when declarative rules are insufficient | A simpler declarative scraper is enough |
-| Login wall, Cloudflare, browser-only flow | CDP-assisted | Required for visible-browser interaction | Direct HTTP scraping already works |
-| Stash-box or Stash GraphQL | Out of scope | Not implemented by this skill | Any task that assumes Stash API integration |
+| Situation                                  | Approach      | Why                                            | Avoid when                                           |
+| ------------------------------------------ | ------------- | ---------------------------------------------- | ---------------------------------------------------- |
+| Static HTML, stable fields                 | `scrapeXPath` | Lowest maintenance declarative path            | Content is JavaScript-only or requires browser login |
+| JSON endpoint or embedded JSON             | `scrapeJson`  | Data is already structured                     | Response only appears after browser automation       |
+| Complex logic, helper packages, multi-step | `script`      | Needed when declarative rules are insufficient | A simpler declarative scraper is enough              |
+| Login wall, Cloudflare, browser-only flow  | CDP-assisted  | Required for visible-browser interaction       | Direct HTTP scraping already works                   |
+| Stash-box or Stash GraphQL                 | Out of scope  | Not implemented by this skill                  | Any task that assumes Stash API integration          |
 
 ## Rules
 

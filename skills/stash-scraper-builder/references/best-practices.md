@@ -14,6 +14,7 @@ Canonical reference:
 ## Studio normalization (G3)
 
 Build a small matrix: domain → display name, handling:
+
 - Apostrophe / hyphen variants (`Staggers'`, `Staggers-`)
 - HD / POV casing (`HD`, `POV`)
 - Parent / child studio relationships

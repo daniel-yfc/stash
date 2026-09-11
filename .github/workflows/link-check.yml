@@ -2,7 +2,7 @@ name: Link Check
 
 on:
   schedule:
-    - cron: '0 0 * * 0'  # Weekly, Sunday 00:00 UTC
+    - cron: "0 0 * * 0" # Weekly, Sunday 00:00 UTC
   workflow_dispatch:
 
 permissions:
@@ -22,7 +22,7 @@ jobs:
       - name: Check links in Markdown files
         uses: lycheeverse/lychee-action@v2
         with:
-          args: '--verbose --no-progress skills/stash-scraper-builder/**/*.md README.md'
+          args: "--verbose --no-progress skills/stash-scraper-builder/**/*.md README.md"
           fail: false
 
       - name: Upload results

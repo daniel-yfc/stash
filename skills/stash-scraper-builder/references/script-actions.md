@@ -41,10 +41,10 @@ A dependency-only package has no `*ByURL` / `*ByFragment` / `*ByName` entry poin
 
 ## I/O contract (E4)
 
-| Type | stdin | stdout |
-| --- | --- | --- |
-| `*ByName` | `{"name": "<query>"}` | `[{...}]` even for one hit |
-| All others | object (`url` or fragment) | `{...}` not an array |
+| Type       | stdin                      | stdout                     |
+| ---------- | -------------------------- | -------------------------- |
+| `*ByName`  | `{"name": "<query>"}`      | `[{...}]` even for one hit |
+| All others | object (`url` or fragment) | `{...}` not an array       |
 
 > **Never emit a bare object from a `*ByName` operation.** Stash parses search results as a list; a bare `{...}` yields zero results or a parse error. Zero hits → `[]`. One hit → `[{...}]`.
 

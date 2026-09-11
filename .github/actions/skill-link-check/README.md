@@ -14,16 +14,16 @@ steps:
   - uses: actions/checkout@v4
   - uses: ./.github/actions/skill-link-check
     with:
-      skill-file: skills/stash-scraper-builder/SKILL.md   # 預設值
-      extensions: "md|json"                                # 預設值
+      skill-file: skills/stash-scraper-builder/SKILL.md # 預設值
+      extensions: "md|json" # 預設值
 ```
 
 ## 輸入
 
-| 輸入 | 預設 | 說明 |
-| --- | --- | --- |
-| `skill-file` | `skills/stash-scraper-builder/SKILL.md` | SKILL.md 路徑 |
-| `extensions` | `md\|json` | 允許的參考副檔名（regex） |
+| 輸入         | 預設                                    | 說明                      |
+| ------------ | --------------------------------------- | ------------------------- |
+| `skill-file` | `skills/stash-scraper-builder/SKILL.md` | SKILL.md 路徑             |
+| `extensions` | `md\|json`                              | 允許的參考副檔名（regex） |
 
 ## 跨 repo 重用
 

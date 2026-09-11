@@ -42,4 +42,3 @@ Runs on pull requests and scheduled intervals to detect broken internal and exte
 ## Interpretation
 
 A green schema and quality gate job means YAML conforms to official syntax and repository policy. It does not establish live selector correctness, site availability, login success, or image CDN accessibility. Those results are verified via `scrutiny.yml` or local runs of `tools/scrutiny.js` and tracked in [`LIVE_TEST_STATUS.md`](LIVE_TEST_STATUS.md).
-

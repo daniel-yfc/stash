@@ -4,25 +4,25 @@ on:
   workflow_dispatch:
     inputs:
       scraper:
-        description: 'Scraper path or filename (e.g. scrapers/CK-Download.yml or CK-Download.yml). Leave blank to test all.'
+        description: "Scraper path or filename (e.g. scrapers/CK-Download.yml or CK-Download.yml). Leave blank to test all."
         required: false
-        default: ''
+        default: ""
       search:
-        description: 'Test searchScraper query and multi-result parsing'
+        description: "Test searchScraper query and multi-result parsing"
         type: boolean
         default: true
       paginate:
-        description: 'Walk search pagination pages 1-3'
+        description: "Walk search pagination pages 1-3"
         type: boolean
         default: false
       url:
-        description: 'Explicit detail scene URL to evaluate against sceneScraper'
+        description: "Explicit detail scene URL to evaluate against sceneScraper"
         required: false
-        default: ''
+        default: ""
       probe:
-        description: 'Custom probe keyword(s), comma-separated'
+        description: "Custom probe keyword(s), comma-separated"
         required: false
-        default: ''
+        default: ""
 
 permissions:
   contents: read

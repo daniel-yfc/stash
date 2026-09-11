@@ -28,14 +28,14 @@ The YAML operation arguments and the Python operation dispatcher must remain syn
 
 ## Documentation relationships
 
-| Layer | Responsibility | Canonical location |
-| --- | --- | --- |
-| Templates | Starting YAML/Python scaffolds | `templates/` |
-| Repository workflow | Copying, pairing, and validation sequence | `docs/` |
-| Agent behavior | Scope, output contract, and global rules | `AGENTS.md` |
-| Skill behavior | Scraper design and authoring contract | `skills/stash-scraper-builder/SKILL.md` |
-| Specialized operations | Script I/O, dates, XPath, JSON, CDP, and failures | `skills/stash-scraper-builder/references/` |
-| Runtime validation | Official schema and validator | `validator/` and upstream CommunityScrapers |
+| Layer                  | Responsibility                                    | Canonical location                          |
+| ---------------------- | ------------------------------------------------- | ------------------------------------------- |
+| Templates              | Starting YAML/Python scaffolds                    | `templates/`                                |
+| Repository workflow    | Copying, pairing, and validation sequence         | `docs/`                                     |
+| Agent behavior         | Scope, output contract, and global rules          | `AGENTS.md`                                 |
+| Skill behavior         | Scraper design and authoring contract             | `skills/stash-scraper-builder/SKILL.md`     |
+| Specialized operations | Script I/O, dates, XPath, JSON, CDP, and failures | `skills/stash-scraper-builder/references/`  |
+| Runtime validation     | Official schema and validator                     | `validator/` and upstream CommunityScrapers |
 
 ## Script-specific checks
 

@@ -1,10 +1,10 @@
 name: Test Eval Workflow
 
 on:
-  workflow_dispatch:  # Manual trigger
+  workflow_dispatch: # Manual trigger
     inputs:
       scraper_file:
-        description: 'Scraper file to test (e.g., ACCEED.yml)'
+        description: "Scraper file to test (e.g., ACCEED.yml)"
         required: false
 
 permissions:

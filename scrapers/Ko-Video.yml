@@ -33,13 +33,13 @@ sceneByFragment:
   queryURLReplace:
     title:
       - regex: '\.[^.]+$'
-        with: ''
+        with: ""
       - regex: '[_\.]+'
-        with: ' '
+        with: " "
       - regex: '\s{2,}'
-        with: ' '
+        with: " "
       - regex: '^\s+|\s+$'
-        with: ''
+        with: ""
   scraper: searchScraper
 
 xPathScrapers:
@@ -54,16 +54,16 @@ xPathScrapers:
         postProcess:
           - replace:
               - regex: '^\s+|\s+$'
-                with: ''
+                with: ""
 
       Code:
         selector: $results//a[contains(@href,'/products/detail.php')]/@href
         postProcess:
           - replace:
-              - regex: '^.*?[?&]product_code=([^&]+).*$'
-                with: '$1'
+              - regex: "^.*?[?&]product_code=([^&]+).*$"
+                with: "$1"
               - regex: '\s+'
-                with: ''
+                with: ""
 
       URLs:
         selector: $results//a[contains(@href,'/products/detail.php')]/@href
@@ -98,14 +98,14 @@ xPathScrapers:
         postProcess:
           - replace:
               - regex: '^\s+|\s+$'
-                with: ''
+                with: ""
 
       Code:
         selector: //input[@name='product_code']/@value
         postProcess:
           - replace:
               - regex: '^\s+|\s+$'
-                with: ''
+                with: ""
 
       URLs:
         fixed: "{inputURL}"
@@ -131,7 +131,7 @@ xPathScrapers:
           postProcess:
             - replace:
                 - regex: '^\s+|\s+$'
-                  with: ''
+                  with: ""
 
       Performers:
         Name:
@@ -155,7 +155,7 @@ xPathScrapers:
           postProcess:
             - replace:
                 - regex: '^\s+|\s+$'
-                  with: ''
+                  with: ""
 
       Details:
         selector: //p[@class='deitail_txt']/text()[normalize-space()]
@@ -177,5 +177,4 @@ driver:
   headers:
     - Key: User-Agent
       Value: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
-
 # Last Updated: 2026-08-28

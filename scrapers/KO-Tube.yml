@@ -49,13 +49,13 @@ xPathScrapers:
         postProcess:
           - replace:
               - regex: '^\s+|\s+$'
-                with: ''
+                with: ""
       Date:
         selector: '//td[contains(text(), "DVD 発売") or contains(text(), "発売")]/following-sibling::td[1]/text()'
         postProcess:
           - replace:
-              - regex: '([0-9]{4}) 年 ([0-9]{1,2}) 月'
-                with: '$1-$2-01'
+              - regex: "([0-9]{4}) 年 ([0-9]{1,2}) 月"
+                with: "$1-$2-01"
           - javascript: |
               var p = value.split("-");
               if (p.length >= 2) {
@@ -73,14 +73,14 @@ xPathScrapers:
           postProcess:
             - replace:
                 - regex: '^\s+|\s+$'
-                  with: ''
+                  with: ""
       Tags:
         Name:
           selector: '//td[contains(text(), "プレイ")]/following-sibling::td[1]/text()'
           postProcess:
             - replace:
                 - regex: '^\s+|\s+$'
-                  with: ''
+                  with: ""
           split: "、"
       Performers:
         Name:
@@ -88,7 +88,7 @@ xPathScrapers:
           postProcess:
             - replace:
                 - regex: '^\s+|\s+$'
-                  with: ''
+                  with: ""
           split: "、"
       URLs: '//a[contains(@href, "ko-video.com")]/@href'
       Groups:
@@ -101,8 +101,8 @@ xPathScrapers:
         selector: '//td[contains(text(), "DVD 発売") or contains(text(), "発売")]/following-sibling::td[1]/text()'
         postProcess:
           - replace:
-              - regex: '([0-9]{4}) 年 ([0-9]{1,2}) 月'
-                with: '$1-$2-01'
+              - regex: "([0-9]{4}) 年 ([0-9]{1,2}) 月"
+                with: "$1-$2-01"
           - javascript: |
               var p = value.split("-");
               if (p.length >= 2) {
@@ -120,14 +120,14 @@ xPathScrapers:
           postProcess:
             - replace:
                 - regex: '^\s+|\s+$'
-                  with: ''
+                  with: ""
       Tags:
         Name:
           selector: '//td[contains(text(), "プレイ")]/following-sibling::td[1]/text()'
           postProcess:
             - replace:
                 - regex: '^\s+|\s+$'
-                  with: ''
+                  with: ""
           split: "、"
       URLs: '//a[contains(@href, "ko-video.com")]/@href'
 
