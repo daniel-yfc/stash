@@ -322,17 +322,23 @@ class Validator {
   }
 }
 
+export { Validator, isSorted, walk };
+
 export function main(flags, files) {
-  const args = process.argv.slice(2)
-  flags = (flags === undefined) ? args.filter(arg => arg.startsWith('-')) : flags;
-  files = (files === undefined) ? args.filter(arg => !arg.startsWith('-')) : files;
+  const args = process.argv.slice(2);
+  flags = flags === undefined ? args.filter(arg => arg.startsWith('-')) : flags;
+  files = files === undefined ? args.filter(arg => !arg.startsWith('-')) : files;
   const validator = new Validator(flags);
   const result = validator.run(files);
   if (flags.includes('--ci')) {
     process.exit(result ? 0 : 1);
   }
+  return result;
 }
 
-export default main
+export default main;
 
-main()
+const isMainModule = process.argv[1] && import.meta.filename === path.resolve(process.argv[1]);
+if (isMainModule) {
+  main();
+}
