@@ -253,8 +253,8 @@ sceneByURL:
 xPathScrapers:
   myScraper:
     scene:
-      title:
-        xpath: //title
+      Title:
+        selector: //title
 `;
       fs.writeFileSync(validScraperPath, validYaml);
 
@@ -292,8 +292,8 @@ sceneByName:
 xPathScrapers:
   myScraper:
     scene:
-      title:
-        xpath: //title
+      Title:
+        selector: //title
 `;
       fs.writeFileSync(scraperPath, yamlContent);
 
