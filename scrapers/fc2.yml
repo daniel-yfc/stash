@@ -34,7 +34,7 @@ xPathScrapers:
         selector: //iframe[@data-iframe='description']/@src
         postProcess:
           - replace:
-              - regex: '^/'
+              - regex: "^/"
                 with: https://adult.contents.fc2.com
           - subScraper:
               selector: //body//text()[not(ancestor::script) and not(ancestor::style)][normalize-space()]
@@ -86,7 +86,7 @@ xPathScrapers:
         selector: //iframe[@data-iframe='description']/@src
         postProcess:
           - replace:
-              - regex: '^/'
+              - regex: "^/"
                 with: https://adult.contents.fc2.com
           - subScraper:
               selector: //body//text()[not(ancestor::script) and not(ancestor::style)][normalize-space()]
