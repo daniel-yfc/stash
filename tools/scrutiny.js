@@ -423,33 +423,37 @@ function countTotal(fields) {
   return n;
 }
 
-// --- Test one scraper against scene URLs ---
-async function testScraper(file, opts) {
-  const rel = path.relative(ROOT, file);
-  const doc = yaml.parse(fs.readFileSync(file, "utf8"));
-  const entry = { file: rel, name: doc.name };
-
-  let tested = [];
-  let found = { urls: [] };
-
-  if (opts.url) {
-    tested = [{ url: opts.url, probe: "direct", page: null }];
-    entry.urlCandidates = 1;
-  } else {
-    found = await findSceneURLs(doc, opts);
-    if (found.urls.length === 0) {
-      entry.status = "SKIP";
-      entry.reason = found.reason;
-      return entry;
+function evaluateScraperDef(scraperDef, document) {
+  const ctx = { doc: document, common: scraperDef.common || {} };
+  const result = {};
+  if (scraperDef.scene) {
+    result.scene = {};
+    for (const [k, v] of Object.entries(scraperDef.scene)) {
+      result.scene[k] = tryFieldWithDoc(v, ctx);
     }
-    const limit = opts.multiUrl ? found.urls.length : 1;
-    tested = found.urls.slice(0, limit);
-    entry.probeCount = found.probeCount;
-    entry.pageCount = found.pageCount;
-    entry.searchURL = found.searchURL;
-    entry.urlCandidates = found.urls.length;
   }
+  return result;
+}
 
+async function resolveCandidateURLs(doc, opts, entry) {
+  if (opts.url) {
+    entry.urlCandidates = 1;
+    return { tested: [{ url: opts.url, probe: "direct", page: null }], found: { urls: [] } };
+  }
+  const found = await findSceneURLs(doc, opts);
+  if (found.urls.length === 0) {
+    return { tested: [], found };
+  }
+  const limit = opts.multiUrl ? found.urls.length : 1;
+  const tested = found.urls.slice(0, limit);
+  entry.probeCount = found.probeCount;
+  entry.pageCount = found.pageCount;
+  entry.searchURL = found.searchURL;
+  entry.urlCandidates = found.urls.length;
+  return { tested, found };
+}
+
+async function testSceneScraper(tested, doc, opts) {
   const perUrl = [];
   for (const cand of tested) {
     const urlEntry = { url: cand.url, probe: cand.probe, page: cand.page };
@@ -470,50 +474,53 @@ async function testScraper(file, opts) {
       perUrl.push(urlEntry);
       continue;
     }
-    const ctx = { doc: xdoc, common: sceneScraper.common || {} };
-    const result = {};
-    if (sceneScraper.scene) {
-      result.scene = {};
-      for (const [k, v] of Object.entries(sceneScraper.scene)) {
-        result.scene[k] = tryFieldWithDoc(v, ctx);
-      }
-    }
-    urlEntry.fields = result;
+    urlEntry.fields = evaluateScraperDef(sceneScraper, xdoc);
     urlEntry.status = "OK";
     perUrl.push(urlEntry);
     await new Promise((r) => setTimeout(r, 300));
   }
+  return perUrl;
+}
 
-  // Also exercise the searchScraper on the search results page, if present
-  if (opts.searchReport && (found.searchURL || doc.sceneByName || doc.sceneByFragment)) {
-    const sb = doc.sceneByName || doc.sceneByFragment;
-    const searchKey = sb && sb.scraper;
-    const searchDef = searchKey && doc.xPathScrapers && doc.xPathScrapers[searchKey];
-    const bestCand = tested[0] || found.urls[0];
-    const probe =
-      bestCand && bestCand.probe !== "direct" ? bestCand.probe : opts.probe ? opts.probe[0] : "a";
-    const page = opts.paginate ? 2 : bestCand ? bestCand.page : null;
-    const searchPageURL = buildProbeURL(sb.queryURL, probe, page);
-    if (searchDef) {
-      try {
-        const html = await fetchHTML(searchPageURL, opts.cookie);
-        const dom = new JSDOM(html, { virtualConsole: quietConsole });
-        const ctx = { doc: dom.window.document, common: searchDef.common || {} };
-        const result = {};
-        if (searchDef.scene) {
-          result.scene = {};
-          for (const [k, v] of Object.entries(searchDef.scene)) {
-            result.scene[k] = tryFieldWithDoc(v, ctx);
-          }
-        }
-        entry.searchFields = result;
-        entry.searchPageURL = searchPageURL;
-        entry.searchProbe = probe;
-      } catch (e) {
-        entry.searchError = e.message;
-      }
-    }
+async function testSearchScraper(doc, opts, tested, found, entry) {
+  if (!opts.searchReport || (!found.searchURL && !doc.sceneByName && !doc.sceneByFragment)) {
+    return;
   }
+  const sb = doc.sceneByName || doc.sceneByFragment;
+  const searchKey = sb && sb.scraper;
+  const searchDef = searchKey && doc.xPathScrapers && doc.xPathScrapers[searchKey];
+  const bestCand = tested[0] || found.urls[0];
+  const probe =
+    bestCand && bestCand.probe !== "direct" ? bestCand.probe : opts.probe ? opts.probe[0] : "a";
+  const page = opts.paginate ? 2 : bestCand ? bestCand.page : null;
+  const searchPageURL = buildProbeURL(sb.queryURL, probe, page);
+  if (!searchDef) return;
+  try {
+    const html = await fetchHTML(searchPageURL, opts.cookie);
+    const dom = new JSDOM(html, { virtualConsole: quietConsole });
+    entry.searchFields = evaluateScraperDef(searchDef, dom.window.document);
+    entry.searchPageURL = searchPageURL;
+    entry.searchProbe = probe;
+  } catch (e) {
+    entry.searchError = e.message;
+  }
+}
+
+// --- Test one scraper against scene URLs ---
+async function testScraper(file, opts) {
+  const rel = path.relative(ROOT, file);
+  const doc = yaml.parse(fs.readFileSync(file, "utf8"));
+  const entry = { file: rel, name: doc.name };
+
+  const { tested, found } = await resolveCandidateURLs(doc, opts, entry);
+  if (!opts.url && found.urls.length === 0) {
+    entry.status = "SKIP";
+    entry.reason = found.reason;
+    return entry;
+  }
+
+  const perUrl = await testSceneScraper(tested, doc, opts);
+  await testSearchScraper(doc, opts, tested, found, entry);
 
   entry.urls = perUrl;
   entry.status = perUrl.some((u) => u.status === "OK") ? "OK" : perUrl[0].status;
