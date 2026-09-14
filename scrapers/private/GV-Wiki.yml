@@ -1,18 +1,7 @@
 # GV-Wiki
-# Private scraper: requires session cookies captured from an authenticated browser.
-# Do NOT commit real cookie values. Placeholder tokens use <GVWIKI_*>; replace them
-# locally or in a deployment/secrets pipeline before copying this file into Stash.
-# Stash does not expand shell/environment variables inside scraper YAML.
-# Cookies captured/noted 2026-09-15 (names only; values intentionally omitted):
-#   - csrftoken
-#   - gcaycnniik3
-#   - gdaydid
-#   - gnn_sbbcda (HttpOnly in supplied capture; likely auth/session; treat as secret)
-# Browser capture note: duplicate names were observed on .www.gvwiki.com and
-# .gvwiki.com. Entries below are normalized to .gvwiki.com for shared coverage.
-# Review note: this metadata update did not review a rendered or unrendered
-# GV-Wiki page. Selectors and live behavior remain UNVERIFIED against live Stash.
-# Last Updated: 2026-09-15
+# Private scraper: requires session cookie. Do NOT commit to public scrapers/.
+# Verification: UNVERIFIED against live Stash.
+# Last Updated: 2026-09-05
 # Validator fixes:
 #   - removed CookieURL (not allowed when useCDP is true)
 #   - sceneByURL regex -> simple prefix (url items are plain strings)
@@ -28,26 +17,10 @@ driver:
     - Key: User-Agent
       Value: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36
   cookies:
-    # Stash driver cookie fields are Name, Value, Domain, and Path.
-    # CookieURL is intentionally omitted because useCDP is true.
-    # Deployment must render these <GVWIKI_*> placeholders from local secrets.
-    # Environment variables alone are not expanded by Stash at runtime.
     - Cookies:
-        - Name: "csrftoken"
-          Value: "<GVWIKI_CSRFTOKEN>"
-          Domain: ".gvwiki.com"
-          Path: "/"
-        - Name: "gcaycnniik3"
-          Value: "<GVWIKI_GCAYCNNIIK3>"
-          Domain: ".gvwiki.com"
-          Path: "/"
-        - Name: "gdaydid"
-          Value: "<GVWIKI_GDAYDID>"
-          Domain: ".gvwiki.com"
-          Path: "/"
-        - Name: "gnn_sbbcda"
-          Value: "<GVWIKI_GNN_SBBCDA>"
-          Domain: ".gvwiki.com"
+        - Name: "REPLACE_WITH_CURRENT_SESSION_COOKIE_NAME"
+          Value: "REPLACE_WITH_CURRENT_SESSION_COOKIE_VALUE"
+          Domain: ".www.gvwiki.com"
           Path: "/"
 
 sceneByURL:
