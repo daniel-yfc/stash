@@ -1,3 +1,23 @@
+---
+doc_id: DOC-TEST-50
+title: Testing Guide
+status: active
+layer: repository
+owner: maintainer
+audience:
+  - agent
+  - maintainer
+applies_to:
+  - testing
+  - validator
+last_verified: "2026-09-13"
+authority: canonical
+routing:
+  intents:
+    - testing
+    - live-scrutiny
+---
+
 # Testing Guide
 
 ## Overview
@@ -39,7 +59,7 @@ Run the JavaScript unit tests for validator methods (e.g. mapping error collecto
 ```bash
 npm test
 # or directly:
-node --test validator/index.test.mjs
+node --test validator/validator.test.mjs validator/index.test.mjs
 ```
 
 ### 4. Python Test Suite
@@ -89,7 +109,7 @@ Before submitting a scraper change, confirm:
 
 - [ ] `node validator/index.mjs -a --ci` passes without schema errors.
 - [ ] `node validator/index.mjs -a -s --ci` confirms URL ordering.
-- [ ] `npm test` (or `node --test validator/index.test.mjs`) passes JavaScript validator unit tests.
+- [ ] `npm test` passes JavaScript validator unit tests.
 - [ ] `bash tools/scraper-quality-gate.sh <scraper.yml>` passes all policy checks.
 - [ ] `python -m pytest tools/tests/` passes all unit tests.
 - [ ] `node tools/scrutiny.js <scraper.yml> --search` verifies live selectors when site is accessible.

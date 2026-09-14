@@ -32,7 +32,7 @@ def test_sort_check_runs():
 
 def test_validator_unit_tests():
     result = subprocess.run(
-        ["node", "--test", "validator/index.test.mjs"],
+        ["node", "--test", "validator/validator.test.mjs", "validator/index.test.mjs"],
         cwd=ROOT,
         capture_output=True,
         text=True,

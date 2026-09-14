@@ -58,6 +58,27 @@ describe('Validator.getMappingErrors', () => {
     assert.match(errors[0].message, /stashServer/);
   });
 
+  it('collects scraper definition error when stashServer is defined but never used', () => {
+    const validator = new Validator([]);
+    const data = {
+      stashServer: { url: 'https://stash.example.com' },
+      sceneByURL: {
+        action: 'scrapeXPath',
+        scraper: 'myScraper',
+      },
+      xPathScrapers: {
+        myScraper: {
+          scene: {},
+        },
+      },
+    };
+
+    const errors = validator.getMappingErrors(data);
+    assert.equal(errors.length, 1);
+    assert.equal(errors[0].keyword, 'stashServer');
+    assert.match(errors[0].message, /never used/);
+  });
+
   it('collects scraper definition errors when referenced XPath scraper is missing', () => {
     const validator = new Validator([]);
     const data = {
@@ -73,6 +94,26 @@ describe('Validator.getMappingErrors', () => {
     assert.match(errors[0].message, /nonExistentScraper/);
   });
 
+  it('collects scraper definition errors when XPath scraper creates mismatched entity type', () => {
+    const validator = new Validator([]);
+    const data = {
+      sceneByURL: {
+        action: 'scrapeXPath',
+        scraper: 'myScraper',
+      },
+      xPathScrapers: {
+        myScraper: {
+          performer: {},
+        },
+      },
+    };
+
+    const errors = validator.getMappingErrors(data);
+    assert.equal(errors.length, 1);
+    assert.equal(errors[0].keyword, 'myScraper');
+    assert.match(errors[0].message, /should create an object of type `scene`/);
+  });
+
   it('collects scraper definition errors when referenced JSON scraper is missing', () => {
     const validator = new Validator([]);
     const data = {
@@ -86,6 +127,54 @@ describe('Validator.getMappingErrors', () => {
     assert.equal(errors.length, 1);
     assert.equal(errors[0].keyword, 'scraper');
     assert.match(errors[0].message, /nonExistentJsonScraper/);
+  });
+
+  it('collects scraper definition errors when JSON scraper creates mismatched entity type', () => {
+    const validator = new Validator([]);
+    const data = {
+      performerByURL: {
+        action: 'scrapeJson',
+        scraper: 'myJsonScraper',
+      },
+      jsonScrapers: {
+        myJsonScraper: {
+          scene: {},
+        },
+      },
+    };
+
+    const errors = validator.getMappingErrors(data);
+    assert.equal(errors.length, 1);
+    assert.equal(errors[0].keyword, 'myJsonScraper');
+    assert.match(errors[0].message, /should create an object of type `performer`/);
+  });
+
+  it('supports array mapping entries for scrapeJson and detects duplicate URLs', () => {
+    const validator = new Validator([]);
+    const data = {
+      sceneByURL: [
+        {
+          action: 'scrapeJson',
+          scraper: 'myJsonScraper',
+          url: ['https://example.com/a', 'https://example.com/b'],
+        },
+        {
+          action: 'scrapeJson',
+          scraper: 'myJsonScraper',
+          url: ['https://example.com/b', 'https://example.com/c'],
+        },
+      ],
+      jsonScrapers: {
+        myJsonScraper: {
+          scene: {},
+        },
+      },
+    };
+
+    const errors = validator.getMappingErrors(data);
+    assert.equal(errors.length, 1);
+    assert.equal(errors[0].keyword, 'url');
+    assert.match(errors[0].message, /already exists/);
   });
 
   it('collects scraper definition errors when duplicate URLs are specified', () => {
@@ -128,6 +217,25 @@ describe('Validator.getMappingErrors', () => {
     assert.equal(errors.length, 1);
     assert.equal(errors[0].keyword, 'url');
     assert.match(errors[0].message, /sorted in ascending alphabetical order/);
+  });
+
+  it('returns no cookie errors for valid CDP and non-CDP cookie definitions', () => {
+    const validator = new Validator([]);
+    const cdpValid = {
+      driver: {
+        useCDP: true,
+        cookies: [{ Key: 'session', Value: '123' }],
+      },
+    };
+    assert.deepEqual(validator.getMappingErrors(cdpValid), []);
+
+    const nonCdpValid = {
+      driver: {
+        useCDP: false,
+        cookies: [{ Key: 'session', Value: '123', CookieURL: 'https://example.com' }],
+      },
+    };
+    assert.deepEqual(validator.getMappingErrors(nonCdpValid), []);
   });
 
   it('collects cookie errors when CookieURL is missing and useCDP is false', () => {
