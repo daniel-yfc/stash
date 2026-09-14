@@ -42,6 +42,18 @@ def test_frontmatter_invalid_yaml(tmp_path):
     assert check_docs_index.frontmatter(md_file) == {}
 
 
+def test_frontmatter_yaml_error(monkeypatch, tmp_path):
+    """Test the yaml.YAMLError recovery path deterministically."""
+    md_file = tmp_path / "doc.md"
+    md_file.write_text("---\ndoc_id: DOC-TEST-01\n---\n", encoding="utf-8")
+
+    def raise_yaml_error(_):
+        raise yaml.YAMLError("malformed frontmatter")
+
+    monkeypatch.setattr(check_docs_index.yaml, "safe_load", raise_yaml_error)
+    assert check_docs_index.frontmatter(md_file) == {}
+
+
 def test_frontmatter_non_mapping_yaml(tmp_path):
     """Test frontmatter extraction when YAML is not a dictionary."""
     md_file = tmp_path / "doc.md"
@@ -109,7 +121,6 @@ def test_main_validation_errors(monkeypatch, tmp_path, capsys):
     docs_dir.mkdir()
     fake_index = docs_dir / "index.yml"
 
-    # Create one valid doc file and one with doc_id mismatch
     doc1 = docs_dir / "doc1.md"
     doc1.write_text("---\ndoc_id: DOC-01\n---\n", encoding="utf-8")
 
@@ -119,11 +130,8 @@ def test_main_validation_errors(monkeypatch, tmp_path, capsys):
     index_data = {
         "version": 1,
         "documents": [
-            "not a dict",  # document #1 error
-            {
-                # missing fields (doc_id, title, etc)
-                "doc_id": "DOC-01"
-            },
+            "not a dict",
+            {"doc_id": "DOC-01"},
             {
                 "doc_id": "INVALID_ID_FORMAT",
                 "title": "T",
@@ -155,7 +163,11 @@ def test_main_validation_errors(monkeypatch, tmp_path, capsys):
 
     monkeypatch.setattr(check_docs_index, "ROOT", fake_root)
     monkeypatch.setattr(check_docs_index, "INDEX_PATH", fake_index)
-    monkeypatch.setattr(check_docs_index, "expected_markdown_paths", lambda: {"docs/doc1.md", "docs/doc2.md", "docs/missing.md"})
+    monkeypatch.setattr(
+        check_docs_index,
+        "expected_markdown_paths",
+        lambda: {"docs/doc1.md", "docs/doc2.md", "docs/missing.md"},
+    )
 
     result = check_docs_index.main()
     assert result == 1
