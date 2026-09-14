@@ -13,6 +13,7 @@ TOOL_SCRIPTS = [
 ]
 
 TOOL_FILES = TOOL_SCRIPTS + [
+    "tools/check_docs_index.py",
     "tools/check_scraper_docs.py",
     "tools/scrutiny.js",
     "tools/README.md",
