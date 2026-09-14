@@ -13,9 +13,9 @@
 //
 // Network: yes, hits the live upstream sites. Be polite.
 
-import fs from "node:fs";
-import path from "node:path";
-import yaml from "yaml";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { isAbsolute, join, relative } from "node:path";
+import { parse } from "yaml";
 import { JSDOM, VirtualConsole } from "jsdom";
 
 // Suppress noisy CSS parse warnings from JSDOM (cosmetic, not real errors)
@@ -29,7 +29,7 @@ console.error = (...args) => {
 };
 
 const ROOT = process.cwd();
-const SCRAPERS = path.join(ROOT, "scrapers");
+const SCRAPERS = join(ROOT, "scrapers");
 const POLITE_UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
@@ -111,10 +111,10 @@ function parseArgs(argv) {
 // --- File listing ---
 function listScrapers() {
   const out = [];
-  for (const dir of [SCRAPERS, path.join(SCRAPERS, "private")]) {
-    if (!fs.existsSync(dir)) continue;
-    for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".yml"))) {
-      out.push(path.join(dir, f));
+  for (const dir of [SCRAPERS, join(SCRAPERS, "private")]) {
+    if (!existsSync(dir)) continue;
+    for (const f of readdirSync(dir).filter((x) => x.endsWith(".yml"))) {
+      out.push(join(dir, f));
     }
   }
   return out.sort();
@@ -508,8 +508,8 @@ async function testSearchScraper(doc, opts, tested, found, entry) {
 
 // --- Test one scraper against scene URLs ---
 async function testScraper(file, opts) {
-  const rel = path.relative(ROOT, file);
-  const doc = yaml.parse(fs.readFileSync(file, "utf8"));
+  const rel = relative(ROOT, file);
+  const doc = parse(readFileSync(file, "utf8"));
   const entry = { file: rel, name: doc.name };
 
   const { tested, found } = await resolveCandidateURLs(doc, opts, entry);
@@ -583,7 +583,7 @@ async function main() {
   if (opts.all) {
     files = listScrapers();
   } else if (opts.files.length > 0) {
-    files = opts.files.map((a) => (path.isAbsolute(a) ? a : path.join(ROOT, a)));
+    files = opts.files.map((a) => (isAbsolute(a) ? a : join(ROOT, a)));
   } else {
     showHelp();
     return;
