@@ -1,87 +1,225 @@
-name: Validate Scrapers
+name: Validate
 
 on:
   push:
     branches: [main]
-    paths:
-      - "scrapers/**/*.yml"
-      - "validator/**"
-      - "tools/**"
-      - "docs/**"
-      - "skills/**"
-      - "templates/README.md"
-      - "README.md"
-      - "AGENTS.md"
-      - "CLAUDE.md"
-      - "CONTRIBUTING.md"
-      - ".nvmrc"
-      - ".prettierrc.yml"
-      - ".prettierignore"
-      - "package.json"
-      - ".github/workflows/validate.yml"
   pull_request:
     branches: [main]
-    paths:
-      - "scrapers/**/*.yml"
-      - "validator/**"
-      - "tools/**"
-      - "docs/**"
-      - "skills/**"
-      - "templates/README.md"
-      - "README.md"
-      - "AGENTS.md"
-      - "CLAUDE.md"
-      - "CONTRIBUTING.md"
-      - ".nvmrc"
-      - ".prettierrc.yml"
-      - ".prettierignore"
-      - "package.json"
-      - ".github/workflows/validate.yml"
 
 jobs:
   validate:
-    name: Full Test & Validation Suite
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: .nvmrc
+          node-version: 20
           cache: npm
 
-      - name: Verify Node.js version
-        run: node --version
-
-      - name: Install Node dependencies
+      - name: Install Node.js dependencies
         run: npm ci || npm install
 
-      - name: Validate scraper schemas
-        run: node validator/index.mjs -a --ci
+      - name: "1. 擷取器欄位驗證 / Scraper Schema Validation"
+        id: scraper_schema
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          status_dir="${RUNNER_TEMP}/stash-test-summary"
+          mkdir -p "$status_dir"
+          if node validator/index.mjs -a --ci; then
+            printf '%s\n' pass > "$status_dir/01-schema.status"
+          else
+            printf '%s\n' fail > "$status_dir/01-schema.status"
+            exit 1
+          fi
 
-      - name: Check URL array sorting
-        run: node validator/index.mjs -a -s --ci
+      - name: "2. 網址陣列排序驗證 / URL Array Sorting Validation"
+        id: url_array_sorting
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          status_dir="${RUNNER_TEMP}/stash-test-summary"
+          mkdir -p "$status_dir"
+          if node validator/index.mjs -a -s --ci; then
+            printf '%s\n' pass > "$status_dir/02-url-sort.status"
+          else
+            printf '%s\n' fail > "$status_dir/02-url-sort.status"
+            exit 1
+          fi
 
-      - name: Run quality gate across all scrapers
-        run: bash tools/validate-all.sh
+      - name: "3. 擷取器品質檢查 / Scraper Quality Gates"
+        id: scraper_quality_gates
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          status_dir="${RUNNER_TEMP}/stash-test-summary"
+          mkdir -p "$status_dir"
+          if bash tools/validate-all.sh; then
+            printf '%s\n' pass > "$status_dir/03-quality-gates.status"
+          else
+            printf '%s\n' fail > "$status_dir/03-quality-gates.status"
+            exit 1
+          fi
 
-      - name: Setup Python
+      - name: Set up Python
+        if: ${{ !cancelled() }}
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
-          cache: pip
-          cache-dependency-path: requirements.txt
+          python-version: "3.11"
 
       - name: Install Python dependencies
-        run: python -m pip install -r requirements.txt pyyaml jsonschema
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        shell: bash
+        run: |
+          if ! python -m pip install --upgrade pip; then
+            exit 1
+          fi
+          python -m pip install -r requirements.txt
 
-      - name: Run Python regression tests
-        run: python -m pytest tools/tests/ -v
+      - name: "4. Python 回歸測試 / Python Regression Tests"
+        id: python_regression_tests
+        if: ${{ !cancelled() && steps.install_python_dependencies.outcome == 'success' }}
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          status_dir="${RUNNER_TEMP}/stash-test-summary"
+          mkdir -p "$status_dir"
+          if python -m pytest tools/tests/ -v; then
+            printf '%s\n' pass > "$status_dir/04-python-regression.status"
+          else
+            printf '%s\n' fail > "$status_dir/04-python-regression.status"
+            exit 1
+          fi
 
-      - name: Check documentation examples and contradictions
-        run: python tools/check_scraper_docs.py
+      - name: "5. 文件矛盾檢查 / Doc Examples and Contradictions"
+        id: doc_examples_and_contradictions
+        if: ${{ !cancelled() && steps.install_python_dependencies.outcome == 'success' }}
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          status_dir="${RUNNER_TEMP}/stash-test-summary"
+          mkdir -p "$status_dir"
+          if python tools/check_scraper_docs.py; then
+            printf '%s\n' pass > "$status_dir/05-doc-contradictions.status"
+          else
+            printf '%s\n' fail > "$status_dir/05-doc-contradictions.status"
+            exit 1
+          fi
 
-      - name: Check documentation index
-        run: python tools/check_docs_index.py
+      - name: "6. 文件索引驗證 / Doc Index Validation"
+        id: doc_index_validation
+        if: ${{ !cancelled() && steps.install_python_dependencies.outcome == 'success' }}
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          status_dir="${RUNNER_TEMP}/stash-test-summary"
+          mkdir -p "$status_dir"
+          if python tools/check_docs_index.py; then
+            printf '%s\n' pass > "$status_dir/06-doc-index.status"
+          else
+            printf '%s\n' fail > "$status_dir/06-doc-index.status"
+            exit 1
+          fi
+
+      - name: "7. Test Summary / 測試摘要"
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          status_dir="${RUNNER_TEMP}/stash-test-summary"
+
+          state_of() {
+            local status_file="$1"
+            if [ -f "$status_dir/$status_file" ]; then
+              cat "$status_dir/$status_file"
+            else
+              printf '%s\n' not_run
+            fi
+          }
+
+          result_of() {
+            case "$1" in
+              pass) printf '%s' '🟢 通過 (Pass)' ;;
+              fail) printf '%s' '🔴 失敗 (Fail)' ;;
+              *) printf '%s' '🟡 未執行 (Not Run)' ;;
+            esac
+          }
+
+          description_of() {
+            local state="$1"
+            local description="$2"
+            if [ "$state" = "not_run" ]; then
+              printf '%s' '未執行：此工作流程執行中未產生該驗證層的結果。請前往相同序號的 GitHub Actions section 確認原因。<br><br>Not run: this workflow execution produced no result for this verification layer. Check the GitHub Actions section with the same number for the reason.'
+            else
+              printf '%s' "$description"
+            fi
+          }
+
+          schema_state="$(state_of 01-schema.status)"
+          sort_state="$(state_of 02-url-sort.status)"
+          quality_state="$(state_of 03-quality-gates.status)"
+          python_state="$(state_of 04-python-regression.status)"
+          doc_check_state="$(state_of 05-doc-contradictions.status)"
+          doc_index_state="$(state_of 06-doc-index.status)"
+
+          schema_description='驗證納入範圍的擷取器 YAML 是否符合 Schema 結構、必要欄位、資料型別與欄位對應規則。<br><br>Validates that in-scope scraper YAML conforms to schema structure, required fields, data types, and field-mapping rules.'
+          sort_description='驗證擷取器設定中的網址陣列是否符合可重現的升冪排序要求，以避免非語意性的排序差異。<br><br>Validates deterministic ascending ordering of URL arrays to prevent non-semantic ordering differences.'
+          quality_description='對所有納入檢查範圍的擷取器執行儲存庫品質與政策閘門檢查。<br><br>Runs repository quality and policy-gate checks for all selected scrapers.'
+          python_description='執行 Python 測試套件，驗證工具行為、文件索引檢查與其他已覆蓋的回歸案例。<br><br>Runs the Python test suite to validate tool behavior, Doc index checks, and other covered regression cases.'
+          doc_check_description='檢查內嵌完整文件 YAML 範例，並驗證已實作的文件矛盾規則。此項僅涵蓋檢查工具定義的模式與範圍。<br><br>Checks embedded full-document YAML examples and implemented Doc contradiction rules. Coverage is limited to patterns and scope defined by the checker.'
+          doc_index_description='驗證 `docs/index.yml` 的 YAML 結構、必要欄位、文件 ID、索引路徑存在性，以及預期 Markdown 文件的索引覆蓋情形。<br><br>Validates `docs/index.yml` YAML structure, required fields, document IDs, indexed-path existence, and expected Markdown-index coverage.'
+
+          {
+            echo '# Test Summary / 測試摘要'
+            echo
+            echo '**範圍 / Scope：** 僅限儲存庫自動化驗證；不包含即時網站、登入工作階段、CDP、快照或生產就緒驗證。  '
+            echo '**Automated repository verification only; excludes live-site, authenticated-session, CDP, snapshot, and production-readiness verification.**'
+            echo
+            echo '| 序號<br>No. | 驗證層<br>Verification Layer | 說明<br>Description | 結果<br>Result |'
+            echo '| ---: | --- | --- | --- |'
+            printf '| 1 | 擷取器欄位驗證<br>Scraper Schema Validation | %s | %s |\n' "$(description_of "$schema_state" "$schema_description")" "$(result_of "$schema_state")"
+            printf '| 2 | 網址陣列排序驗證<br>URL Array Sorting Validation | %s | %s |\n' "$(description_of "$sort_state" "$sort_description")" "$(result_of "$sort_state")"
+            printf '| 3 | 擷取器品質檢查<br>Scraper Quality Gates | %s | %s |\n' "$(description_of "$quality_state" "$quality_description")" "$(result_of "$quality_state")"
+            printf '| 4 | Python 回歸測試<br>Python Regression Tests | %s | %s |\n' "$(description_of "$python_state" "$python_description")" "$(result_of "$python_state")"
+            printf '| 5 | 文件矛盾檢查<br>Doc Examples and Contradictions | %s | %s |\n' "$(description_of "$doc_check_state" "$doc_check_description")" "$(result_of "$doc_check_state")"
+            printf '| 6 | 文件索引驗證<br>Doc Index Validation | %s | %s |\n' "$(description_of "$doc_index_state" "$doc_index_description")" "$(result_of "$doc_index_state")"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: "8. Enforce required verification result / 強制驗證結果"
+        if: ${{ always() && !cancelled() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          status_dir="${RUNNER_TEMP}/stash-test-summary"
+          required_status_files=(
+            '01-schema.status'
+            '02-url-sort.status'
+            '03-quality-gates.status'
+            '04-python-regression.status'
+            '05-doc-contradictions.status'
+            '06-doc-index.status'
+          )
+
+          for status_file in "${required_status_files[@]}"; do
+            if [ ! -f "$status_dir/$status_file" ]; then
+              echo "Required verification was not run: $status_file"
+              exit 1
+            fi
+            if [ "$(cat "$status_dir/$status_file")" != 'pass' ]; then
+              echo "Required verification did not pass: $status_file"
+              exit 1
+            fi
+          done

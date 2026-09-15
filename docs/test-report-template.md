@@ -1,87 +1,56 @@
-# Full‑Suite Test Report Template (Markdown)
+# Test Report Template
 
-## Purpose
+## CI Test Summary Boundary / CI 測試摘要邊界
 
-A standardized Markdown report structure designed for human contributors, code reviewers, and release managers. It synthesizes static validation, policy enforcement, unit/regression suites, documentation checks, and live site scrutiny into a scannable, structured summary.
+The GitHub Actions Test Summary is a concise, per-run status view using 🟢 通過 (Pass), 🔴 失敗 (Fail), and 🟡 未執行 (Not Run). It does not replace this detailed test-report template.
 
----
+GitHub Actions Test Summary 是每次執行的簡明狀態視圖，使用 🟢 通過 (Pass)、🔴 失敗 (Fail) 與 🟡 未執行 (Not Run) 三種狀態。它不能取代本詳細測試報告模板。
 
-## 1. Quick Status Header
+Use this template when a durable evidence record is required. Record commands, scope, totals, passed/failed/skipped counts, duration, fixtures, provenance, limitations, and findings here as applicable.
 
-```markdown
-# Full‑Suite Test Report
+需要保存可追溯的證據紀錄時，應使用本模板。視情況記錄命令、範圍、總數、通過/失敗/略過數、耗時、fixtures、來源、限制與發現。
 
-- **Date / Timestamp:** 2026-09-08 14:30:00 UTC
-- **Commit / Ref:** `ab12cd3` (branch: `main`)
-- **Environment:** Ubuntu 24.04 LTS / Node v20.x / Python 3.12.3
-- **Executed By:** <Contributor Name / GitHub Actions Run #ID>
-- **Verdict:** ✅ PASS (100% pass rate, 0 regressions)
-```
+## Report metadata
 
----
+| Field | Value |
+| --- | --- |
+| Report ID | `<REPORT-ID>` |
+| Date | `<YYYY-MM-DD>` |
+| Author | `<name or role>` |
+| Commit / revision | `<commit SHA or revision>` |
+| Scope | `<scrapers, documents, tools, or workflow scope>` |
+| Environment | `<local, CI runner, operating system, runtime versions>` |
 
-## 2. Executive Test Matrix (Markdown Table)
+## Objective
 
-| Test Suite / Layer          | Command / Tool                                          |  Total | Passed | Failed | Skipped |  Duration |  Status  | Notes / Key Findings                                        |
-| :-------------------------- | :------------------------------------------------------ | -----: | -----: | -----: | ------: | --------: | :------: | :---------------------------------------------------------- |
-| **Schema Validation**       | `npm run validate`                                      |     14 |     14 |      0 |       0 |      0.8s |   PASS   | All scrapers conform to `scraper.schema.json`               |
-| **Repository Quality Gate** | `bash tools/validate-all.sh`                            |     14 |     14 |      0 |       0 |      1.2s |   PASS   | Strict syntax, naming, and policy rules satisfied           |
-| **Python Test Suite**       | `python3 -m pytest tools/tests/ -v`                     |     13 |     13 |      0 |       0 |     1.67s |   PASS   | Tool scripts, validator wrappers, and skill references pass |
-| **Documentation Check**     | `python3 tools/check_scraper_docs.py`                   |      9 |      9 |      0 |       0 |      0.4s |   PASS   | 9 embedded YAML blocks verified without contradiction       |
-| **URL Sorting Check**       | `npm run validate-sort`                                 |     14 |     14 |      0 |       0 |      0.8s |   PASS   | URLs alphabetically ordered across all scrapers             |
-| **Live Scrutiny (Smoke)**   | `node tools/scrutiny.js scrapers/<Target>.yml --search` |      8 |      8 |      0 |       0 |      4.5s |   PASS   | Target site live search and detail extraction verified      |
-| **TOTAL / SUMMARY**         | _All Verification Layers_                               | **72** | **72** |  **0** |   **0** | **9.37s** | **PASS** | **Pass Rate: 100.0%**                                       |
+State the verification objective, the affected repository paths, and the decision this report supports.
 
----
+## Commands and results
 
-## 3. Failure & Warning Breakdown
+| Test Suite / Layer | Command / Tool | Total | Passed | Failed | Skipped | Duration | Status | Notes / Key Findings |
+| :--- | :--- | ---: | ---: | ---: | ---: | ---: | :---: | :--- |
+| Schema Validation | `node validator/index.mjs -a --ci` | `<n>` | `<n>` | `<n>` | `<n>` | `<duration>` | `<PASS/FAIL>` | `<findings>` |
+| URL Sorting Check | `node validator/index.mjs -a -s --ci` | `<n>` | `<n>` | `<n>` | `<n>` | `<duration>` | `<PASS/FAIL>` | `<findings>` |
+| Repository Quality Gate | `bash tools/validate-all.sh` | `<n>` | `<n>` | `<n>` | `<n>` | `<duration>` | `<PASS/FAIL>` | `<findings>` |
+| Python Test Suite | `python -m pytest tools/tests/ -v` | `<n>` | `<n>` | `<n>` | `<n>` | `<duration>` | `<PASS/FAIL>` | `<findings>` |
+| Documentation Check | `python tools/check_scraper_docs.py` | `<n>` | `<n>` | `<n>` | `<n>` | `<duration>` | `<PASS/FAIL>` | `<findings>` |
+| Documentation Index | `python tools/check_docs_index.py` | `<n>` | `<n>` | `<n>` | `<n>` | `<duration>` | `<PASS/FAIL>` | `<findings>` |
+| Live Scrutiny | `node tools/scrutiny.js scrapers/<Scraper>.yml --search` | `<n>` | `<n>` | `<n>` | `<n>` | `<duration>` | `<PASS/FAIL/NOT RUN>` | `<record evidence type and constraints>` |
 
-If any suite reports non-zero failures, detail each incident in this section:
+## Evidence and provenance
 
-| Issue ID | Suite | Target / Test Name | Root Cause / Error Message                | Action Taken / Owner |
-| :------- | :---- | :----------------- | :---------------------------------------- | :------------------- |
-| _None_   | —     | —                  | _No failures encountered during this run_ | —                    |
+Record the relevant evidence for each claimed result:
 
-_If failures occur, use this format:_
+- Command output or CI run identifier.
+- Repository commit or revision tested.
+- Fixtures, snapshots, source URLs, and capture dates when applicable.
+- Whether evidence was static, unrendered HTTP, rendered DOM, rendered snapshot, or live interaction.
+- Authentication, CDP, age-gate, rate-limit, or availability constraints without recording credentials, cookie values, session tokens, API keys, or browser-profile data.
 
-```markdown
-| BUG-01 | Quality Gate | scrapers/Sample.yml | Root `name:` declaration missing at col 0 | Fixed indentation in YAML |
-| BUG-02 | Python Tests | test_tools.py::test_scrutiny_cli_help | Exit code 1: missing npm dependency | Added dependency to package.json |
-```
+## Limitations and unresolved items
 
----
+List unverified selectors, unavailable sites, skipped tests, assumptions, known policy exceptions, and follow-up work. Do not represent schema validation, a policy-gate pass, or a test-suite pass as live verification or production readiness.
 
-## 4. Live Scrutiny Snapshot (Optional / Release Smoke)
+## Decision
 
-When testing live upstream endpoints with `tools/scrutiny.js`:
-
-| Scraper                 | Test Target / URL          |  Mode  | Fields Extracted | Coverage | Notes                                                   |
-| :---------------------- | :------------------------- | :----: | ---------------: | :------: | :------------------------------------------------------ |
-| `scrapers/Ko-Video.yml` | `product_code=KKE0149_DVD` | Detail |            8 / 8 |   100%   | Title, Code, Date, Image, Studio, Tags, Performers, URL |
-| `scrapers/Ko-Video.yml` | `probe=雄穴`               | Search |            4 / 4 |   100%   | 20 candidates retrieved, pagination functional          |
-
----
-
-## 5. Definition of Done & Sign-Off Checklist
-
-Before merging a pull request or tagging a release, verify:
-
-- [ ] All automated suites in Section 2 executed cleanly (0 failed).
-- [ ] Any test failure in Section 3 is triaged, resolved, and documented.
-- [ ] Modified scrapers have passed live verification via `tools/scrutiny.js`.
-- [ ] No secrets, tokens, or personal session credentials committed to public files.
-- [ ] Documentation check (`check_scraper_docs.py`) confirms no doc-code drift.
-
----
-
-## Usage Instructions
-
-1. **Copy Sections 1 through 5** above into your PR description, issue comment, or a release note artifact (e.g., `evidence/audit/report-YYYY-MM-DD.md`).
-2. **Execute the standard commands** listed in column 2.
-3. **Record actual counts and wall-clock times** emitted by the test runners.
-4. **Calculate total pass rate:** `(Total Passed / Total Checked) × 100%`.
-5. **Sign off** using Section 5.
-
----
-
-_Template Version: 2.0 — Updated 2026-09-08_
+State the decision supported by this report and distinguish it from production promotion. Record what remains unverified.
