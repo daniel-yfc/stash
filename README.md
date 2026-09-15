@@ -4,8 +4,9 @@ A collection of StashApp scrapers with a focus on correctness, maintainability, 
 
 ## Documentation layers
 
-- [`AGENTS.md`](AGENTS.md) — repository-wide agent boundaries and safety rules.
-- [`CLAUDE.md`](CLAUDE.md) — Claude-specific repository instructions; defer to `AGENTS.md` for shared rules.
+- [`AGENTS.md`](AGENTS.md) — canonical repository-wide agent boundaries, safety rules, workflow, evidence, and routing.
+- [`JULES.md`](JULES.md) — Jules-specific execution adapter; defers shared rules to `AGENTS.md`.
+- [`CLAUDE.md`](CLAUDE.md) — Claude-specific execution adapter; defers shared rules to `AGENTS.md`.
 - [`docs/README.md`](docs/README.md) — human-readable repository documentation index.
 - [`docs/index.yml`](docs/index.yml) — machine-readable documentation registry for agents and CI.
 - [`docs/repository-documentation-architecture.md`](docs/repository-documentation-architecture.md) — documentation numbering, naming, metadata, routing, and formatter policy.
@@ -14,6 +15,8 @@ A collection of StashApp scrapers with a focus on correctness, maintainability, 
 - [`skills/stash-scraper-builder/references/`](skills/stash-scraper-builder/references/) — specialized scraper authoring references.
 - [`tools/SRB-2.0-documentation.md`](tools/SRB-2.0-documentation.md) — Scraper Request Builder form tool manual.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — contribution and review workflow.
+
+Shared instructions belong in `AGENTS.md`. Agent-specific files contain only platform-specific execution behavior and defer scraper implementation to the skill and selected references.
 
 ## Repository structure
 
@@ -76,12 +79,13 @@ The official Node/Ajv validator and schema are authoritative. Do not add a secon
 1. Start from the appropriate template in `templates/`, or inspect an existing scraper.
 2. Rename YAML using the site’s CamelCase name and keep the required root `name:`.
 3. Select the smallest verified runtime path: XPath, JSON, script, or CDP.
-4. Read repository-level guidance, then the skill and its specialized references.
+4. Read `AGENTS.md`, then the scraper skill and its specialized references.
 5. Keep public/private authentication boundaries intact.
 6. Validate with the official CommunityScrapers schema/validator.
 7. Run URL sorting, tests, documentation checks, documentation-index checks, and the quality gate.
 8. Run live scrutiny when the target site is accessible.
 9. Record unverified selectors, live-page assumptions, and source provenance.
+10. Keep schema, policy, test, snapshot, live-verification, CI, and production-readiness evidence distinct.
 
 ## Naming and format rules
 
