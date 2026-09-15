@@ -10,7 +10,7 @@ audience:
 applies_to:
   - documentation
   - repository
-last_verified: "2026-09-09"
+last_verified: "2026-09-16"
 authority: canonical
 routing:
   intents:
@@ -31,8 +31,9 @@ This document is the canonical policy for repository documentation numbering, na
 | Layer                                      | Owns                                                                            | Must not own                                        |
 | ------------------------------------------ | ------------------------------------------------------------------------------- | --------------------------------------------------- |
 | Root `README.md`                           | Project purpose, quick start, canonical commands, directory map                 | Detailed scraper selector or runtime semantics      |
-| `AGENTS.md`                                | Repository-wide agent constraints, safety, and routing pointers                 | A second copy of detailed repository or skill rules |
-| `CLAUDE.md`                                | Claude-specific behavior that differs from repository-wide rules                | A second copy of `AGENTS.md` or skill references    |
+| `AGENTS.md`                                | Shared repository-wide agent constraints, safety, workflow, evidence, and routing | A second copy of detailed repository or skill rules |
+| `JULES.md`                                 | Jules-specific execution behavior that differs from shared rules                | A second copy of `AGENTS.md` or skill references    |
+| `CLAUDE.md`                                | Claude-specific execution behavior that differs from shared rules               | A second copy of `AGENTS.md` or skill references    |
 | `CONTRIBUTING.md`                          | Human contribution and review workflow                                          | Runtime implementation details                      |
 | `templates/README.md`                      | Template inventory, pairing, provenance, naming, copy workflow                  | Full scraper authoring manual                       |
 | `docs/`                                    | Repository architecture, CI, testing, production gates, maintenance, and status | Per-field scraper rules                             |
@@ -40,6 +41,8 @@ This document is the canonical policy for repository documentation numbering, na
 | `skills/stash-scraper-builder/references/` | Specialized XPath, JSON, script, CDP, date, failure, and validation guidance    | Project-wide contribution policy                    |
 | `validator/`                               | Executable validation behavior and schema                                       | Prose-only source of truth                          |
 | `tools/`                                   | Inspection, validation, documentation, and live-scrutiny utilities              | Canonical schema definitions                        |
+
+`AGENTS.md` is the shared agent-policy authority. Root agent adapters such as `JULES.md` and `CLAUDE.md` are optional platform-specific entry points: they may define only execution behavior unique to that platform and must defer shared repository rules to `AGENTS.md`, scraper implementation to `skills/stash-scraper-builder/SKILL.md`, and specialized behavior to the references selected by the skill read order.
 
 ## Document identity and numbering
 
@@ -111,7 +114,7 @@ Legacy documents may be migrated incrementally. When front matter contains `doc_
 
 ## Agent routing
 
-1. Repository administration, CI, paths, or contribution: `README.md` → `AGENTS.md` → `docs/README.md` → `docs/index.yml` → the owning repository document.
+1. Repository administration, CI, paths, contribution, or shared agent behavior: `README.md` → `AGENTS.md` → an applicable agent adapter (`JULES.md` or `CLAUDE.md`) → `docs/README.md` → `docs/index.yml` → the owning repository document.
 2. Scraper authoring or debugging: `skills/stash-scraper-builder/SKILL.md` → `references/skill-read-order.md` → the selected specialized reference.
 3. Schema or validation questions: official `validator/index.mjs` and official schema first, then repository policy.
 4. Live verification: `docs/06_Testing_Guide.md` → `docs/LIVE_TEST_STATUS.md` → `tools/scrutiny.js`.
@@ -159,6 +162,7 @@ If a command differs between local tooling and documentation, inspect the execut
 - Link to the owning document instead of restating detailed rules.
 - Repository-level docs may summarize a skill rule, but should link to the skill reference for implementation details.
 - Skill-level docs may link to repository commands and paths, but should not redefine repository governance.
+- Root agent adapters must be indexed and may not restate shared repository, schema, validation-command, documentation, or credential policy.
 - Every new documentation file must be listed in `docs/README.md` and `docs/index.yml`.
 - Before a release, run link checking, documentation-index checking, and a search for stale command/path names.
 
