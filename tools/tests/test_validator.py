@@ -29,12 +29,13 @@ def test_sort_check_runs():
     )
     assert result.returncode == 0, result.stdout + result.stderr
 
-
 def test_validator_unit_tests():
     result = subprocess.run(
-        ["node", "--test", "validator/validator.test.mjs", "validator/index.test.mjs"],
+        ["npm", "test"],
         cwd=ROOT,
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="strict",
     )
     assert result.returncode == 0, result.stdout + result.stderr
