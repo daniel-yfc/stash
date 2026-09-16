@@ -322,9 +322,6 @@ export class Validator {
   }
 }
 
-export { isSorted, walk };
-
->>>>>>> f307356 (fix: resolve duplicate Validator export and add 'it' to imports)
 export function main(flags, files) {
   const args = process.argv.slice(2);
   flags = flags === undefined ? args.filter((arg) => arg.startsWith("-")) : flags;
