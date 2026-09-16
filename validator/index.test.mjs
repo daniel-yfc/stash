@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { test, describe } from "node:test";
+import { test, describe, it } from "node:test";
 import { Validator } from "./index.mjs";
 
 describe("Validator - _collectConfigMappingErrors", () => {
