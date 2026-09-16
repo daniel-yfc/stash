@@ -464,33 +464,30 @@ async function resolveCandidateURLs(doc, opts, entry) {
   return { tested, found };
 }
 
-async function testSceneScraper(tested, doc, opts) {
-  const perUrl = [];
-  for (const cand of tested) {
-    const urlEntry = { url: cand.url, probe: cand.probe, page: cand.page };
-    let html;
-    try {
-      html = await fetchHTML(cand.url, opts.cookie);
-    } catch (e) {
-      urlEntry.status = "FETCH_FAIL";
-      urlEntry.reason = e.message;
-      perUrl.push(urlEntry);
-      continue;
-    }
-    const dom = new JSDOM(html, { virtualConsole: quietConsole });
-    const xdoc = dom.window.document;
-    const sceneScraper = (doc.xPathScrapers || {})[doc.sceneByURL?.[0]?.scraper];
-    if (!sceneScraper) {
-      urlEntry.status = "NO_SCENE_SCRAPER";
-      perUrl.push(urlEntry);
-      continue;
-    }
-    urlEntry.fields = evaluateScraperDef(sceneScraper, xdoc);
-    urlEntry.status = "OK";
-    perUrl.push(urlEntry);
-    await new Promise((r) => setTimeout(r, 300));
-  }
-  return perUrl;
+export async function testSceneScraper(tested, doc, opts) {
+  return Promise.all(
+    tested.map(async (cand) => {
+      const urlEntry = { url: cand.url, probe: cand.probe, page: cand.page };
+      let html;
+      try {
+        html = await fetchHTML(cand.url, opts.cookie);
+      } catch (e) {
+        urlEntry.status = "FETCH_FAIL";
+        urlEntry.reason = e.message;
+        return urlEntry;
+      }
+      const dom = new JSDOM(html, { virtualConsole: quietConsole });
+      const xdoc = dom.window.document;
+      const sceneScraper = (doc.xPathScrapers || {})[doc.sceneByURL?.[0]?.scraper];
+      if (!sceneScraper) {
+        urlEntry.status = "NO_SCENE_SCRAPER";
+        return urlEntry;
+      }
+      urlEntry.fields = evaluateScraperDef(sceneScraper, xdoc);
+      urlEntry.status = "OK";
+      return urlEntry;
+    }),
+  );
 }
 
 async function testSearchScraper(doc, opts, tested, found, entry) {
