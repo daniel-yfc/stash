@@ -18,16 +18,6 @@ node validator/index.mjs -a -s scrapers
 
 The localized Deno validator has been removed. Do not add a second validator or a local schema fork; the upstream CommunityScrapers validator and schema are authoritative.
 
-## Unit Tests
-
-Run JavaScript unit tests for validator helper methods (including mapping error collector checks in `getMappingErrors`):
-
-```bash
-npm test
-# or directly:
-node --test validator/index.test.mjs
-```
-
 ## Quality gate
 
 For one scraper:
