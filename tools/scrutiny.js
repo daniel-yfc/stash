@@ -203,17 +203,28 @@ function extractSceneURLs(searchHTML, scraperDoc, baseURL, probe, page) {
       const key = k.startsWith("$") ? k : "$" + k;
       sel = sel.replaceAll(key, v);
     }
+    const postProcessors =
+      typeof urlsSel === "object" && urlsSel.postProcess
+        ? urlsSel.postProcess.map((pp) => ({
+            ...pp,
+            replace: pp.replace
+              ? pp.replace.map((r) => ({
+                  ...r,
+                  compiledRegex: new RegExp(r.regex),
+                }))
+              : undefined,
+          }))
+        : [];
+
     const snap = xdoc.evaluate(sel, xdoc, null, XP_ALL, null);
     for (let i = 0; i < snap.snapshotLength; i++) {
       const node = snap.snapshotItem(i);
       let href = node.nodeValue || node.textContent || "";
       if (!href) continue;
-      if (typeof urlsSel === "object" && urlsSel.postProcess) {
-        for (const pp of urlsSel.postProcess) {
-          if (pp.replace) {
-            for (const r of pp.replace) {
-              href = href.replace(new RegExp(r.regex), r.with);
-            }
+      for (const pp of postProcessors) {
+        if (pp.replace) {
+          for (const r of pp.replace) {
+            href = href.replace(r.compiledRegex, r.with);
           }
         }
       }
