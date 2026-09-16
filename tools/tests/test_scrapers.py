@@ -1,4 +1,3 @@
-import re
 import subprocess
 from pathlib import Path
 
@@ -22,6 +21,7 @@ def test_scrapers_have_name():
 
 
 def test_fragment_mapping_is_optional_but_valid_when_present():
+    import re
     for scraper in (ROOT / "scrapers").rglob("*.yml"):
         data = scraper.read_text()
         if "sceneByQueryFragment:" not in data:

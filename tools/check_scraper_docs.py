@@ -13,11 +13,10 @@ from jsonschema import Draft7Validator
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA = ROOT / "validator" / "scraper.schema.json"
 DOC_ROOT = ROOT / "skills" / "stash-scraper-builder"
-YAML_BLOCK_PATTERN = re.compile(r"```yaml\r?\n(.*?)```", flags=re.S)
 
 
 def full_yaml_blocks(path):
-    return YAML_BLOCK_PATTERN.findall(path.read_text(encoding="utf-8"))
+    return re.findall(r"```yaml\r?\n(.*?)```", path.read_text(encoding="utf-8"), flags=re.S)
 
 
 def has_mapping(doc):

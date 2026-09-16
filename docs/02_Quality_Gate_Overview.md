@@ -1,73 +1,62 @@
-# Quality Gate Overview
+---
+doc_id: DOC-QG-20
+title: Quality Gate Overview
+status: active
+layer: repository
+owner: maintainer
+audience:
+  - agent
+  - maintainer
+applies_to:
+  - scrapers
+  - ci
+last_verified: "2026-09-09"
+authority: canonical
+routing:
+  intents:
+    - quality-gate
+    - validation
+---
 
-## Purpose
+# Scraper 品質管線總覽
 
-The quality gate provides repository-local validation layers for scraper configuration, policy conformance, tooling regressions, and documentation integrity. It does not prove live-site behavior or production readiness.
+## 目的
 
-## Verification layers
+本文件提供品質管線的高层概覽。詳細規則以 [`03_Quality_Gate_Rules.md`](03_Quality_Gate_Rules.md) 為準；文件編號、命名與索引規則以 [`repository-documentation-architecture.md`](repository-documentation-architecture.md) 為準。
 
-| Layer | Command | What it establishes |
-| --- | --- | --- |
-| Schema | `node validator/index.mjs -a --ci` | Scraper YAML conforms to the validator's schema and mapping requirements |
-| URL ordering | `node validator/index.mjs -a -s --ci` | URL arrays meet deterministic ordering requirements |
-| Repository policy | `bash tools/validate-all.sh` | Selected scraper files pass repository quality-gate policies |
-| Python regression | `python -m pytest tools/tests/ -v` | Covered Python tool and regression behavior passes |
-| Documentation | `python tools/check_scraper_docs.py` | Embedded full-document YAML examples and implemented contradiction rules pass |
-| Documentation index | `python tools/check_docs_index.py` | Documentation IDs, paths, and expected index coverage pass |
-| Live scrutiny | `node tools/scrutiny.js scrapers/<Scraper>.yml --search` | A deliberately tested live site response supports the recorded selector evidence |
+## 技術檢核原則
 
-## Validation result separation / 驗證結果分離
+1. XPath/JSON scraper 必須有非空白的根層級 `name:`；檔名一致是專案慣例。
+2. `driver.useCDP` 只能宣告於頂層 `driver` 區塊。
+3. 公開 `scrapers/*.yml` 不得包含 `driver.cookies`；需要登入的版本置於 `scrapers/private/`。
+4. `sceneByFragment` 不是每個 scraper 的必填項目；只有目標網站確實支援 fragment/title lookup 時才加入。若 XPath/JSON fragment mapping 存在，必須提供對應 `queryURL`。
+5. 日期格式使用 Go reference layout，例如 `2006-01-02`。
+6. Schema 驗證與 live-site selector 驗證是不同層級，不得以 schema 通過取代實頁測試。
 
-Each result reports only its own verification layer. A pass in one layer does not imply a pass in another layer and cannot substitute for missing evidence.
+## 驗證層級
 
-每一項結果僅報告其自身驗證層。某一層通過不代表其他層亦通過，也不能取代缺少的證據。
+| 層級                | 工具                                                     | 證明範圍                                |
+| ------------------- | -------------------------------------------------------- | --------------------------------------- |
+| Schema              | `npm run validate`                                       | YAML 符合官方 schema                    |
+| URL ordering        | `npm run validate-sort`                                  | URL array 排序符合 validator 要求       |
+| Repository policy   | `bash tools/validate-all.sh`                             | 命名、credentials、fragment、日期等政策 |
+| Python regression   | `python -m pytest tools/tests/`                          | 工具與測試套件可執行                    |
+| Documentation       | `python tools/check_scraper_docs.py`                     | 文件範例與規則一致                      |
+| Documentation index | `python tools/check_docs_index.py`                       | 文件 ID、路徑與索引一致                 |
+| Live scrutiny       | `node tools/scrutiny.js scrapers/<Scraper>.yml --search` | 目標網站實頁 selector 可用性            |
 
-The Validation workflow reports these six repository-automation layers in this order:
+## CI 工作流
 
-1. 擷取器欄位驗證 / Scraper Schema Validation
-2. 網址陣列排序驗證 / URL Array Sorting Validation
-3. 擷取器品質檢查 / Scraper Quality Gates
-4. Python 回歸測試 / Python Regression Tests
-5. 文件矛盾檢查 / Doc Examples and Contradictions
-6. 文件索引驗證 / Doc Index Validation
+- `validate.yml`：blocking schema、sorting、quality gate、pytest 與文件檢查。
+- `pr-check.yml`：針對 PR 變更的 scraper 執行檢查並回報。
+- `scrutiny.yml`：手動觸發 live-site probing。
+- `link-check.yml`：檢查 Markdown 連結。
+- `eval.yml`：手動評估測試。
 
-The GitHub Actions Test Summary uses three states:
+## 狀態追蹤
 
-- 🟢 通過 (Pass): the layer ran and passed.
-- 🔴 失敗 (Fail): the layer ran and failed.
-- 🟡 未執行 (Not Run): the layer produced no result in that workflow run; it is neither a pass nor a test failure.
+- Schema/CI 結果不代表 live selector 正確。
+- Live 測試結果記錄於 [`LIVE_TEST_STATUS.md`](LIVE_TEST_STATUS.md)。
+- 測試報告使用 [`test-report-template.md`](test-report-template.md)。
 
-GitHub Actions Test Summary 使用三種狀態：
-
-- 🟢 通過 (Pass)：該層已執行並通過。
-- 🔴 失敗 (Fail)：該層已執行但失敗。
-- 🟡 未執行 (Not Run)：該 workflow run 未產生該層結果；它不是通過，也不是測試本身的失敗。
-
-Do not infer these equivalences:
-
-- A schema pass is not a quality-gate pass.
-- A quality-gate pass is not Python regression-test success.
-- A documentation or index pass is not snapshot verification.
-- Any repository-automation pass is not live-search verification, live-detail verification, authenticated/CDP validation, or production readiness.
-
-不得推論下列等價關係：
-
-- Schema 通過不等於品質閘門通過。
-- 品質閘門通過不等於 Python 回歸測試成功。
-- 文件或索引通過不等於快照驗證。
-- 任何儲存庫自動化通過都不等於即時搜尋驗證、即時詳情頁驗證、登入/CDP 驗證或生產就緒。
-
-## Gate usage
-
-Run the complete local sequence before submitting a scraper change:
-
-```bash
-node validator/index.mjs -a --ci
-node validator/index.mjs -a -s --ci
-bash tools/validate-all.sh
-python -m pytest tools/tests/ -v
-python tools/check_scraper_docs.py
-python tools/check_docs_index.py
-```
-
-Use live scrutiny separately when the target site is accessible and the task requires live evidence.
+**最後更新**: 2026-09-09
