@@ -36,20 +36,6 @@ const POLITE_UA =
 // XPath result types
 const XP_ALL = 7; // ORDERED_NODE_SNAPSHOT_TYPE
 
-const regexCache = new Map();
-function getRegExp(pattern, flags = "") {
-  const key = `${flags}:${pattern}`;
-  let re = regexCache.get(key);
-  if (!re) {
-    re = new RegExp(pattern, flags);
-    regexCache.set(key, re);
-  }
-  if (re.global || re.sticky) {
-    re.lastIndex = 0;
-  }
-  return re;
-}
-
 function showHelp() {
   console.log(`
 Usage: node tools/scrutiny.js [options] [scraper.yml ...]
@@ -224,7 +210,7 @@ function extractSceneURLs(searchHTML, scraperDoc, baseURL, probe, page) {
             replace: pp.replace
               ? pp.replace.map((r) => ({
                   ...r,
-                  compiledRegex: getRegExp(r.regex, r.flags),
+                  compiledRegex: new RegExp(r.regex),
                 }))
               : undefined,
           }))

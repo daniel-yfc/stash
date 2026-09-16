@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node *)",
+      "Bash(npm install)",
+      "Bash(npm view *)",
+      "Bash(bash *)",
+      "Bash(python *)",
+      "Bash(py *)",
+      "Bash(curl *)",
+      "Bash($h *)",
+      "Bash($m=[regex]::match)",
+      "Bash($m.value)",
+      "Bash($m=[regex]::matches)",
+      "Bash($m)",
+      "Bash(foreach-object *)",
+      "Bash(select-object *)",
+      "Bash($m2=[regex]::match)",
+      "Bash($m2.value)",
+      "Bash(powershell *)",
+      "Bash(nslookup *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push)",
+      "Bash(ls *)",
+      "Bash(cd *)",
+      "Bash(ipconfig)",
+      "Bash(findstr *)",
+      "Bash(curl.exe *)",
+      "Bash(ssh *)",
+      "Bash(\"c:\\program files\\git\\bin\\bash.exe\" *)",
+      "Bash(set *)"
+    ]
+  },
+  "$version": 4
+}

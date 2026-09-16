@@ -16,6 +16,8 @@ def test_validator_runs():
         cwd=ROOT,
         capture_output=True,
         text=True,
+    encoding="utf-8",
+    errors="strict",
     )
     assert result.returncode == 0, result.stdout + result.stderr
 
@@ -26,6 +28,8 @@ def test_sort_check_runs():
         cwd=ROOT,
         capture_output=True,
         text=True,
+    encoding="utf-8",
+    errors="strict",
     )
     assert result.returncode == 0, result.stdout + result.stderr
 
@@ -36,5 +40,7 @@ def test_validator_unit_tests():
         cwd=ROOT,
         capture_output=True,
         text=True,
+    encoding="utf-8",
+    errors="strict",
     )
     assert result.returncode == 0, result.stdout + result.stderr

@@ -97,4 +97,8 @@ def test_has_mapping():
 
 def test_check_scraper_docs_main_success():
     """Test check_scraper_docs.main() passes on real repository docs."""
+<<<<<<< HEAD
     assert check_scraper_docs.main() == 0
+=======
+    assert check_scraper_docs.main() == 0
+>>>>>>> cab71d50169f908b5135d1daa212226c532ca6da
