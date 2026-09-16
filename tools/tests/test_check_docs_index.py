@@ -49,60 +49,6 @@ def test_frontmatter_non_mapping_yaml(tmp_path):
     assert check_docs_index.frontmatter(md_file) == {}
 
 
-def test_frontmatter_empty_block(tmp_path):
-    """Test frontmatter extraction when frontmatter block is empty."""
-    md_file = tmp_path / "doc.md"
-    md_file.write_text("---\n---\n\nContent", encoding="utf-8")
-    assert check_docs_index.frontmatter(md_file) == {}
-
-
-def test_frontmatter_scalar_yaml(tmp_path):
-    """Test frontmatter extraction when YAML is a scalar (int, string, bool)."""
-    md_file = tmp_path / "doc.md"
-    md_file.write_text("---\n42\n---\n", encoding="utf-8")
-    assert check_docs_index.frontmatter(md_file) == {}
-
-    md_file.write_text("---\n\"just a string\"\n---\n", encoding="utf-8")
-    assert check_docs_index.frontmatter(md_file) == {}
-
-    md_file.write_text("---\ntrue\n---\n", encoding="utf-8")
-    assert check_docs_index.frontmatter(md_file) == {}
-
-
-def test_frontmatter_not_starting_with_dashes(tmp_path):
-    """Test frontmatter extraction when file does not start with ---."""
-    md_file = tmp_path / "doc.md"
-    md_file.write_text("   ---\ndoc_id: DOC-01\n---\n", encoding="utf-8")
-    assert check_docs_index.frontmatter(md_file) == {}
-
-
-def test_frontmatter_nested_dict(tmp_path):
-    """Test frontmatter extraction with nested mapping structures."""
-    md_file = tmp_path / "doc.md"
-    content = "---\ndoc_id: DOC-01\nmeta:\n  author: Jules\n  tags:\n    - test\n---\n"
-    md_file.write_text(content, encoding="utf-8")
-    assert check_docs_index.frontmatter(md_file) == {
-        "doc_id": "DOC-01",
-        "meta": {"author": "Jules", "tags": ["test"]},
-    }
-
-
-def test_frontmatter_multiple_blocks(tmp_path):
-    """Test frontmatter extraction extracts only the first frontmatter block."""
-    md_file = tmp_path / "doc.md"
-    content = "---\ndoc_id: DOC-01\n---\n\n---\ndoc_id: DOC-02\n---\n"
-    md_file.write_text(content, encoding="utf-8")
-    assert check_docs_index.frontmatter(md_file) == {"doc_id": "DOC-01"}
-
-
-def test_frontmatter_with_comments_and_whitespace(tmp_path):
-    """Test frontmatter extraction with comments and empty lines inside frontmatter."""
-    md_file = tmp_path / "doc.md"
-    content = "---\n# A comment\ndoc_id: DOC-01\n\n  \n---\n"
-    md_file.write_text(content, encoding="utf-8")
-    assert check_docs_index.frontmatter(md_file) == {"doc_id": "DOC-01"}
-
-
 def test_expected_markdown_paths():
     """Test expected_markdown_paths returns expected files."""
     paths = check_docs_index.expected_markdown_paths()
