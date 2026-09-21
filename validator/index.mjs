@@ -1,11 +1,11 @@
-import fs from 'node:fs';
-import path from 'node:path';
+import fs from "node:fs";
+import path from "node:path";
 
 import Ajv from "ajv";
 
-import betterAjvErrors from 'better-ajv-errors';
-import chalk from 'chalk';
-import { parse } from 'yaml';
+import betterAjvErrors from "better-ajv-errors";
+import chalk from "chalk";
+import { parse } from "yaml";
 import addFormats from "ajv-formats";
 
 // https://www.peterbe.com/plog/nodejs-fs-walk
@@ -23,17 +23,17 @@ function walk(directory, ext, filepaths = []) {
 }
 
 // https://stackoverflow.com/a/53833620
-const isSorted = arr => arr.every((v,i,a) => !i || a[i-1] <= v);
+const isSorted = (arr) => arr.every((v, i, a) => !i || a[i - 1] <= v);
 
-class Validator {
+export class Validator {
   constructor(flags) {
-    this.allowDeprecations = flags.includes('-d');
-    this.stopOnError = !flags.includes('-a');
-    this.sortedURLs = flags.includes('-s');
-    this.verbose = flags.includes('-v');
+    this.allowDeprecations = flags.includes("-d");
+    this.stopOnError = !flags.includes("-a");
+    this.sortedURLs = flags.includes("-s");
+    this.verbose = flags.includes("-v");
 
-    const schemaPath = path.resolve(import.meta.dirname, './scraper.schema.json');
-    this.schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
+    const schemaPath = path.resolve(import.meta.dirname, "./scraper.schema.json");
+    this.schema = JSON.parse(fs.readFileSync(schemaPath, "utf8"));
     this.ajv = new Ajv({
       // allErrors: true,
       strict: true,
@@ -47,15 +47,15 @@ class Validator {
     let scrapers;
 
     if (files && Array.isArray(files) && files.length > 0) {
-      scrapers = files.map(file => path.resolve(file));
+      scrapers = files.map((file) => path.resolve(file));
     } else {
-      const scrapersDir = path.resolve(import.meta.dirname, '../scrapers');
-      scrapers = walk(scrapersDir, '.yml');
+      const scrapersDir = path.resolve(import.meta.dirname, "../scrapers");
+      scrapers = walk(scrapersDir, ".yml");
     }
 
     const yamlLoadOptions = {
       prettyErrors: true,
-      version: '1.2',
+      version: "1.2",
       merge: true,
     };
 
@@ -66,10 +66,10 @@ class Validator {
       const relPath = path.relative(process.cwd(), file);
       let contents, data;
       try {
-        contents = fs.readFileSync(file, 'utf8');
+        contents = fs.readFileSync(file, "utf8");
         data = parse(contents, yamlLoadOptions);
       } catch (error) {
-        console.error(`${chalk.red(chalk.bold('ERROR'))} in: ${relPath}:`);
+        console.error(`${chalk.red(chalk.bold("ERROR"))} in: ${relPath}:`);
         error.stack = null;
         console.error(error);
         result = result && false;
@@ -91,7 +91,7 @@ class Validator {
 
       // Output validation errors
       if (!valid) {
-        const output = betterAjvErrors('scraper', data, validate.errors, { indent: 2 });
+        const output = betterAjvErrors("scraper", data, validate.errors, { indent: 2 });
         console.log(output);
       }
 
@@ -106,7 +106,7 @@ class Validator {
     }
 
     if (!this.verbose && result) {
-      console.log(chalk.green('Validation passed!'));
+      console.log(chalk.green("Validation passed!"));
     }
 
     return result;
@@ -125,10 +125,10 @@ class Validator {
 
     if (data.sceneByName && !data.sceneByQueryFragment) {
       errors.push({
-        keyword: 'sceneByName',
+        keyword: "sceneByName",
         message: `a \`sceneByQueryFragment\` configuration is required for \`sceneByName\` to work`,
-        params: { keyword: 'sceneByName' },
-        dataPath: '/sceneByName',
+        params: { keyword: "sceneByName" },
+        dataPath: "/sceneByName",
       });
     }
 
@@ -136,7 +136,7 @@ class Validator {
   }
 
   _collectScraperDefinitionErrors(data) {
-    const hasStashServer = Object.keys(data).includes('stashServer');
+    const hasStashServer = Object.keys(data).includes("stashServer");
     const xPathScrapers = data.xPathScrapers ? Object.keys(data.xPathScrapers) : [];
     const jsonScrapers = data.jsonScrapers ? Object.keys(data.jsonScrapers) : [];
 
@@ -158,29 +158,29 @@ class Validator {
 
       const multiple = value instanceof Array;
       (multiple ? value : [value]).forEach(({ action, scraper, url }, idx) => {
-        const dataPath = `/${key}${multiple ? `/${idx}` : ''}`;
+        const dataPath = `/${key}${multiple ? `/${idx}` : ""}`;
 
-        if (action === 'stash') {
+        if (action === "stash") {
           needsStashServer = true;
           if (!hasStashServer) {
             errors.push({
-              keyword: 'action',
+              keyword: "action",
               message: `root object should contain a \`stashServer\` definition`,
-              params: { keyword: 'action' },
-              dataPath: dataPath + '/action',
+              params: { keyword: "action" },
+              dataPath: dataPath + "/action",
             });
           }
           return;
         }
 
-        if (action === 'scrapeXPath') {
+        if (action === "scrapeXPath") {
           configuredXPathScrapers.push(scraper);
           if (!xPathScrapers.includes(scraper)) {
             errors.push({
-              keyword: 'scraper',
+              keyword: "scraper",
               message: `xPathScrapers should contain a XPath scraper definition for \`${scraper}\``,
-              params: { keyword: 'scraper' },
-              dataPath: dataPath + '/scraper',
+              params: { keyword: "scraper" },
+              dataPath: dataPath + "/scraper",
             });
           } else if (!data.xPathScrapers || !data.xPathScrapers[scraper][type]) {
             errors.push({
@@ -196,9 +196,9 @@ class Validator {
               const exists = seenURLs[u];
               if (exists) {
                 errors.push({
-                  keyword: 'url',
+                  keyword: "url",
                   message: `URLs for type \`${type}\` should be unique, already exists on ${exists}`,
-                  params: { keyword: 'url' },
+                  params: { keyword: "url" },
                   dataPath: `${dataPath}/url/${uIdx}`,
                 });
               } else {
@@ -208,10 +208,10 @@ class Validator {
 
             if (this.sortedURLs && !isSorted(url)) {
               errors.push({
-                keyword: 'url',
-                message: 'URL list should be sorted in ascending alphabetical order',
-                params: { keyword: 'url' },
-                dataPath: dataPath + '/url',
+                keyword: "url",
+                message: "URL list should be sorted in ascending alphabetical order",
+                params: { keyword: "url" },
+                dataPath: dataPath + "/url",
               });
             }
           }
@@ -219,14 +219,14 @@ class Validator {
           return;
         }
 
-        if (action === 'scrapeJson') {
+        if (action === "scrapeJson") {
           configuredJsonScrapers.push(scraper);
           if (!jsonScrapers.includes(scraper)) {
             errors.push({
-              keyword: 'scraper',
+              keyword: "scraper",
               message: `jsonScrapers should contain a JSON scraper definition for \`${scraper}\``,
-              params: { keyword: 'scraper' },
-              dataPath: dataPath + '/scraper',
+              params: { keyword: "scraper" },
+              dataPath: dataPath + "/scraper",
             });
           } else if (!data.jsonScrapers || !data.jsonScrapers[scraper][type]) {
             errors.push({
@@ -242,9 +242,9 @@ class Validator {
               const exists = seenURLs[u];
               if (exists) {
                 errors.push({
-                  keyword: 'url',
+                  keyword: "url",
                   message: `URLs for type \`${type}\` should be unique, already exists on ${exists}`,
-                  params: { keyword: 'url' },
+                  params: { keyword: "url" },
                   dataPath: `${dataPath}/url/${uIdx}`,
                 });
               } else {
@@ -254,10 +254,10 @@ class Validator {
 
             if (this.sortedURLs && !isSorted(url)) {
               errors.push({
-                keyword: 'url',
-                message: 'URL list should be sorted in ascending alphabetical order',
-                params: { keyword: 'url' },
-                dataPath: dataPath + '/url',
+                keyword: "url",
+                message: "URL list should be sorted in ascending alphabetical order",
+                params: { keyword: "url" },
+                dataPath: dataPath + "/url",
               });
             }
           }
@@ -282,10 +282,10 @@ class Validator {
 
     if (!needsStashServer && hasStashServer) {
       errors.unshift({
-        keyword: 'stashServer',
-        message: '`stashServer` is defined, but never used',
-        params: { keyword: 'stashServer' },
-        dataPath: '/stashServer',
+        keyword: "stashServer",
+        message: "`stashServer` is defined, but never used",
+        params: { keyword: "stashServer" },
+        dataPath: "/stashServer",
       });
     }
 
@@ -299,19 +299,19 @@ class Validator {
     if (cookies) {
       const usesCDP = Boolean(data.driver && data.driver.useCDP);
       cookies.forEach((cookieItem, idx) => {
-        const hasCookieURL = 'CookieURL' in cookieItem;
+        const hasCookieURL = "CookieURL" in cookieItem;
         if (!usesCDP && !hasCookieURL) {
           errors.push({
-            keyword: 'CookieURL',
-            message: '`CookieURL` is required because useCDP is `false`',
-            params: { keyword: 'CookieURL' },
+            keyword: "CookieURL",
+            message: "`CookieURL` is required because useCDP is `false`",
+            params: { keyword: "CookieURL" },
             dataPath: `/driver/cookies/${idx}`,
           });
         } else if (usesCDP && hasCookieURL) {
           errors.push({
-            keyword: 'CookieURL',
-            message: 'Should not have `CookieURL` because useCDP is `true`',
-            params: { keyword: 'CookieURL' },
+            keyword: "CookieURL",
+            message: "Should not have `CookieURL` because useCDP is `true`",
+            params: { keyword: "CookieURL" },
             dataPath: `/driver/cookies/${idx}/CookieURL`,
           });
         }
@@ -322,23 +322,19 @@ class Validator {
   }
 }
 
-export { Validator, isSorted, walk };
-
 export function main(flags, files) {
   const args = process.argv.slice(2);
-  flags = flags === undefined ? args.filter(arg => arg.startsWith('-')) : flags;
-  files = files === undefined ? args.filter(arg => !arg.startsWith('-')) : files;
+  flags = flags === undefined ? args.filter((arg) => arg.startsWith("-")) : flags;
+  files = files === undefined ? args.filter((arg) => !arg.startsWith("-")) : files;
   const validator = new Validator(flags);
   const result = validator.run(files);
-  if (flags.includes('--ci')) {
+  if (flags.includes("--ci")) {
     process.exit(result ? 0 : 1);
   }
-  return result;
 }
 
 export default main;
 
-const isMainModule = process.argv[1] && import.meta.filename === path.resolve(process.argv[1]);
-if (isMainModule) {
+if (process.argv[1] && fs.realpathSync(process.argv[1]) === fs.realpathSync(import.meta.filename)) {
   main();
 }

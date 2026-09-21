@@ -25,14 +25,7 @@ For each site, record:
 1. One known detail URL.
 2. One scene-name search URL, if supported.
 3. Extracted title, code, date, image, studio, tags, performers, and URL.
-4. Whether the evidence is a live page, unrendered HTTP response, rendered DOM,
-   or rendered-DOM snapshot; identify the fixture/date where applicable.
-5. Whether CDP, login, age verification, or cookies were required. If cookie
-   metadata was supplied, record only cookie names and domain metadata; never
-   record cookie values here.
-6. The date and site response status.
+4. Whether the page required CDP, login, age verification, or cookies.
+5. The date and site response status.
 
 Do not promote a scraper from `Unverified` based only on schema validation.
-
-Do not treat rendered snapshots from a different site as evidence for this
-scraper. For example, FC2 rendered snapshots do not verify GV-Wiki selectors.

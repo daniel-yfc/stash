@@ -1,28 +1,8 @@
----
-doc_id: DOC-TEST-50
-title: Testing Guide
-status: active
-layer: repository
-owner: maintainer
-audience:
-  - agent
-  - maintainer
-applies_to:
-  - testing
-  - validator
-last_verified: "2026-09-13"
-authority: canonical
-routing:
-  intents:
-    - testing
-    - live-scrutiny
----
-
 # Testing Guide
 
 ## Overview
 
-This guide covers local testing, schema validation, CI/CD checks, JavaScript validator unit tests, and Python regression tests for the Stash Scraper Quality Gate system.
+This guide covers local testing, schema validation, CI/CD checks, and Python regression tests for the Stash Scraper Quality Gate system.
 
 ## Test Types
 
@@ -52,25 +32,15 @@ node validator/index.mjs -a --ci
 node validator/index.mjs -a -s --ci
 ```
 
-### 3. JavaScript Validator Unit Tests
+### 3. Python Test Suite
 
-Run the JavaScript unit tests for validator methods (e.g. mapping error collector checks in `getMappingErrors`):
-
-```bash
-npm test
-# or directly:
-node --test validator/validator.test.mjs validator/index.test.mjs
-```
-
-### 4. Python Test Suite
-
-Run the Python test suite to check script executability, directory structures, skill reference integrity, and validator unit tests:
+Run the Python test suite to check script executability, directory structures, and skill reference integrity:
 
 ```bash
 python -m pytest tools/tests/
 ```
 
-### 5. Live Scraper Scrutiny
+### 4. Live Scraper Scrutiny
 
 Run live-site evaluation to verify selectors against real DOM responses:
 
@@ -85,7 +55,7 @@ node tools/scrutiny.js scrapers/CK-Download.yml --paginate --multi
 node tools/scrutiny.js scrapers/CK-Download.yml --url="<URL>"
 ```
 
-### 6. Documentation Verification
+### 5. Documentation Verification
 
 Validate Markdown documentation structure and references:
 
@@ -109,7 +79,6 @@ Before submitting a scraper change, confirm:
 
 - [ ] `node validator/index.mjs -a --ci` passes without schema errors.
 - [ ] `node validator/index.mjs -a -s --ci` confirms URL ordering.
-- [ ] `npm test` passes JavaScript validator unit tests.
 - [ ] `bash tools/scraper-quality-gate.sh <scraper.yml>` passes all policy checks.
 - [ ] `python -m pytest tools/tests/` passes all unit tests.
 - [ ] `node tools/scrutiny.js <scraper.yml> --search` verifies live selectors when site is accessible.

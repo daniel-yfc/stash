@@ -7,23 +7,17 @@ documents:
     status: active
     intents: [quick-start, repository-map]
   - doc_id: DOC-AGENTS-00
-    title: Shared Agent Instructions
+    title: Agent Instructions
     path: AGENTS.md
     layer: repository
     status: active
-    intents: [agent-routing, repository-policy, agent-workflow, evidence-reporting]
-  - doc_id: DOC-JULES-00
-    title: Jules Adapter
-    path: JULES.md
-    layer: repository
-    status: active
-    intents: [agent-routing, jules-execution]
+    intents: [agent-routing, repository-policy]
   - doc_id: DOC-CLAUDE-00
-    title: Claude Adapter
+    title: Claude Instructions
     path: CLAUDE.md
     layer: repository
     status: active
-    intents: [agent-routing, claude-execution]
+    intents: [agent-routing]
   - doc_id: DOC-CONTRIB-00
     title: Contributing Guide
     path: CONTRIBUTING.md
@@ -270,10 +264,3 @@ documents:
     layer: skill
     status: active
     intents: [templates, workflow]
-  - doc_id: REF-SEC-40
-    title: Private Cookie Deployment
-    path: skills/stash-scraper-builder/references/private-cookie-deployment.md
-    layer: skill
-    status: active
-    intents: [authentication, cookies, private-deployment]
-    read_after: [REF-SEC-30]

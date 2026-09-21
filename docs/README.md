@@ -7,7 +7,7 @@ owner: maintainer
 audience:
   - agent
   - maintainer
-last_verified: "2026-09-16"
+last_verified: "2026-09-09"
 authority: canonical
 routing:
   intents:
@@ -27,8 +27,7 @@ This directory contains repository-level workflow, architecture, testing, and ma
 ## Ownership
 
 - Repository workflow and project operations belong here and in the root `README.md`.
-- Shared agent constraints, safety, workflow, evidence, and reporting rules belong in [`AGENTS.md`](../AGENTS.md).
-- Platform adapters such as [`CLAUDE.md`](../CLAUDE.md) and [`JULES.md`](../JULES.md) contain only agent-specific execution behavior and defer shared rules to `AGENTS.md`.
+- Agent-wide constraints belong in `AGENTS.md` and `CLAUDE.md`.
 - Scraper authoring rules belong in `skills/stash-scraper-builder/SKILL.md`.
 - Specialized scraper behavior belongs in `skills/stash-scraper-builder/references/`.
 
@@ -51,4 +50,4 @@ This directory contains repository-level workflow, architecture, testing, and ma
 
 ## Rule of thumb
 
-Use `AGENTS.md` for shared agent rules, an agent adapter only for platform-specific execution behavior, `templates/` to start a file, `skills/stash-scraper-builder/` to decide how it should be authored, `validator/` and `tools/` to verify it, and `docs/` to understand repository workflow and maintenance.
+Use `templates/` to start a file, `skills/stash-scraper-builder/` to decide how it should be authored, `validator/` and `tools/` to verify it, and `docs/` to understand repository workflow and maintenance.
