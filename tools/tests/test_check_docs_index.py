@@ -41,6 +41,17 @@ def test_frontmatter_invalid_yaml(tmp_path):
     md_file.write_text("---\n: : : invalid yaml\n---\n", encoding="utf-8")
     assert check_docs_index.frontmatter(md_file) == {}
 
+def test_frontmatter_yaml_error_raised(tmp_path, monkeypatch):
+    """Test frontmatter extraction when yaml.safe_load raises yaml.YAMLError."""
+    md_file = tmp_path / "doc.md"
+    md_file.write_text("---\nkey: value\n---\n", encoding="utf-8")
+
+    def mock_safe_load(stream):
+        raise yaml.YAMLError("Simulated YAML parsing error")
+
+    monkeypatch.setattr(yaml, "safe_load", mock_safe_load)
+    assert check_docs_index.frontmatter(md_file) == {}
+
 
 def test_frontmatter_non_mapping_yaml(tmp_path):
     """Test frontmatter extraction when YAML is not a dictionary."""
