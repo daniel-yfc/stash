@@ -170,3 +170,11 @@ def test_main_validation_errors(monkeypatch, tmp_path, capsys):
     assert "DOC-02: front matter doc_id 'DOC-WRONG' does not match index" in captured.out
     assert "DOC-02: read_after references unknown or later ID 'DOC-UNKNOWN'" in captured.out
     assert "Markdown document is not indexed: docs/missing.md" in captured.out
+
+def test_fail():
+    """Test that fail appends error messages to the errors list."""
+    errors = []
+    check_docs_index.fail(errors, "error 1")
+    assert errors == ["error 1"]
+    check_docs_index.fail(errors, "error 2")
+    assert errors == ["error 1", "error 2"]
